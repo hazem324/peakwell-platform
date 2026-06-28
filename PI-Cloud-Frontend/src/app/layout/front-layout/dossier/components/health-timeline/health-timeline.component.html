@@ -1,0 +1,178 @@
+<div class="health-timeline">
+
+  <!-- Loading -->
+  <div class="empty-dash" *ngIf="loading">
+    <div class="empty-dash-icon">⏳</div>
+    <h3>Loading your health timeline…</h3>
+  </div>
+
+  <!-- Empty -->
+  <div class="empty-dash" *ngIf="!loading && totalCount === 0">
+    <div class="empty-dash-icon">📋</div>
+    <h3>No health events yet</h3>
+    <p>Add biometric measurements, log symptoms, or create goals to see your health timeline.</p>
+  </div>
+
+  <div class="timeline-content" *ngIf="!loading && totalCount > 0">
+
+    <!-- Header -->
+    <div class="tl-header">
+      <div>
+        <h3>Health Timeline</h3>
+        <span class="tl-range">{{ response?.dateRange }} · {{ totalCount }} events</span>
+      </div>
+    </div>
+
+    <!-- Stats Strip -->
+    <div class="stats-strip">
+      <div class="stat-chip" *ngFor="let f of filters"
+           [class.stat-chip--active]="activeFilter === f.value"
+           (click)="setFilter(f.value)">
+        <span class="stat-chip-icon">{{ f.icon }}</span>
+        <span class="stat-chip-label">{{ f.label }}</span>
+        <span class="stat-chip-count">{{ f.value === 'all' ? totalCount : getCount(f.value) }}</span>
+      </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="tl-track">
+      <ng-container *ngFor="let event of filteredEvents; let i = index">
+
+        <!-- Date separator -->
+        <div class="tl-date-sep" *ngIf="getDateLabel(event, i)">
+          <span>{{ getDateLabel(event, i) }}</span>
+        </div>
+
+        <!-- Event card -->
+        <div class="tl-event" [style.background]="sevBg(event.severity)"
+             (click)="toggleExpand(event.id)">
+          <div class="tl-event-dot" [style.background]="event.color"></div>
+
+          <div class="tl-event-body">
+            <div class="tl-event-top">
+              <span class="tl-event-icon">{{ event.icon }}</span>
+              <div class="tl-event-info">
+                <strong>{{ event.title }}</strong>
+                <span class="tl-event-sub">{{ event.subtitle }}</span>
+              </div>
+              <div class="tl-event-right">
+                <span class="tl-type-badge" [style.color]="event.color"
+                      [style.background]="event.color + '15'">{{ typeLabel(event.type) }}</span>
+                <span class="tl-event-time">{{ formatTime(event.date) }}</span>
+              </div>
+            </div>
+
+            <!-- Expanded detail -->
+            <div class="tl-event-detail" *ngIf="expandedId === event.id">
+
+              <!-- Biometric detail -->
+              <div class="detail-grid" *ngIf="event.type === 'biometric'">
+                <div class="detail-item">
+                  <span class="detail-label">Weight</span>
+                  <span class="detail-value">{{ event.data['weight'] }} kg</span>
+                  <span class="detail-change" *ngIf="hasData(event, 'weightChange')"
+                        [style.color]="event.data['weightChange'] > 0 ? '#c96a3f' : '#7a9e7e'">
+                    {{ event.data['weightChange'] > 0 ? '+' : '' }}{{ event.data['weightChange'] }} kg
+                  </span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">BMI</span>
+                  <span class="detail-value">{{ event.data['bmi'] }}</span>
+                  <span class="detail-change" *ngIf="hasData(event, 'bmiChange')"
+                        [style.color]="event.data['bmiChange'] > 0 ? '#c96a3f' : '#7a9e7e'">
+                    {{ event.data['bmiChange'] > 0 ? '+' : '' }}{{ event.data['bmiChange'] }}
+                  </span>
+                </div>
+                <div class="detail-item" *ngIf="hasData(event, 'bodyFat')">
+                  <span class="detail-label">Body Fat</span>
+                  <span class="detail-value">{{ event.data['bodyFat'] }}%</span>
+                </div>
+                <div class="detail-item" *ngIf="hasData(event, 'muscleMass')">
+                  <span class="detail-label">Muscle</span>
+                  <span class="detail-value">{{ event.data['muscleMass'] }} kg</span>
+                </div>
+                <div class="detail-item" *ngIf="hasData(event, 'systolic')">
+                  <span class="detail-label">Blood Pressure</span>
+                  <span class="detail-value">{{ event.data['systolic'] }}/{{ event.data['diastolic'] }}</span>
+                </div>
+                <div class="detail-item" *ngIf="hasData(event, 'glucose')">
+                  <span class="detail-label">Glucose</span>
+                  <span class="detail-value">{{ event.data['glucose'] }} mg/dL</span>
+                </div>
+              </div>
+
+              <!-- Symptom detail -->
+              <div class="detail-grid" *ngIf="event.type === 'symptom'">
+                <div class="detail-item">
+                  <span class="detail-label">Severity</span>
+                  <span class="detail-value">{{ event.data['severity'] }}/10</span>
+                </div>
+                <div class="detail-item" *ngIf="hasData(event, 'mood')">
+                  <span class="detail-label">Mood</span>
+                  <span class="detail-value">{{ event.data['mood'] }}/5</span>
+                </div>
+                <div class="detail-item" *ngIf="hasData(event, 'energy')">
+                  <span class="detail-label">Energy</span>
+                  <span class="detail-value">{{ event.data['energy'] }}/5</span>
+                </div>
+                <div class="detail-item" *ngIf="hasData(event, 'stressLevel')">
+                  <span class="detail-label">Stress</span>
+                  <span class="detail-value">{{ event.data['stressLevel'] }}/5</span>
+                </div>
+                <div class="detail-item" *ngIf="hasData(event, 'timeOfDay')">
+                  <span class="detail-label">Time</span>
+                  <span class="detail-value">{{ event.data['timeOfDay'] }}</span>
+                </div>
+                <div class="detail-note" *ngIf="hasData(event, 'notes')">
+                  <em>"{{ event.data['notes'] }}"</em>
+                </div>
+              </div>
+
+              <!-- Goal detail -->
+              <div class="detail-grid" *ngIf="event.type === 'goal'">
+                <div class="detail-item">
+                  <span class="detail-label">Metric</span>
+                  <span class="detail-value">{{ event.data['metric'] }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Target</span>
+                  <span class="detail-value">{{ event.data['startValue'] }} → {{ event.data['targetValue'] }} {{ event.data['unit'] }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Deadline</span>
+                  <span class="detail-value">{{ event.data['deadline'] }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Status</span>
+                  <span class="detail-value" [style.color]="event.data['achieved'] ? '#7a9e7e' : '#e88f68'">
+                    {{ event.data['achieved'] ? 'Achieved!' : 'In progress' }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Alert detail -->
+              <div class="detail-grid" *ngIf="event.type === 'alert'">
+                <div class="detail-item">
+                  <span class="detail-label">Metric</span>
+                  <span class="detail-value">{{ event.data['metric'] }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Value</span>
+                  <span class="detail-value" style="color: #c96a3f">{{ event.data['value'] }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Threshold</span>
+                  <span class="detail-value">{{ event.data['threshold'] }}</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </ng-container>
+    </div>
+
+    <div class="tl-end">End of timeline · {{ totalCount }} events</div>
+  </div>
+</div>

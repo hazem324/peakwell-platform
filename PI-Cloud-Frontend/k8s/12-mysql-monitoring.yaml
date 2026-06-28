@@ -1,0 +1,250 @@
+## ── Secret: MySQL exporter DSNs ──────────────────────────────────────────────
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-exporter-secret
+  namespace: peakwell
+type: Opaque
+stringData:
+  primary-dsn:  "root:peakwell@(mysql-0.mysql.peakwell.svc.cluster.local:3306)/"
+  replica-dsn:  "root:peakwell@(mysql-replica-0.mysql-replica.peakwell.svc.cluster.local:3306)/"
+---
+## ── MySQL primary exporter (monitors mysql-0) ────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-exporter
+  namespace: peakwell
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql-exporter
+      db-target: primary
+  template:
+    metadata:
+      labels:
+        app: mysql-exporter
+        db-target: primary
+    spec:
+      containers:
+        - name: exporter
+          image: prom/mysqld-exporter:v0.15.1
+          args:
+            - --collect.info_schema.tables=false
+            - --collect.info_schema.innodb_tablespaces=false
+            - --collect.auto_increment.columns=false
+            - --collect.perf_schema.tablelocks=false
+            - --collect.perf_schema.file_events=false
+            - --collect.perf_schema.eventswaits=false
+            - --collect.perf_schema.indexiowaits=false
+            - --collect.perf_schema.tableiowaits=false
+          ports:
+            - name: metrics
+              containerPort: 9104
+          env:
+            - name: DATA_SOURCE_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-exporter-secret
+                  key: primary-dsn
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "10m"
+            limits:
+              memory: "64Mi"
+              cpu: "100m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-exporter
+  namespace: peakwell
+  labels:
+    app: mysql-exporter
+    db-target: primary
+spec:
+  selector:
+    app: mysql-exporter
+    db-target: primary
+  ports:
+    - name: metrics
+      port: 9104
+      targetPort: 9104
+---
+## ── MySQL replica exporter (monitors mysql-replica-0) ────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-replica-exporter
+  namespace: peakwell
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql-exporter
+      db-target: replica
+  template:
+    metadata:
+      labels:
+        app: mysql-exporter
+        db-target: replica
+    spec:
+      containers:
+        - name: exporter
+          image: prom/mysqld-exporter:v0.15.1
+          args:
+            - --collect.info_schema.tables=false
+            - --collect.info_schema.innodb_tablespaces=false
+            - --collect.auto_increment.columns=false
+            - --collect.perf_schema.tablelocks=false
+            - --collect.perf_schema.file_events=false
+            - --collect.perf_schema.eventswaits=false
+            - --collect.perf_schema.indexiowaits=false
+            - --collect.perf_schema.tableiowaits=false
+          ports:
+            - name: metrics
+              containerPort: 9104
+          env:
+            - name: DATA_SOURCE_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-exporter-secret
+                  key: replica-dsn
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "10m"
+            limits:
+              memory: "64Mi"
+              cpu: "100m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-replica-exporter
+  namespace: peakwell
+  labels:
+    app: mysql-exporter
+    db-target: replica
+spec:
+  selector:
+    app: mysql-exporter
+    db-target: replica
+  ports:
+    - name: metrics
+      port: 9104
+      targetPort: 9104
+---
+## ── ServiceMonitor: both MySQL exporters ─────────────────────────────────────
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: mysql-monitor
+  namespace: peakwell
+  labels:
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: mysql-exporter
+  endpoints:
+    - port: metrics
+      interval: 15s
+---
+## ── PrometheusRule: MySQL alerts ─────────────────────────────────────────────
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: mysql-alerts
+  namespace: peakwell
+  labels:
+    release: prometheus
+spec:
+  groups:
+    - name: mysql.rules
+      rules:
+        - alert: MySQLPrimaryDown
+          expr: mysql_up{service="mysql-exporter"} == 0
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "MySQL primary (mysql-0) is DOWN"
+            description: "mysql-0 has been unreachable for more than 1 minute. Automatic failover to mysql-replica-0 should have triggered."
+
+        - alert: MySQLReplicaDown
+          expr: mysql_up{service="mysql-replica-exporter"} == 0
+          for: 2m
+          labels:
+            severity: warning
+          annotations:
+            summary: "MySQL replica (mysql-replica-0) is DOWN"
+            description: "mysql-replica-0 has been unreachable for more than 2 minutes. High-availability standby is unavailable."
+
+        - alert: MySQLReplicationStopped
+          expr: |
+            mysql_slave_status_slave_io_running{service="mysql-replica-exporter"} == 0
+            OR mysql_slave_status_slave_sql_running{service="mysql-replica-exporter"} == 0
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "MySQL replication has stopped"
+            description: "Replication IO or SQL thread is not running on mysql-replica-0. Data is no longer being synced."
+
+        - alert: MySQLReplicationLagging
+          expr: mysql_slave_status_seconds_behind_master{service="mysql-replica-exporter"} > 30
+          for: 2m
+          labels:
+            severity: warning
+          annotations:
+            summary: "MySQL replication is lagging"
+            description: "mysql-replica-0 is {{ $value | humanizeDuration }} behind the primary."
+---
+## ── Secret: Gmail App Password for Alertmanager ─────────────────────────────
+## Replace YOUR_GMAIL_APP_PASSWORD with a 16-char Google App Password
+## (Google Account → Security → 2-Step Verification → App passwords)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: alertmanager-email-secret
+  namespace: peakwell
+type: Opaque
+stringData:
+  gmail-app-password: "YOUR_GMAIL_APP_PASSWORD"
+---
+## ── AlertmanagerConfig: email receiver for peakwell alerts ───────────────────
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: mysql-email-alerts
+  namespace: peakwell
+  labels:
+    release: prometheus
+spec:
+  route:
+    receiver: email-critical
+    groupBy: ["alertname"]
+    groupWait: 30s
+    groupInterval: 5m
+    repeatInterval: 1h
+    matchers:
+      - name: severity
+        matchType: =~
+        value: "critical|warning"
+  receivers:
+    - name: email-critical
+      emailConfigs:
+        - to: "ghaliounoussama@gmail.com"
+          from: "ghaliounoussama@gmail.com"
+          smarthost: "smtp.gmail.com:587"
+          authUsername: "ghaliounoussama@gmail.com"
+          authPassword:
+            name: alertmanager-email-secret
+            key: gmail-app-password
+          requireTLS: true
+          headers:
+            - key: Subject
+              value: '[PeakWell Alert] {{ .GroupLabels.alertname }}'

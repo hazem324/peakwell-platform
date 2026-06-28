@@ -1,0 +1,386 @@
+@keyframes ns-page-in {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+:host { display: block; animation: ns-page-in 0.45s cubic-bezier(.25,.8,.25,1) both; }
+
+// ── Tokens ────────────────────────────────────────────────────────────────
+$P:     #c96a3f;
+$bg:    #f6f2ee;
+$card:  #ffffff;
+$bdr:   #ede8e2;
+$bdr2:  #f5f1ed;
+$dk:    #1e1a16;
+$mid:   #7a726c;
+$lt:    #b0a89e;
+$serif: 'Cormorant Garamond', Georgia, serif;
+$sans:  'Jost', sans-serif;
+
+$star:     #4a7a50;
+$churn:    #c8a83a;
+$plan:     #d4713a;
+$critical: #b84a2a;
+
+// ── Base ──────────────────────────────────────────────────────────────────
+.page      { background: $bg; min-height: 100vh; font-family: $sans; padding-bottom: 60px; }
+.container { max-width: 1080px; margin: 0 auto; padding: 0 28px; }
+
+// ── Header ────────────────────────────────────────────────────────────────
+.page-header {
+  background: $card; border-bottom: 1px solid $bdr;
+  padding: 20px 0; margin-bottom: 22px;
+  animation: ns-page-in 0.4s cubic-bezier(.25,.8,.25,1) both;
+}
+.back-link {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+  color: $lt; text-decoration: none; margin-bottom: 14px; transition: color .2s;
+  &:hover { color: $P; }
+}
+.header-body {
+  display: flex; align-items: center; justify-content: space-between; gap: 20px;
+}
+.header-left { display: flex; align-items: center; gap: 16px; }
+.header-icon {
+  width: 48px; height: 48px; border-radius: 13px; flex-shrink: 0;
+  background: linear-gradient(135deg, rgba($P,.12), rgba($P,.05));
+  border: 1px solid rgba($P,.15);
+  display: flex; align-items: center; justify-content: center; color: $P;
+}
+.header-text {
+  h1 { font-family: $serif; font-size: 28px; font-weight: 700; color: $dk; margin: 0; line-height: 1.1; }
+  p  { font-size: 12px; color: $lt; margin: 3px 0 0; }
+}
+.btn-refresh {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: $dk; color: #fff; border: none; border-radius: 10px;
+  padding: 10px 18px; font-size: 12px; font-family: $sans; font-weight: 700;
+  cursor: pointer; transition: all .2s; white-space: nowrap; flex-shrink: 0;
+  &:hover:not(:disabled) { background: $P; box-shadow: 0 4px 14px rgba($P,.3); }
+  &:disabled { opacity: .4; cursor: not-allowed; }
+}
+
+// ── Loading ───────────────────────────────────────────────────────────────
+.loading-wrap {
+  display: flex; align-items: center; justify-content: center;
+  gap: 12px; padding: 80px 0; color: $mid; font-size: 13px;
+}
+.spinner {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 2.5px solid $bdr; border-top-color: $P;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+// ── KPI Row ───────────────────────────────────────────────────────────────
+.kpi-row {
+  display: grid; grid-template-columns: repeat(5, 1fr);
+  gap: 10px; margin-bottom: 16px;
+  animation: ns-page-in 0.4s cubic-bezier(.25,.8,.25,1) 0.05s both;
+  @media(max-width:900px) { grid-template-columns: repeat(3,1fr); }
+}
+.kpi-card {
+  background: $card; border: 1px solid $bdr; border-radius: 12px;
+  padding: 14px 16px; display: flex; align-items: center; gap: 11px;
+  transition: box-shadow .2s, transform .2s;
+  &:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,.07); }
+}
+.kpi-icon {
+  width: 36px; height: 36px; border-radius: 9px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 17px;
+  &--neutral { background: rgba($P,.08); color: $P; }
+  &--star    { background: rgba($star,.10); }
+  &--churn   { background: rgba($churn,.10); }
+  &--plan    { background: rgba($plan,.10); }
+  &--critical{ background: rgba($critical,.10); }
+}
+.kpi-num {
+  font-family: $serif; font-size: 26px; font-weight: 700; color: $dk; line-height: 1;
+  &--star     { color: $star; }
+  &--churn    { color: $churn; }
+  &--plan     { color: $plan; }
+  &--critical { color: $critical; }
+}
+.kpi-label {
+  font-size: 9px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .8px; color: $lt; margin-top: 2px;
+}
+
+// ── Main Layout ───────────────────────────────────────────────────────────
+.main-layout {
+  display: grid; grid-template-columns: 1fr 320px; gap: 14px; align-items: start;
+  @media(max-width:1080px) { grid-template-columns: 1fr; }
+}
+
+// ── Top Row (map + actions side by side) ─────────────────────────────────
+.top-row {
+  display: grid; grid-template-columns: 1fr 290px; gap: 14px; align-items: stretch;
+  margin-bottom: 14px;
+  animation: ns-page-in 0.4s cubic-bezier(.25,.8,.25,1) 0.15s both;
+  @media(max-width:860px) { grid-template-columns: 1fr; }
+}
+
+// ── Quadrant Breakdown ────────────────────────────────────────────────────
+.qb-section {
+  padding: 14px 18px 16px; border-top: 1px solid $bdr2;
+}
+.qb-title {
+  font-size: 9px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: .8px; color: $lt; margin-bottom: 12px;
+}
+.qb-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 12px;
+}
+.qb-item {
+  border-radius: 10px; padding: 9px 6px; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  &--star     { background: rgba($star,    .08); }
+  &--churn    { background: rgba($churn,   .08); }
+  &--plan     { background: rgba($plan,    .08); }
+  &--critical { background: rgba($critical,.10); }
+}
+.qb-icon { font-size: 13px; line-height: 1; }
+.qb-num  {
+  font-family: $serif; font-size: 18px; font-weight: 700; line-height: 1;
+  .qb-item--star     & { color: $star; }
+  .qb-item--churn    & { color: $churn; }
+  .qb-item--plan     & { color: $plan; }
+  .qb-item--critical & { color: $critical; }
+}
+.qb-label { font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: $lt; }
+.qb-bar {
+  display: flex; height: 5px; border-radius: 4px; overflow: hidden; gap: 2px;
+}
+.qb-seg {
+  border-radius: 4px; min-width: 4px; transition: flex .4s ease;
+  &--star     { background: $star; }
+  &--churn    { background: $churn; }
+  &--plan     { background: $plan; }
+  &--critical { background: $critical; }
+}
+
+// ── Plot Container ────────────────────────────────────────────────────────
+.plot-container { position: relative; padding: 12px 12px 6px; }
+
+// ── Actions Card ─────────────────────────────────────────────────────────
+.actions-card {
+  background: $card; border: 1px solid $bdr; border-radius: 16px;
+  overflow: hidden; display: flex; flex-direction: column;
+  box-shadow: 0 2px 12px rgba(0,0,0,.04);
+  height: 100%;
+}
+
+// ── Patients Card (full width) ────────────────────────────────────────────
+.patients-card {
+  background: $card; border: 1px solid $bdr; border-radius: 16px;
+  overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,.04);
+  animation: ns-page-in 0.4s cubic-bezier(.25,.8,.25,1) 0.25s both;
+}
+.pt-table { width: 100%; }
+.pt-head {
+  display: grid; grid-template-columns: 2fr 1.4fr 1.4fr 1.1fr 60px 110px;
+  padding: 10px 20px; border-bottom: 1px solid $bdr2;
+  font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .8px; color: $lt;
+}
+.pt-row {
+  display: grid; grid-template-columns: 2fr 1.4fr 1.4fr 1.1fr 60px 110px;
+  padding: 12px 20px; border-bottom: 1px solid $bdr2; align-items: center;
+  cursor: pointer; transition: background .15s;
+  &:last-child { border-bottom: none; }
+  &:hover { background: $bg; }
+}
+.pt-patient { display: flex; align-items: center; gap: 10px; }
+.pt-av {
+  width: 34px; height: 34px; border-radius: 9px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 800;
+}
+.pt-patient strong { font-size: 13px; font-weight: 700; color: $dk; display: block; }
+.pt-patient em     { font-size: 10px; color: $lt; font-style: normal; }
+.pt-metric {
+  display: flex; align-items: center; gap: 8px;
+  b { font-size: 13px; font-weight: 800; font-family: $serif; flex-shrink: 0; min-width: 28px; text-align: right; }
+}
+.pm-track { flex: 1; height: 4px; background: $bdr; border-radius: 3px; overflow: hidden; max-width: 100px; }
+.pm-fill  { height: 100%; border-radius: 3px; }
+.pt-badge {
+  display: inline-flex; align-items: center; padding: 3px 9px;
+  border-radius: 6px; font-size: 9px; font-weight: 800; letter-spacing: .5px;
+}
+.pt-count { font-size: 13px; font-weight: 700; color: $mid; }
+.btn-view {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: $dk; color: #fff; border: none; border-radius: 8px;
+  padding: 7px 12px; font-size: 11px; font-family: $sans; font-weight: 700;
+  cursor: pointer; transition: all .2s; white-space: nowrap;
+  &:hover { background: $P; }
+}
+
+// ── Map Card ──────────────────────────────────────────────────────────────
+.map-card {
+  background: $card; border: 1px solid $bdr; border-radius: 16px;
+  overflow: hidden; display: flex; flex-direction: column;
+  box-shadow: 0 2px 12px rgba(0,0,0,.04);
+}
+.map-card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 10px; padding: 16px 20px;
+  border-bottom: 1px solid $bdr2;
+}
+.card-title { font-size: 12px; font-weight: 800; color: $dk; text-transform: uppercase; letter-spacing: 1px; }
+.card-sub   { font-size: 11px; color: $lt; margin-top: 2px; }
+.map-legend {
+  display: flex; gap: 14px; flex-wrap: wrap; align-items: center;
+  span { display: flex; align-items: center; gap: 5px; font-size: 11px; color: $mid; font-weight: 600; }
+  i    { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+}
+
+// Map plot area — the key sizing element
+.map-area {
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  grid-template-rows:    1fr 20px;
+  padding: 12px 12px 6px 4px;
+  height: 420px; // ← comfortable, readable, not overwhelming
+}
+.axis {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 8.5px; font-weight: 700; color: $lt;
+  text-transform: uppercase; letter-spacing: .5px;
+  &--y {
+    grid-column: 1; grid-row: 1;
+    flex-direction: column; padding: 6px 0;
+    span        { writing-mode: vertical-rl; }
+    .axis-title { writing-mode: vertical-rl; transform: rotate(180deg); color: $mid; }
+  }
+  &--x {
+    grid-column: 2; grid-row: 2;
+    padding: 4px 2px 0;
+    .axis-title { color: $mid; }
+  }
+}
+.plot-wrap {
+  grid-column: 2; grid-row: 1;
+  position: relative; overflow: hidden; border-radius: 8px;
+}
+.plot-svg { width: 100%; height: 100%; display: block; }
+
+// Tooltip pinned top-right
+.plot-tooltip {
+  position: absolute; top: 8px; right: 8px;
+  background: $dk; color: #fff; border-radius: 12px;
+  padding: 12px 14px; z-index: 30; pointer-events: none;
+  min-width: 160px; box-shadow: 0 6px 20px rgba(0,0,0,.28);
+}
+.tt-header { display: flex; align-items: center; gap: 9px; margin-bottom: 8px; }
+.tt-avatar {
+  width: 30px; height: 30px; border-radius: 8px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 800;
+}
+.tt-name { font-family: $serif; font-size: 14px; font-weight: 700; line-height: 1.1; }
+.tt-quad { font-size: 10px; font-weight: 700; margin-top: 1px; }
+.tt-metrics { display: flex; gap: 14px; }
+.tt-metric {
+  display: flex; flex-direction: column; gap: 1px;
+  span   { font-size: 9px; color: rgba(255,255,255,.4); }
+  strong { font-size: 15px; font-weight: 800; font-family: $serif; }
+}
+
+.map-footer {
+  display: flex; align-items: center; gap: 0;
+  padding: 12px 20px; border-top: 1px solid $bdr2; background: $bdr2;
+}
+.mf-stat  { flex: 1; text-align: center; }
+.mf-num   {
+  display: block; font-family: $serif; font-size: 20px;
+  font-weight: 700; color: $dk; line-height: 1;
+  &--blue { color: #3a9ec8; }
+}
+.mf-label { display: block; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; color: $lt; margin-top: 2px; }
+.mf-div   { width: 1px; height: 28px; background: $bdr; }
+
+// ── Sidebar ───────────────────────────────────────────────────────────────
+.sidebar { display: flex; flex-direction: column; gap: 12px; }
+
+.sidebar-card {
+  background: $card; border: 1px solid $bdr; border-radius: 16px;
+  overflow: hidden; display: flex; flex-direction: column;
+  box-shadow: 0 2px 12px rgba(0,0,0,.04);
+}
+.sc-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px; border-bottom: 1px solid $bdr2;
+}
+.sc-badge {
+  min-width: 22px; height: 22px; border-radius: 6px; padding: 0 7px;
+  background: $P; color: #fff; font-size: 11px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  &.empty    { background: $bdr; color: $lt; }
+  &--neutral { background: $bdr2; color: $mid; }
+}
+.filter-row {
+  display: flex; flex-wrap: wrap; gap: 5px; padding: 10px 18px;
+  border-bottom: 1px solid $bdr2;
+  button {
+    background: $bdr2; border: none; border-radius: 6px;
+    padding: 3px 10px; font-size: 10px; font-family: $sans; font-weight: 700;
+    color: $mid; cursor: pointer; transition: all .15s;
+    &:hover  { background: $bdr; }
+    &.active { background: $dk; color: #fff; }
+    &.f-urgent.active { background: $critical; }
+    &.f-high.active   { background: $plan; }
+    &.f-medium.active { background: $churn; }
+    &.f-low.active    { background: $star; }
+  }
+}
+
+.action-list { overflow-y: auto; flex: 1; }
+.action-row {
+  display: flex; align-items: flex-start; gap: 9px;
+  padding: 10px 18px; border-bottom: 1px solid $bdr2;
+  border-left: 3px solid var(--c, $bdr);
+  cursor: pointer; transition: background .15s;
+  &:last-child { border-bottom: none; }
+  &:hover { background: $bg; }
+}
+.ar-icon { font-size: 15px; flex-shrink: 0; padding-top: 1px; }
+.ar-body {
+  flex: 1; min-width: 0;
+  strong { font-size: 11px; font-weight: 700; color: $dk; display: block; }
+  span   { font-size: 10px; color: $lt; display: block; margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+.ar-prio { padding: 2px 7px; border-radius: 5px; font-size: 8px; font-weight: 800; letter-spacing: .5px; flex-shrink: 0; margin-top: 1px; }
+.action-empty {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 6px; padding: 28px; color: $lt;
+  svg { opacity: .35; }
+  p   { font-size: 12px; font-weight: 600; margin: 0; }
+}
+
+.patient-list { overflow-y: auto; max-height: 340px; }
+.patient-row {
+  display: flex; align-items: center; gap: 9px;
+  padding: 10px 18px; border-bottom: 1px solid $bdr2;
+  cursor: pointer; transition: background .15s;
+  &:last-child { border-bottom: none; }
+  &:hover { background: $bg; }
+  &:hover .pr-arrow { opacity: 1; transform: translateX(2px); }
+}
+.pr-avatar {
+  width: 30px; height: 30px; border-radius: 8px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 800;
+}
+.pr-info {
+  flex: 1; min-width: 0;
+  strong { font-size: 12px; font-weight: 700; color: $dk; display: block; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+.pr-bars { display: flex; flex-direction: column; gap: 3px; }
+.pr-bar-wrap {
+  height: 3px; background: $bdr; border-radius: 2px; overflow: hidden; max-width: 130px;
+}
+.pr-bar-fill { height: 100%; border-radius: 2px; }
+.pr-right { display: flex; align-items: center; gap: 5px; flex-shrink: 0; }
+.pr-quad  { width: 26px; height: 26px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 13px; }
+.pr-arrow { color: $lt; opacity: 0; transition: all .2s; }

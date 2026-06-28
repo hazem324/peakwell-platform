@@ -1,0 +1,444 @@
+<div class="profile-page" *ngIf="profile as p">
+  <div class="profile-layout">
+
+    <!-- ── Sidebar ── -->
+    <aside class="profile-sidebar">
+      <div class="profile-card">
+
+        <div class="avatar">
+          <img *ngIf="currentPhotoUrl" [src]="currentPhotoUrl" alt="Profile"/>
+          <span *ngIf="!currentPhotoUrl">{{ initials }}</span>
+          <div class="avatar-badge">
+            {{
+              role === 'STUDENT'    ? '🎓' :
+              role === 'DIETITIAN'  ? '🩺' :
+              role === 'RESTAURANT' ? '🍽️' : '⚙️'
+            }}
+          </div>
+        </div>
+
+        <div class="profile-name">{{ p.firstName }} {{ p.lastName }}</div>
+        <div class="profile-email">{{ p.email }}</div>
+
+        <div class="role-pill"
+             [class.role-pill--student]="role === 'STUDENT'"
+             [class.role-pill--dietitian]="role === 'DIETITIAN'">
+          {{
+            role === 'STUDENT'    ? '🎓 Student'      :
+            role === 'DIETITIAN'  ? '🩺 Dietitian'    :
+            role === 'RESTAURANT' ? '🍽️ Restaurant'   : '⚙️ Admin'
+          }}
+        </div>
+
+        <!-- Student quick stats -->
+        <div class="profile-stats" *ngIf="role === 'STUDENT'">
+          <div class="stat-box">
+            <div class="stat-val">{{ p.studentProfile?.height || '—' }}</div>
+            <div class="stat-key">Height cm</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-val">{{ p.studentProfile?.weight || '—' }}</div>
+            <div class="stat-key">Weight kg</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-val">{{ activityLabel }}</div>
+            <div class="stat-key">Activity</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-val">{{ goalLabel }}</div>
+            <div class="stat-key">Goal</div>
+          </div>
+        </div>
+
+        <button class="btn-edit" *ngIf="!editMode" (click)="enableEdit()">✏️ Edit Profile</button>
+        <button class="btn-edit btn-edit--cancel" *ngIf="editMode" (click)="cancelEdit()">Cancel</button>
+
+        <div class="profile-actions">
+          <button class="btn-action" (click)="resetPassword()">🔑 Reset Password</button>
+          <app-change-password-modal
+  *ngIf="showPasswordModal"
+  (closed)="showPasswordModal = false">
+</app-change-password-modal>
+          <button class="btn-action btn-action--danger" (click)="logout()">↩ Logout</button>
+        </div>
+
+      </div>
+    </aside>
+
+    <!-- ── Main Content ── -->
+    <main class="profile-content">
+      <form [formGroup]="form" (ngSubmit)="saveProfile()">
+
+        <div class="content-card">
+
+          <div class="card-header">
+            <div>
+              <div class="card-title">Contact & Address</div>
+              <div class="card-subtitle">Your personal information</div>
+            </div>
+          </div>
+
+          <div class="info-grid">
+
+            <div class="info-item">
+              <label>Phone number</label>
+              <div class="info-value" *ngIf="!editMode">{{ p.phoneNumber || '—' }}</div>
+              <div class="input-wrap" *ngIf="editMode">
+                <input type="text" formControlName="phoneNumber"/>
+              </div>
+            </div>
+
+            <div class="info-item">
+              <label>Country</label>
+              <div class="info-value" *ngIf="!editMode">{{ p.address.country || '—' }}</div>
+              <div class="input-wrap" *ngIf="editMode">
+                <input type="text" formControlName="country"/>
+              </div>
+            </div>
+
+            <div class="info-item">
+              <label>City</label>
+              <div class="info-value" *ngIf="!editMode">{{ p.address.city || '—' }}</div>
+              <div class="input-wrap" *ngIf="editMode">
+                <input type="text" formControlName="city"/>
+              </div>
+            </div>
+
+            <div class="info-item">
+              <label>Street</label>
+              <div class="info-value" *ngIf="!editMode">{{ p.address.street || '—' }}</div>
+              <div class="input-wrap" *ngIf="editMode">
+                <input type="text" formControlName="street"/>
+              </div>
+            </div>
+
+            <div class="info-item">
+              <label>Postal code</label>
+              <div class="info-value" *ngIf="!editMode">{{ p.address.postalCode || '—' }}</div>
+              <div class="input-wrap" *ngIf="editMode">
+                <input type="text" formControlName="postalCode"/>
+              </div>
+            </div>
+
+            <div class="info-item">
+              <label>State</label>
+              <div class="info-value" *ngIf="!editMode">{{ p.address.state || '—' }}</div>
+              <div class="input-wrap" *ngIf="editMode">
+                <input type="text" formControlName="state"/>
+              </div>
+            </div>
+
+          </div>
+
+          <hr>
+
+          <!-- ══════════ STUDENT ══════════ -->
+          <div *ngIf="role === 'STUDENT'">
+
+            <div class="card-header">
+              <div>
+                <div class="card-title">Personal information</div>
+                <div class="card-subtitle">Your basic health profile</div>
+              </div>
+              <button class="btn-save" type="submit" *ngIf="editMode" [disabled]="loading">
+                {{ loading ? 'Saving…' : 'Save changes' }}
+              </button>
+            </div>
+
+            <div class="info-grid">
+
+              <div class="info-item">
+                <label>Height (cm)</label>
+                <div class="info-value" *ngIf="!editMode">{{ p.studentProfile?.height || '—' }}</div>
+                <div class="input-wrap" *ngIf="editMode">
+                  <input type="number" formControlName="height" placeholder="170"/>
+                </div>
+              </div>
+
+              <div class="info-item">
+                <label>Weight (kg)</label>
+                <div class="info-value" *ngIf="!editMode">{{ p.studentProfile?.weight || '—' }}</div>
+                <div class="input-wrap" *ngIf="editMode">
+                  <input type="number" formControlName="weight" placeholder="65"/>
+                </div>
+              </div>
+
+              <div class="info-item">
+                <label>Activity level</label>
+                <div class="info-value" *ngIf="!editMode">{{ activityLabel }}</div>
+                <div class="input-wrap" *ngIf="editMode">
+                  <select formControlName="activityLevel" class="auth-select">
+                    <option value="LOW">Low</option>
+                    <option value="MEDIUM">Medium</option>
+                    <option value="HIGH">High</option>
+                  </select>
+                  <span class="select-arrow">▾</span>
+                </div>
+              </div>
+
+              <div class="info-item">
+                <label>Health goal</label>
+                <div class="info-value" *ngIf="!editMode">{{ goalLabel }}</div>
+                <div class="input-wrap" *ngIf="editMode">
+                  <select formControlName="goal" class="auth-select">
+                    <option value="LOSE_WEIGHT">Lose weight</option>
+                    <option value="GAIN_WEIGHT">Gain weight</option>
+                    <option value="MAINTAIN">Maintain weight</option>
+                  </select>
+                  <span class="select-arrow">▾</span>
+                </div>
+              </div>
+
+            </div>
+
+            <div class="section-divider" style="margin-top: 20px">Profile photo</div>
+
+            <!-- Edit mode -->
+            <div class="photo-upload-row" *ngIf="editMode">
+              <div class="photo-preview">
+                <img *ngIf="currentPhotoUrl" [src]="currentPhotoUrl" alt="Preview"/>
+                <span *ngIf="!currentPhotoUrl" class="photo-placeholder">🎓</span>
+              </div>
+              <div class="upload-zone upload-zone--compact"
+                   [class.upload-zone--has-file]="photoFile"
+                   (click)="photoInput.click()"
+                   (dragover)="$event.preventDefault()"
+                   (drop)="onPhotoDrop($event)">
+                <input #photoInput type="file" accept=".jpg,.jpeg,.png,.webp"
+                       (change)="onPhotoChange($event)" hidden/>
+                <ng-container *ngIf="!photoFile">
+                  <span class="upload-icon">🖼️</span>
+                  <span class="upload-label">Click or drag photo</span>
+                  <span class="upload-hint">JPG, PNG or WEBP — max 3MB</span>
+                </ng-container>
+                <ng-container *ngIf="photoFile">
+                  <span class="upload-icon">✅</span>
+                  <span class="upload-label upload-label--success">{{ photoFile.name }}</span>
+                  <span class="upload-hint">{{ formatSize(photoFile.size) }}</span>
+                  <button class="upload-remove" type="button"
+                          (click)="removePhoto($event)">✕ Remove</button>
+                </ng-container>
+              </div>
+            </div>
+
+            <!-- View mode -->
+            <div *ngIf="!editMode">
+              <img *ngIf="p.imageUrl" [src]="p.imageUrl" alt="Profile"
+                   class="cert-preview-img"
+                   style="border-radius: 50%; width: 80px; height: 80px;"/>
+              <div class="info-value" *ngIf="!p.imageUrl">No photo uploaded</div>
+            </div>
+
+            <span class="field-error" *ngIf="photoError">{{ photoError }}</span>
+          </div>
+
+          <!-- ══════════ DIETITIAN ══════════ -->
+          <div *ngIf="role === 'DIETITIAN'">
+
+            <div class="card-header">
+              <div>
+                <div class="card-title">Professional information</div>
+                <div class="card-subtitle">Your dietitian profile</div>
+              </div>
+              <button class="btn-save" type="submit" *ngIf="editMode" [disabled]="loading">
+                {{ loading ? 'Saving…' : 'Save changes' }}
+              </button>
+            </div>
+
+            <div class="section-divider">Credentials</div>
+            <div class="info-grid">
+
+              <div class="info-item">
+                <label>Specialization</label>
+                <div class="info-value" *ngIf="!editMode">{{ p.dietitianProfile?.specialization || '—' }}</div>
+                <div class="input-wrap" *ngIf="editMode">
+                  <input type="text" formControlName="specialization" placeholder="e.g. Sports nutrition"/>
+                </div>
+              </div>
+
+              <div class="info-item">
+                <label>Experience (years)</label>
+                <div class="info-value" *ngIf="!editMode">{{ p.dietitianProfile?.experienceYears || '—' }}</div>
+                <div class="input-wrap" *ngIf="editMode">
+                  <input type="number" formControlName="experienceYears" placeholder="5"/>
+                </div>
+              </div>
+
+              <div class="info-item">
+                <label>Consultation price</label>
+                <div class="info-value" *ngIf="!editMode">
+                  <span class="price-badge">$ {{ p.dietitianProfile?.consultationPrice }} / session</span>
+                </div>
+                <div class="input-wrap" *ngIf="editMode">
+                  <span class="price-prefix">$</span>
+                  <input type="number" formControlName="consultationPrice" placeholder="80"/>
+                </div>
+              </div>
+
+              <div class="info-item">
+                <label>Portfolio URL</label>
+                <div class="info-value" *ngIf="!editMode">
+                  <a [href]="p.dietitianProfile?.linkUrl" target="_blank" class="info-link">
+                    {{ p.dietitianProfile?.linkUrl || '—' }}
+                  </a>
+                </div>
+                <div class="input-wrap" *ngIf="editMode">
+                  <input type="text" formControlName="linkUrl" placeholder="https://yoursite.com"/>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Profile Photo -->
+            <div class="section-divider" style="margin-top: 20px">Profile photo</div>
+
+            <!-- View mode -->
+            <div *ngIf="!editMode">
+              <img *ngIf="p.imageUrl" [src]="p.imageUrl" alt="Profile photo"
+                   class="cert-preview-img"
+                   style="border-radius: 50%; width: 80px; height: 80px;"/>
+              <div class="info-value" *ngIf="!p.imageUrl">No photo uploaded</div>
+            </div>
+
+            <!-- Edit mode -->
+            <div *ngIf="editMode">
+              <div class="photo-upload-row">
+                <div class="photo-preview">
+                  <img *ngIf="currentPhotoUrl" [src]="currentPhotoUrl" alt="Preview"/>
+                  <span *ngIf="!currentPhotoUrl" class="photo-placeholder">🩺</span>
+                </div>
+                <div class="upload-zone upload-zone--compact"
+                     [class.upload-zone--has-file]="photoFile"
+                     (click)="photoInput.click()"
+                     (dragover)="$event.preventDefault()"
+                     (drop)="onPhotoDrop($event)">
+                  <input #photoInput type="file" accept=".jpg,.jpeg,.png,.webp"
+                         (change)="onPhotoChange($event)" hidden/>
+                  <ng-container *ngIf="!photoFile">
+                    <span class="upload-icon">🖼️</span>
+                    <span class="upload-label">Click or drag photo</span>
+                    <span class="upload-hint">JPG, PNG or WEBP — max 3MB</span>
+                  </ng-container>
+                  <ng-container *ngIf="photoFile">
+                    <span class="upload-icon">✅</span>
+                    <span class="upload-label upload-label--success">{{ photoFile.name }}</span>
+                    <span class="upload-hint">{{ formatSize(photoFile.size) }}</span>
+                    <button class="upload-remove" type="button"
+                            (click)="removePhoto($event)">✕ Remove</button>
+                  </ng-container>
+                </div>
+              </div>
+              <span class="field-error" *ngIf="photoError">{{ photoError }}</span>
+            </div>
+
+            <!-- Certificate -->
+            <div class="section-divider" style="margin-top: 20px">Certification document</div>
+
+            <!-- View mode -->
+            <div *ngIf="!editMode">
+              <div *ngIf="p.dietitianProfile?.certificateUrl" class="cert-preview">
+                <span class="cert-icon">📄</span>
+                <a [href]="p.dietitianProfile?.certificateUrl" target="_blank" class="info-link">
+                  View certificate
+                </a>
+              </div>
+              <div class="info-value" *ngIf="!p.dietitianProfile?.certificateUrl">
+                No certificate uploaded
+              </div>
+            </div>
+
+            <!-- Edit mode -->
+            <div *ngIf="editMode">
+              <div class="upload-zone"
+                   [class.upload-zone--has-file]="certFile"
+                   (click)="certInput.click()"
+                   (dragover)="$event.preventDefault()"
+                   (drop)="onCertDrop($event)">
+                <input #certInput type="file" accept=".pdf,.jpg,.jpeg,.png"
+                       (change)="onCertChange($event)" hidden/>
+                <ng-container *ngIf="!certFile">
+                  <span class="upload-icon">📄</span>
+                  <span class="upload-label">Click or drag certificate</span>
+                  <span class="upload-hint">PDF, JPG or PNG — max 5MB</span>
+                </ng-container>
+                <ng-container *ngIf="certFile">
+                  <span class="upload-icon">✅</span>
+                  <span class="upload-label upload-label--success">{{ certFile.name }}</span>
+                  <span class="upload-hint">{{ formatSize(certFile.size) }}</span>
+                  <button class="upload-remove" type="button"
+                          (click)="removeCert($event)">✕ Remove</button>
+                </ng-container>
+              </div>
+              <span class="field-error" *ngIf="certError">{{ certError }}</span>
+            </div>
+
+          </div>
+
+          <!-- ══════════ RESTAURANT / ADMIN ══════════ -->
+          <div *ngIf="role === 'RESTAURANT' || role === 'ADMIN'">
+
+            <div class="card-header">
+              <div>
+                <div class="card-title">
+                  {{ role === 'RESTAURANT' ? 'Restaurant information' : 'Admin information' }}
+                </div>
+                <div class="card-subtitle">
+                  {{ role === 'RESTAURANT' ? 'Your restaurant profile' : 'Your admin profile' }}
+                </div>
+              </div>
+              <button class="btn-save" type="submit" *ngIf="editMode" [disabled]="loading">
+                {{ loading ? 'Saving…' : 'Save changes' }}
+              </button>
+            </div>
+
+            <!-- Profile Photo -->
+            <div class="section-divider">Profile photo</div>
+
+            <!-- View mode -->
+            <div *ngIf="!editMode">
+              <img *ngIf="p.imageUrl" [src]="p.imageUrl" alt="Profile photo"
+                   class="cert-preview-img"
+                   style="border-radius: 50%; width: 80px; height: 80px;"/>
+              <div class="info-value" *ngIf="!p.imageUrl">No photo uploaded</div>
+            </div>
+
+            <!-- Edit mode -->
+            <div *ngIf="editMode">
+              <div class="photo-upload-row">
+                <div class="photo-preview">
+                  <img *ngIf="currentPhotoUrl" [src]="currentPhotoUrl" alt="Preview"/>
+                  <span *ngIf="!currentPhotoUrl" class="photo-placeholder">
+                    {{ role === 'RESTAURANT' ? '🍽️' : '⚙️' }}
+                  </span>
+                </div>
+                <div class="upload-zone upload-zone--compact"
+                     [class.upload-zone--has-file]="photoFile"
+                     (click)="photoInput.click()"
+                     (dragover)="$event.preventDefault()"
+                     (drop)="onPhotoDrop($event)">
+                  <input #photoInput type="file" accept=".jpg,.jpeg,.png,.webp"
+                         (change)="onPhotoChange($event)" hidden/>
+                  <ng-container *ngIf="!photoFile">
+                    <span class="upload-icon">🖼️</span>
+                    <span class="upload-label">Click or drag photo</span>
+                    <span class="upload-hint">JPG, PNG or WEBP — max 3MB</span>
+                  </ng-container>
+                  <ng-container *ngIf="photoFile">
+                    <span class="upload-icon">✅</span>
+                    <span class="upload-label upload-label--success">{{ photoFile.name }}</span>
+                    <span class="upload-hint">{{ formatSize(photoFile.size) }}</span>
+                    <button class="upload-remove" type="button"
+                            (click)="removePhoto($event)">✕ Remove</button>
+                  </ng-container>
+                </div>
+              </div>
+              <span class="field-error" *ngIf="photoError">{{ photoError }}</span>
+            </div>
+
+          </div>
+
+        </div>
+      </form>
+    </main>
+  </div>
+</div>

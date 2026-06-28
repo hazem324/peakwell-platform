@@ -1,0 +1,25 @@
+<section class="testi-section">
+  <div class="container">
+    <div class="testi-header">
+      <div class="section-label">Real Results</div>
+      <h2 class="section-title">Stories that <em>Inspire</em></h2>
+    </div>
+    <div class="testi-grid">
+      <div class="testi-card" *ngFor="let t of testimonials">
+        <div class="testi-stars">
+          <span *ngFor="let s of stars">⭐</span>
+        </div>
+        <div class="testi-quote">&ldquo;</div>
+        <p class="testi-text">{{ t.text }}</p>
+        <div class="testi-author">
+          <div class="testi-avatar" [style.background]="t.avatarBg">{{ t.avatarEmoji }}</div>
+          <div>
+            <div class="testi-name">{{ t.name }}</div>
+            <div class="testi-detail">{{ t.memberDuration }}</div>
+          </div>
+        </div>
+        <div class="testi-result">{{ t.resultEmoji }} {{ t.result }}</div>
+      </div>
+    </div>
+  </div>
+</section>

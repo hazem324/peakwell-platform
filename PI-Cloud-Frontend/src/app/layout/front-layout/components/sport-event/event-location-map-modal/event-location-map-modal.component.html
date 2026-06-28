@@ -1,0 +1,14 @@
+<div class="map-modal-backdrop">
+  <div class="map-modal">
+    <div class="map-modal-header">
+      <h3>Localisation de l’événement</h3>
+      <button type="button" class="close-btn" (click)="onClose()">✕</button>
+    </div>
+
+    <div id="event-location-map" class="map-container"></div>
+
+    <div class="map-address" *ngIf="address">
+      {{ address }}
+    </div>
+  </div>
+</div>

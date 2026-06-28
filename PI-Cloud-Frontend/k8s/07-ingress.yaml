@@ -1,0 +1,32 @@
+# Requires nginx ingress controller:
+#   kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.10.1/deploy/static/provider/cloud/deploy.yaml
+#
+# Replace <NODE_IP_OR_DOMAIN> in the host field with your cluster's
+# external IP (minikube: $(minikube ip)) or your real domain.
+# For local testing add to hosts file: <NODE_IP> peakwell.local
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: peakwell-ingress
+  namespace: peakwell
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: peakwell.local     # ← replace with your domain or IP
+      http:
+        paths:
+          # All traffic goes to the frontend service.
+          # The nginx inside the frontend container handles:
+          #   /peakwell/  → backend:8090  (API + uploads)
+          #   /ai-events/ → ai-sport:8004
+          #   /           → Angular SPA
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 80

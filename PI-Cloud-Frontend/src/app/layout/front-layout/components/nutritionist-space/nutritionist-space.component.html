@@ -1,0 +1,193 @@
+<div class="hub-page">
+
+  <!-- Hero -->
+  <div class="hub-hero">
+    <div class="hero-orb"></div>
+    <div class="hero-orb hero-orb--2"></div>
+    <div class="container">
+      <span class="hub-eyebrow">
+        <span class="eyebrow-pulse"></span>
+        Nutritionist Workspace
+      </span>
+      <h1>Welcome back, <em>Doctor</em></h1>
+      <p class="hero-sub">Your clinical tools and patient data, all in one place.</p>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- Stats Strip -->
+    <div class="stats-strip" *ngIf="statsLoaded">
+
+      <div class="stat-item">
+        <div class="si-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <div class="si-meta">
+          <span class="si-value">{{ totalPatients }}</span>
+          <span class="si-label">Total Patients</span>
+        </div>
+      </div>
+
+      <div class="stat-sep"></div>
+
+      <div class="stat-item stat-item--alert" *ngIf="criticalCount > 0">
+        <div class="si-icon si-icon--alert">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+        </div>
+        <div class="si-meta">
+          <span class="si-value">{{ criticalCount }}</span>
+          <span class="si-label">Critical Cases</span>
+        </div>
+      </div>
+
+      <div class="stat-sep" *ngIf="criticalCount > 0"></div>
+
+      <div class="stat-item">
+        <div class="si-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 11 12 14 22 4"/>
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+          </svg>
+        </div>
+        <div class="si-meta">
+          <span class="si-value">{{ actionItemCount }}</span>
+          <span class="si-label">Action Items</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Section label: Featured Tools -->
+    <div class="section-label">Featured Tools</div>
+
+    <!-- Navigation Grid -->
+    <div class="hub-grid">
+
+      <!-- Health Heatmap — Primary full-width card -->
+      <div class="hub-card hub-card--primary">
+        <div class="hc-top">
+          <div class="hc-icon-wrap">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="7.5" cy="7.5" r="1.5"/><circle cx="18.5" cy="5.5" r="1.5"/>
+              <circle cx="11.5" cy="11.5" r="1.5"/><circle cx="7.5" cy="16.5" r="1.5"/>
+              <circle cx="17.5" cy="14.5" r="1.5"/><path d="M3 3v18h18"/>
+            </svg>
+          </div>
+          <div class="hc-badge hc-badge--alert" *ngIf="criticalCount > 0">
+            <span class="badge-dot"></span>
+            {{ criticalCount }} critical
+          </div>
+        </div>
+        <div class="hc-body">
+          <h2>Health Heatmap</h2>
+          <p>Visual scatter plot of all patients by health score vs engagement. Instantly spot who needs attention, filter action items by priority, and navigate directly to any patient's dossier.</p>
+          <ul class="hc-features">
+            <li>Interactive patient bubble map</li>
+            <li>Quadrant analysis — Star, Churn, Critical</li>
+            <li>Priority-filtered action items feed</li>
+            <li>Full patient overview table</li>
+          </ul>
+        </div>
+        <a routerLink="/nutritionist/heatmap" class="hc-btn hc-btn--primary">
+          Open Health Heatmap
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </a>
+      </div>
+
+      <!-- Clients -->
+      <div class="hub-card">
+        <div class="hc-top">
+          <div class="hc-icon-wrap">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </div>
+          <div class="hc-badge" *ngIf="totalPatients > 0">
+            {{ totalPatients }} clients
+          </div>
+        </div>
+        <div class="hc-body">
+          <h2>Clients</h2>
+          <p>Search and manage all registered clients. View their profile, biometric history, health goals and current status at a glance.</p>
+          <ul class="hc-features">
+            <li>Search by name, goal or email</li>
+            <li>Active & inactive client status</li>
+            <li>BMI, weight and activity overview</li>
+            <li>Direct link to each client's dossier</li>
+          </ul>
+        </div>
+        <a routerLink="/nutritionist/clients" class="hc-btn">
+          Go to Clients
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </a>
+      </div>
+
+      <!-- Quick Access Panel -->
+      <div class="quick-access-panel">
+        <div class="qap-header">Quick Access</div>
+        <div class="qap-grid">
+
+          <div class="quick-card">
+            <div class="qc-icon-wrap">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+              </svg>
+            </div>
+            <div class="qc-body">
+              <h3>Consultations</h3>
+              <p>Review sessions, notes and recommendations.</p>
+            </div>
+            <a routerLink="/nutritionist/consultations" class="qc-link">
+              My Consultations
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </a>
+          </div>
+
+          <div class="quick-card">
+            <div class="qc-icon-wrap">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+            </div>
+            <div class="qc-body">
+              <h3>Schedule</h3>
+              <p>Manage appointments and call requests.</p>
+            </div>
+            <a routerLink="/nutritionist/schedule" class="qc-link">
+              Open Schedule
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </a>
+          </div>
+
+<div class="quick-card">
+            <div class="qc-icon-wrap">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+              </svg>
+            </div>
+            <div class="qc-body">
+              <h3>AI Patient Insights</h3>
+              <p>Dropout predictions, booking probability and recommended actions per patient.</p>
+            </div>
+            <a routerLink="/nutritionist/insights" class="qc-link">
+              Open Insights
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </a>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

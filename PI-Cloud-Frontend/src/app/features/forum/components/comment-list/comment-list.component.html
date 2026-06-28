@@ -1,0 +1,203 @@
+<div class="comments-section">
+  <div class="comments-header">
+    <h3 class="comments-title">Discussion</h3>
+    <span class="comment-count" *ngIf="!loading && comments.length > 0">{{ comments.length }} {{ comments.length === 1 ? 'comment' : 'comments' }}</span>
+  </div>
+
+  <div class="loading-spinner" *ngIf="loading">
+    <div class="spinner-dot"></div>
+    <p>Loading comments...</p>
+  </div>
+
+  <div class="error-message" *ngIf="error">
+    <p>{{ error }}</p>
+  </div>
+
+  <div class="comments-list" *ngIf="!loading && comments.length > 0">
+    <!-- Main comments -->
+    <div class="comment-card" *ngFor="let comment of comments" [@fadeInUp]>
+
+      <!-- Comment Header with Avatar -->
+      <div class="comment-card-header">
+        <div class="comment-avatar">
+          <span class="avatar-initial">{{ comment.author.charAt(0).toUpperCase() }}</span>
+        </div>
+
+        <div class="comment-header-content">
+          <div class="author-info">
+            <span class="comment-author">{{ comment.author }}</span>
+            <span class="comment-date">{{ formatDate(comment.createdAt) }}</span>
+          </div>
+        </div>
+
+        <button class="delete-btn"
+                *ngIf="canDeleteComment(comment)"
+                (click)="deleteComment(comment.id!)"
+                title="Delete comment"
+                class="btn-delete-comment">
+          ✕
+        </button>
+      </div>
+
+      <!-- Comment content -->
+      <div class="comment-body">
+        <p class="comment-text">{{ comment.content }}</p>
+      </div>
+
+      <!-- Vote and Reply actions -->
+      <div class="comment-actions">
+        <!-- Vote Section -->
+        <div class="vote-section">
+          <button class="vote-btn upvote-btn"
+                  [class.active]="getUserVote(comment.id!) === 'UPVOTE'"
+                  (click)="voteComment(comment, 'UPVOTE')"
+                  title="Upvote"
+                  aria-label="Upvote comment">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
+              <polyline points="18,15 12,9 6,15"></polyline>
+            </svg>
+          </button>
+
+          <span class="vote-count" [class.has-votes]="getNetVotes(comment) !== 0">
+            {{ getNetVotes(comment) }}
+          </span>
+
+          <button class="vote-btn downvote-btn"
+                  [class.active]="getUserVote(comment.id!) === 'DOWNVOTE'"
+                  (click)="voteComment(comment, 'DOWNVOTE')"
+                  title="Downvote"
+                  aria-label="Downvote comment">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
+              <polyline points="6,9 12,15 18,9"></polyline>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Reply button -->
+        <button class="reply-btn"
+                *ngIf="userForumService.canReply()"
+                (click)="showReplyForm(comment.id!)"
+                title="Reply to comment"
+                aria-label="Reply to comment">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
+          <span>Reply</span>
+        </button>
+      </div>
+
+      <!-- Inline Reply Form -->
+      <div class="reply-form-wrapper" *ngIf="replyingToId === comment.id" [@slideDown]>
+        <div class="reply-form-container">
+          <div class="reply-form-badge">Replying to {{ comment.author }}</div>
+          <textarea [(ngModel)]="replyContent"
+                    placeholder="Write a reply..."
+                    class="reply-textarea"></textarea>
+          <div class="reply-form-actions">
+            <button class="btn-submit-reply" (click)="submitReply(comment)">Post Reply</button>
+            <button class="btn-cancel-reply" (click)="cancelReply()">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Nested Replies -->
+      <div class="replies-container" *ngIf="comment.replies && comment.replies.length > 0">
+        <div class="reply-card" *ngFor="let reply of comment.replies" [@fadeInUp]>
+
+          <!-- Reply Header with Avatar -->
+          <div class="comment-card-header">
+            <div class="comment-avatar avatar-reply">
+              <span class="avatar-initial">{{ reply.author.charAt(0).toUpperCase() }}</span>
+            </div>
+
+            <div class="comment-header-content">
+              <div class="author-info">
+                <span class="comment-author">{{ reply.author }}</span>
+                <span class="comment-date">{{ formatDate(reply.createdAt) }}</span>
+              </div>
+            </div>
+
+            <button class="delete-btn"
+                    *ngIf="canDeleteComment(reply)"
+                    (click)="deleteComment(reply.id!)"
+                    title="Delete comment"
+                    class="btn-delete-comment">
+              ✕
+            </button>
+          </div>
+
+          <!-- Reply content -->
+          <div class="comment-body">
+            <p class="comment-text">{{ reply.content }}</p>
+          </div>
+
+          <!-- Reply vote and reply actions -->
+          <div class="comment-actions">
+            <div class="vote-section">
+              <button class="vote-btn upvote-btn"
+                      [class.active]="getUserVote(reply.id!) === 'UPVOTE'"
+                      (click)="voteComment(reply, 'UPVOTE')"
+                      title="Upvote"
+                      aria-label="Upvote reply">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2">
+                  <polyline points="18,15 12,9 6,15"></polyline>
+                </svg>
+              </button>
+              <span class="vote-count" [class.has-votes]="getNetVotes(reply) !== 0">
+                {{ getNetVotes(reply) }}
+              </span>
+              <button class="vote-btn downvote-btn"
+                      [class.active]="getUserVote(reply.id!) === 'DOWNVOTE'"
+                      (click)="voteComment(reply, 'DOWNVOTE')"
+                      title="Downvote"
+                      aria-label="Downvote reply">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2">
+                  <polyline points="6,9 12,15 18,9"></polyline>
+                </svg>
+              </button>
+            </div>
+
+            <button class="reply-btn"
+                    *ngIf="userForumService.canReply()"
+                    (click)="showReplyForm(reply.id!)"
+                    title="Reply to comment"
+                    aria-label="Reply to comment">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+              <span>Reply</span>
+            </button>
+          </div>
+
+          <!-- Reply to reply form -->
+          <div class="reply-form-wrapper" *ngIf="replyingToId === reply.id" [@slideDown]>
+            <div class="reply-form-container">
+              <div class="reply-form-badge">Replying to {{ reply.author }}</div>
+              <textarea [(ngModel)]="replyContent"
+                        placeholder="Write a reply..."
+                        class="reply-textarea"></textarea>
+              <div class="reply-form-actions">
+                <button class="btn-submit-reply" (click)="submitReply(comment)">Post Reply</button>
+                <button class="btn-cancel-reply" (click)="cancelReply()">Cancel</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="no-comments-state" *ngIf="!loading && comments.length === 0">
+    <div class="empty-state-icon">💭</div>
+    <h4 class="empty-state-title">No comments yet</h4>
+    <p class="empty-state-text">Be the first to share your thoughts on this article!</p>
+  </div>
+</div>

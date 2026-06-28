@@ -1,0 +1,137 @@
+<section class="hero" id="home">
+  <div class="hero-orb hero-orb--1"></div>
+  <div class="hero-orb hero-orb--2"></div>
+  <div class="hero-grid-lines"></div>
+
+  <div class="container">
+    <div class="hero-inner">
+
+      <!-- Text -->
+      <div class="hero-text">
+        <div class="hero-eyebrow fade-up">
+          <span class="eyebrow-dot"></span>
+          Health Monitoring · Nutrition · Wellness
+        </div>
+
+        <h1 class="hero-title fade-up-2">
+          Your health,<br/>
+          monitored.<br/>
+          Your goals,
+          <em>achieved.</em>
+        </h1>
+
+        <p class="hero-desc fade-up-3">
+          PeakWell connects you with registered dietitians, tracks your biometrics in real time,
+          and gives you AI-powered insights — all in one place.
+        </p>
+
+        <div class="hero-actions fade-up-4">
+          <button class="btn-primary" [routerLink]="['/auth/login']">
+            🚀 Get Started
+          </button>
+          <button class="btn-outline" (click)="scrollTo('about')">
+            Explore Features
+          </button>
+        </div>
+
+        <div class="hero-stats fade-up-4">
+          <div class="hs-item">
+            <strong>500+</strong>
+            <span>Tested Recipes</span>
+          </div>
+          <div class="hs-divider"></div>
+          <div class="hs-item">
+            <strong>3</strong>
+            <span>User Roles</span>
+          </div>
+          <div class="hs-divider"></div>
+          <div class="hs-item">
+            <strong>24/7</strong>
+            <span>Monitoring</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Visual -->
+      <div class="hero-visual fade-up-3">
+
+        <!-- Top badges row -->
+        <div class="hv-badges-top">
+          <div class="hv-badge hv-badge--event">
+            <span>🏅</span>
+            <div>
+              <strong>5K Wellness Run</strong>
+              <span>Sat · 3 spots left</span>
+            </div>
+          </div>
+          <div class="hv-badge hv-badge--consult">
+            <span class="consult-avatar">👨‍⚕️</span>
+            <div>
+              <strong>Dr. Karim</strong>
+              <span class="online-label"><span class="live-dot"></span>Online now</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Central card -->
+        <div class="hv-central">
+          <div class="hvc-header">
+            <span class="hvc-avatar">O</span>
+            <div>
+              <strong>Health Dashboard</strong>
+              <span>Last updated just now</span>
+            </div>
+            <span class="hvc-live"><span class="live-dot"></span>Live</span>
+          </div>
+
+          <div class="hvc-stats">
+            <div class="hvc-stat" *ngFor="let m of metrics">
+              <span class="hvc-stat-label">{{ m.label }}</span>
+              <span class="hvc-stat-value" [style.color]="m.color">{{ m.value }}</span>
+              <span class="hvc-stat-trend"
+                [class.hvc-stat-trend--up]="m.up"
+                [class.hvc-stat-trend--down]="!m.up">
+                {{ m.up ? '↑' : '↓' }} {{ m.trend }}
+              </span>
+            </div>
+          </div>
+
+          <div class="hvc-bar-row">
+            <span class="hvc-bar-label">Health Score</span>
+            <div class="hvc-bar-track">
+              <div class="hvc-bar-fill" style="width: 82%"></div>
+            </div>
+            <span class="hvc-bar-val">82</span>
+          </div>
+        </div>
+
+        <!-- Bottom badges row -->
+        <div class="hv-badges-row">
+          <div class="hv-badge hv-badge--goal">
+            <span>🎯</span>
+            <div>
+              <strong>Goal reached!</strong>
+              <span>BMI target hit</span>
+            </div>
+          </div>
+          <div class="hv-badge hv-badge--meal">
+            <span>🍽️</span>
+            <div>
+              <strong>Today's Meal</strong>
+              <span>Salmon · 380 kcal</span>
+            </div>
+          </div>
+          <div class="hv-badge hv-badge--streak">
+            <span>🔥</span>
+            <div>
+              <strong>14-day streak</strong>
+              <span>Keep it up!</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</section>

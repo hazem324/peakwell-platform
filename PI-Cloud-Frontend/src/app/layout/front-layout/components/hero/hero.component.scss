@@ -1,0 +1,407 @@
+// ── Animations ───────────────────────────────────────────────────────────────
+@keyframes float-a {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-9px); }
+}
+@keyframes float-b {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-6px); }
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.4; transform: scale(0.8); }
+}
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.fade-up   { animation: fade-up 0.6s cubic-bezier(.25,.8,.25,1) 0.1s  both; }
+.fade-up-2 { animation: fade-up 0.6s cubic-bezier(.25,.8,.25,1) 0.22s both; }
+.fade-up-3 { animation: fade-up 0.6s cubic-bezier(.25,.8,.25,1) 0.34s both; }
+.fade-up-4 { animation: fade-up 0.6s cubic-bezier(.25,.8,.25,1) 0.46s both; }
+
+// ── Section ───────────────────────────────────────────────────────────────────
+.hero {
+  background: var(--cream);
+  min-height: 90vh;
+  display: flex;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-orb {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(90px);
+
+  &--1 {
+    width: 580px; height: 580px;
+    background: radial-gradient(circle, rgba(201,106,63,0.14) 0%, transparent 70%);
+    right: -60px; top: -140px;
+  }
+  &--2 {
+    width: 380px; height: 380px;
+    background: radial-gradient(circle, rgba(122,158,126,0.11) 0%, transparent 70%);
+    left: -80px; bottom: -80px;
+  }
+}
+
+.hero-grid-lines {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(0,0,0,0.055) 1px, transparent 1px);
+  background-size: 32px 32px;
+  pointer-events: none;
+}
+
+// ── Layout ────────────────────────────────────────────────────────────────────
+.hero-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+  align-items: center;
+  padding: 100px 0 80px;
+  position: relative;
+  z-index: 1;
+}
+
+// ── Text side ─────────────────────────────────────────────────────────────────
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--sage-dark);
+  font-weight: 700;
+  margin-bottom: 24px;
+}
+
+.eyebrow-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--terracotta);
+  flex-shrink: 0;
+}
+
+.hero-title {
+  font-family: var(--font-serif);
+  font-size: clamp(44px, 5vw, 68px);
+  font-weight: 400;
+  line-height: 1.08;
+  color: var(--charcoal);
+  margin-bottom: 24px;
+  letter-spacing: -0.5px;
+
+  em {
+    font-style: italic;
+    color: var(--terracotta);
+  }
+}
+
+.hero-desc {
+  font-size: 16px;
+  line-height: 1.8;
+  color: var(--warm-gray);
+  max-width: 420px;
+  margin-bottom: 36px;
+}
+
+.hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 36px;
+}
+
+// Stat strip below buttons
+.hero-stats {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 20px 24px;
+  background: #fff;
+  border: 1px solid #ede8e3;
+  border-radius: 16px;
+  max-width: 360px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+}
+
+.hs-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  gap: 2px;
+
+  strong {
+    font-family: var(--font-serif);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--terracotta);
+    line-height: 1;
+  }
+
+  span {
+    font-size: 11px;
+    color: #8a7e78;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+}
+
+.hs-divider {
+  width: 1px;
+  height: 32px;
+  background: #ede8e3;
+  flex-shrink: 0;
+}
+
+// ── Visual side ───────────────────────────────────────────────────────────────
+.hero-visual {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: center;
+}
+
+// Top row — two badges
+.hv-badges-top {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  max-width: 380px;
+}
+
+.hv-badge--event {
+  flex: 1;
+  animation: float-b 4.8s ease-in-out 0.2s infinite;
+}
+
+.hv-badge--consult {
+  flex: 1;
+  animation: float-b 5s ease-in-out 0.8s infinite;
+}
+
+// Central dashboard card
+.hv-central {
+  background: #fff;
+  border: 1px solid #ede8e3;
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.10), 0 4px 16px rgba(0,0,0,0.05);
+  width: 100%;
+  max-width: 380px;
+  animation: float-a 6s ease-in-out infinite;
+}
+
+// Bottom row — three badges
+.hv-badges-row {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  max-width: 380px;
+}
+
+.hv-badge--goal {
+  flex: 1;
+  animation: float-b 4.5s ease-in-out 0.3s infinite;
+}
+
+.hv-badge--meal {
+  flex: 1;
+  animation: float-b 5s ease-in-out 0.9s infinite;
+}
+
+.hv-badge--streak {
+  flex: 1;
+  animation: float-b 5.5s ease-in-out 1.4s infinite;
+}
+
+// Shared badge styles
+.hv-badge {
+  background: #fff;
+  border: 1px solid #ede8e3;
+  border-radius: 16px;
+  padding: 12px 14px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.08);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  > span:first-child { font-size: 20px; flex-shrink: 0; }
+
+  div strong { font-size: 12px; font-weight: 700; color: #1e1a16; display: block; }
+  div span   { font-size: 11px; color: #8a7e78; }
+}
+
+// ── Dashboard card internals ───────────────────────────────────────────────────
+.hvc-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f0ece8;
+
+  strong { font-size: 13px; font-weight: 700; color: #1e1a16; display: block; }
+  span   { font-size: 11px; color: #b5aaa5; }
+}
+
+.hvc-avatar {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--terracotta), #e8895e);
+  color: #fff; font-size: 14px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.hvc-live {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #4a7a4e;
+  background: rgba(74,122,78,0.1);
+  border-radius: 100px;
+  padding: 3px 10px;
+  flex-shrink: 0;
+}
+
+.live-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #4a7a4e;
+  display: inline-block;
+  animation: pulse-dot 1.5s ease-in-out infinite;
+}
+
+.hvc-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.hvc-stat {
+  background: #faf7f4;
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hvc-stat-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #b5aaa5;
+}
+
+.hvc-stat-value {
+  font-size: 17px;
+  font-weight: 700;
+  font-family: var(--font-serif);
+}
+
+.hvc-stat-trend {
+  font-size: 10px;
+  font-weight: 600;
+  color: #b5aaa5;
+
+  &--up   { color: #4a7a4e; }
+  &--down { color: #c96a3f; }
+}
+
+.hvc-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hvc-bar-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #8a7e78;
+  white-space: nowrap;
+  min-width: 72px;
+}
+
+.hvc-bar-track {
+  flex: 1;
+  height: 6px;
+  background: #f0ece8;
+  border-radius: 100px;
+  overflow: hidden;
+}
+
+.hvc-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--terracotta), #e8895e);
+  border-radius: 100px;
+}
+
+.hvc-bar-val {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--terracotta);
+  min-width: 24px;
+  text-align: right;
+}
+
+// Consult badge specifics
+.consult-avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: rgba(201,106,63,0.1);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.online-label {
+  display: flex !important;
+  align-items: center;
+  gap: 5px;
+  color: #4a7a4e !important;
+  font-weight: 600 !important;
+  font-size: 11px;
+
+  .live-dot { background: #4a7a4e; }
+}
+
+// ── Responsive ────────────────────────────────────────────────────────────────
+@media (max-width: 1024px) {
+  .hv-central, .hv-badges-top, .hv-badges-row { max-width: 320px; }
+}
+
+@media (max-width: 900px) {
+  .hero-inner {
+    grid-template-columns: 1fr;
+    gap: 48px;
+    padding: 70px 0 60px;
+    text-align: center;
+  }
+
+  .hero-eyebrow,
+  .hero-actions,
+  .hero-stats { justify-content: center; margin-left: auto; margin-right: auto; }
+
+  .hero-desc { margin-left: auto; margin-right: auto; }
+
+  .hv-central, .hv-badges-top, .hv-badges-row { max-width: 440px; }
+}
+
+@media (max-width: 600px) {
+  .hero-visual { display: none; }
+}

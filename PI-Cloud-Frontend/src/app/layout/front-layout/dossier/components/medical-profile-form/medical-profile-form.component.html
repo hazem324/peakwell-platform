@@ -1,0 +1,195 @@
+<div class="profile-form">
+  <div class="form-card">
+    <div class="form-card-header">
+      <h3>Medical Profile</h3>
+      <p>This information helps your nutritionist provide better care. Fields marked * are required.</p>
+    </div>
+
+    <!-- ── Account Info (read-only) ───────────────────── -->
+    <div class="account-banner">
+      <div class="ab-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="8" r="4"/>
+          <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+        </svg>
+      </div>
+      <div class="ab-content">
+        <div class="ab-title">Account Information</div>
+        <div class="ab-note">Pulled from your account — edit in your profile settings.</div>
+        <div class="ab-fields" *ngIf="!userInfoLoading">
+          <div class="ab-field">
+            <span class="ab-lbl">Full Name</span>
+            <span class="ab-val">{{ userInfo.firstName || '—' }} {{ userInfo.lastName }}</span>
+          </div>
+          <div class="ab-field">
+            <span class="ab-lbl">Date of Birth</span>
+            <input type="date" [(ngModel)]="userInfo.dateOfBirth"
+                   style="font-size:13px;border:1px solid #ede8e3;border-radius:8px;padding:4px 8px;color:#1e1a16;background:#faf7f4"/>
+          </div>
+          <div class="ab-field" *ngIf="userInfo.height">
+            <span class="ab-lbl">Height</span>
+            <span class="ab-val">{{ userInfo.height }} cm</span>
+          </div>
+        </div>
+        <div class="ab-loading" *ngIf="userInfoLoading">
+          <div class="ab-spinner"></div> Loading account data…
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Medical Details ────────────────────────────── -->
+    <div class="form-section">
+      <div class="form-section-label">🩺 Medical Details</div>
+      <div class="form-grid-2">
+
+        <div class="field-group" [class.field-group--invalid]="genderInvalid">
+          <label>Gender *</label>
+          <select [(ngModel)]="profile.gender">
+            <option value="">Select…</option>
+            <option value="female">Female</option>
+            <option value="male">Male</option>
+            <option value="other">Other</option>
+          </select>
+          <span class="field-error" *ngIf="genderInvalid">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Please select a gender
+          </span>
+        </div>
+
+        <div class="field-group" [class.field-group--invalid]="bloodTypeInvalid">
+          <label>Blood Type *</label>
+          <select [(ngModel)]="profile.bloodType">
+            <option value="">Select…</option>
+            <option *ngFor="let bt of bloodTypes">{{ bt }}</option>
+          </select>
+          <span class="field-error" *ngIf="bloodTypeInvalid">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Please select a blood type
+          </span>
+        </div>
+
+        <div class="field-group field-group--full">
+          <label>Emergency Contact</label>
+          <input type="text" [(ngModel)]="profile.emergencyContact"
+                 placeholder="Full name — Phone number"/>
+          <span class="field-hint">Optional, but highly recommended</span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── Allergies ──────────────────────────────────── -->
+    <div class="form-section">
+      <div class="form-section-label">⚠️ Allergies</div>
+
+      <div class="suggest-wrap">
+        <div class="tag-input-row">
+          <input type="text"
+                 [(ngModel)]="newAllergy"
+                 placeholder="e.g. Gluten, Peanuts, Penicillin…"
+                 (keyup.enter)="addAllergy()"
+                 (focus)="allergyFocused = true"
+                 (blur)="allergyFocused = false"
+                 autocomplete="off"/>
+          <button class="btn-add-tag" (click)="addAllergy()">+ Add</button>
+        </div>
+        <div class="suggest-dropdown" *ngIf="allergyFocused && filteredAllergies.length > 0">
+          <div class="suggest-header">Suggestions</div>
+          <button class="suggest-item suggest-item--allergy"
+                  *ngFor="let s of filteredAllergies"
+                  (mousedown)="selectAllergy(s)">
+            <span class="suggest-icon">⚠️</span>{{ s }}
+          </button>
+        </div>
+      </div>
+      <div class="tag-list" *ngIf="profile.allergies.length > 0">
+        <span class="tag tag--allergy" *ngFor="let a of profile.allergies; let i = index">
+          {{ a }} <button (click)="removeAllergy(i)">×</button>
+        </span>
+      </div>
+      <div class="empty-hint" *ngIf="profile.allergies.length === 0">
+        No allergies added yet. Type to search or enter a custom allergy.
+      </div>
+    </div>
+
+    <!-- ── Medical Conditions ─────────────────────────── -->
+    <div class="form-section">
+      <div class="form-section-label">⚕️ Medical Conditions</div>
+
+      <div class="suggest-wrap">
+        <div class="tag-input-row">
+          <input type="text"
+                 [(ngModel)]="newCondition"
+                 placeholder="e.g. Type 2 Diabetes, Hypertension…"
+                 (keyup.enter)="addCondition()"
+                 (focus)="conditionFocused = true"
+                 (blur)="conditionFocused = false"
+                 autocomplete="off"/>
+          <button class="btn-add-tag" (click)="addCondition()">+ Add</button>
+        </div>
+        <div class="suggest-dropdown" *ngIf="conditionFocused && filteredConditions.length > 0">
+          <div class="suggest-header">Suggestions</div>
+          <button class="suggest-item suggest-item--condition"
+                  *ngFor="let s of filteredConditions"
+                  (mousedown)="selectCondition(s)">
+            <span class="suggest-icon">⚕️</span>{{ s }}
+          </button>
+        </div>
+      </div>
+      <div class="tag-list" *ngIf="profile.conditions.length > 0">
+        <span class="tag tag--condition" *ngFor="let c of profile.conditions; let i = index">
+          {{ c }} <button (click)="removeCondition(i)">×</button>
+        </span>
+      </div>
+      <div class="empty-hint" *ngIf="profile.conditions.length === 0">
+        No conditions added yet. Type to search or enter a custom condition.
+      </div>
+    </div>
+
+    <!-- ── Medications ────────────────────────────────── -->
+    <div class="form-section">
+      <div class="form-section-label">💊 Current Medications</div>
+
+      <div class="suggest-wrap">
+        <div class="tag-input-row">
+          <input type="text"
+                 [(ngModel)]="newMedication"
+                 placeholder="e.g. Metformin 500mg, Vitamin D…"
+                 (keyup.enter)="addMedication()"
+                 (focus)="medicationFocused = true"
+                 (blur)="medicationFocused = false"
+                 autocomplete="off"/>
+          <button class="btn-add-tag" (click)="addMedication()">+ Add</button>
+        </div>
+        <div class="suggest-dropdown" *ngIf="medicationFocused && filteredMedications.length > 0">
+          <div class="suggest-header">Suggestions</div>
+          <button class="suggest-item suggest-item--medication"
+                  *ngFor="let s of filteredMedications"
+                  (mousedown)="selectMedication(s)">
+            <span class="suggest-icon">💊</span>{{ s }}
+          </button>
+        </div>
+      </div>
+      <div class="tag-list" *ngIf="profile.medications.length > 0">
+        <span class="tag tag--medication" *ngFor="let m of profile.medications; let i = index">
+          {{ m }} <button (click)="removeMedication(i)">×</button>
+        </span>
+      </div>
+      <div class="empty-hint" *ngIf="profile.medications.length === 0">
+        No medications added yet. Type to search or enter a custom medication.
+      </div>
+    </div>
+
+    <!-- ── Validation summary ─────────────────────────── -->
+    <div class="validation-summary" *ngIf="submitted && !isFormValid">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      Please fill in all required fields before saving.
+    </div>
+
+    <div class="form-actions">
+      <button class="btn-save" (click)="save()" [disabled]="saving">
+        {{ saving ? 'Saving…' : 'Save Medical Profile' }}
+      </button>
+    </div>
+  </div>
+</div>

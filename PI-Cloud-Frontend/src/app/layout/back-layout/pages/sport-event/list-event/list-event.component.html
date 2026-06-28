@@ -1,0 +1,71 @@
+<div class="event-list-section">
+  <div *ngIf="loading" class="empty-state">Chargement...</div>
+
+  <div class="event-cards" *ngIf="!loading && events.length > 0">
+    <div class="event-card" *ngFor="let event of events">
+      <div class="event-image">
+        <img
+          [src]="event.imageUrl || 'assets/events/default.jpg'"
+          [alt]="event.title">
+      </div>
+
+      <div class="event-content">
+        <div class="event-top">
+          <div class="event-main">
+            <h4>{{ event.title }}</h4>
+            <p class="event-desc">
+              {{ event.description || 'Aucune description disponible.' }}
+            </p>
+          </div>
+
+          <span class="category-badge">
+            {{ event.category }}
+          </span>
+        </div>
+
+        <div class="event-meta-grid">
+          <div class="meta-box">
+            <span class="meta-label">Date</span>
+            <strong>{{ event.eventDate | date:'mediumDate' }}</strong>
+          </div>
+
+          <div class="meta-box">
+            <span class="meta-label">Heure</span>
+            <strong>{{ event.eventDate | date:'shortTime' }}</strong>
+          </div>
+
+          <div class="meta-box location-box">
+            <span class="meta-label">Lieu</span>
+            <strong>{{ event.location }}</strong>
+          </div>
+
+          <div class="meta-box">
+            <span class="meta-label">Participants</span>
+            <strong>{{ event.currentParticipants }}/{{ event.maxParticipants }}</strong>
+          </div>
+        </div>
+
+        <div class="event-footer">
+          <span class="status-badge" [ngClass]="event.status?.toLowerCase()">
+            {{ event.status }}
+          </span>
+
+          <div class="event-actions">
+            <button class="btn edit" (click)="onEdit(event)">✏️ Edit</button>
+            <button class="btn delete" (click)="onDelete(event.id)">🗑 Delete</button>
+            <button class="btn participants" (click)="onParticipants(event)">
+              👥 Participants
+            </button>
+            <button class="btn reviews" (click)="onReviews(event)">
+              ⭐ Reviews
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!loading && events.length === 0" class="empty-state">
+    Aucun événement trouvé.
+  </div>
+</div>

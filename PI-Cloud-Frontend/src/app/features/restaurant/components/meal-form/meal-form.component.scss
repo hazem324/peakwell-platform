@@ -1,0 +1,295 @@
+/* OVERLAY */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+/* MODAL */
+.modal {
+  width: 100%;
+  max-width: 650px;
+  max-height: 90vh;
+
+  background: white;
+  border-radius: 16px;
+
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+}
+
+
+/* HEADER */
+.modal-header {
+  padding: 1.2rem 1.5rem;
+  border-bottom: 1px solid #eee;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  h2 {
+    margin: 0;
+    font-size: 1.2rem;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.8rem;
+    color: #777;
+  }
+}
+
+.close-btn {
+  border: none;
+  background: #f3f3f3;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+}
+
+/* BODY */
+.modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: 1;
+}
+
+/* FORM */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.full {
+  grid-column: span 2;
+}
+
+/* INPUT */
+input,
+select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+
+  &:focus {
+    outline: none;
+    border-color: #c96a3d;
+  }
+}
+
+/* SECTION */
+.products-section {
+  margin-top: 1.2rem;
+}
+
+/* TITLE */
+.section-title {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+
+  h4 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  span {
+    font-size: 0.75rem;
+    color: #777;
+  }
+}
+
+/* GRID CARDS */
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+/* CARD */
+/* GRID */
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+/* CARD */
+.product-card {
+  position: relative;
+  background: #fafafa;
+  border-radius: 14px;
+  padding: 12px;
+
+  border: 1px solid #eee;
+  cursor: pointer;
+  transition: 0.2s;
+
+  display: flex;
+}
+
+.product-card:hover {
+  background: #f5f5f5;
+}
+
+.product-card.active {
+  border-color: #c96a3d;
+  background: #fff3ec;
+}
+
+/* CHECKBOX (TOP RIGHT) */
+.checkbox {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+
+  width: 16px;
+  height: 16px;
+
+  cursor: pointer;
+}
+
+/* CONTENT */
+.card-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+}
+
+/* TOP (NAME) */
+.top .name {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+/* MIDDLE (STOCK) */
+.middle .stock {
+  font-size: 0.75rem;
+  color: #777;
+}
+
+/* BOTTOM (INPUT) */
+.bottom {
+  margin-top: auto;
+}
+
+.qty {
+  width: 100%;
+  padding: 6px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+/* INPUT GLOBAL FIX */
+input {
+  box-sizing: border-box;
+}
+
+/* CARD HEADER */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* NAME */
+.card-body .name {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* STOCK */
+.stock {
+  font-size: 0.7rem;
+  color: #777;
+}
+
+/* QTY */
+.card-footer .qty {
+  width: 100%;
+  padding: 6px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+/* FOOTER */
+.modal-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #eee;
+
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+
+  background: white;
+}
+
+/* BUTTONS */
+.btn-primary {
+  background: #c96a3d;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.btn-secondary {
+  background: #e5e5e5;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.product-avatar img {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 40px;
+}
+
+.image-preview {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+}
+
+.image-preview img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 2px solid #eee;
+}
+

@@ -1,0 +1,28 @@
+<section class="blog-section" id="blog">
+  <div class="container">
+    <div class="blog-header">
+      <div>
+        <div class="section-label">Learn &amp; Grow</div>
+        <h2 class="section-title">From the <em>Blog</em></h2>
+      </div>
+      <button class="btn-outline" (click)="goToForum()">All Articles &rarr;</button>
+    </div>
+    <div class="blog-grid">
+      <div class="blog-card"
+           *ngFor="let post of posts"
+           [class.blog-card--main]="post.featured"
+           (click)="openPost(post)">
+        <div class="blog-img" [style.background]="post.bgGradient">
+          <span class="blog-emoji">{{ post.emoji }}</span>
+          <span class="blog-category">{{ post.category }}</span>
+        </div>
+        <div class="blog-body">
+          <div class="blog-date">{{ post.date }}</div>
+          <h3 class="blog-title">{{ post.title }}</h3>
+          <p class="blog-excerpt">{{ post.excerpt }}</p>
+          <span class="blog-read">Read Article &rarr;</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

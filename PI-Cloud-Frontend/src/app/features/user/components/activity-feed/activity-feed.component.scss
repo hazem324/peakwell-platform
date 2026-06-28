@@ -1,0 +1,133 @@
+.feed-card { max-height: 480px; display: flex; flex-direction: column; }
+
+.chart-card {
+  background: #fff;
+  border: 1px solid #ede8e3;
+  border-radius: 16px;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.chart-header {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #f5f0eb;
+  padding-bottom: 14px;
+  flex-shrink: 0;
+}
+
+.chart-title {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: #2d2d2d;
+  font-family: 'Jost', sans-serif;
+}
+
+.chart-subtitle {
+  font-size: 11px;
+  color: #c5bdb7;
+  font-family: 'Jost', sans-serif;
+  margin-left: auto;
+}
+
+.feed {
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: #ede8e3; border-radius: 100px; }
+}
+
+.feed-item {
+  display: flex;
+  gap: 12px;
+  padding: 10px 8px;
+  border-radius: 10px;
+  transition: background 0.15s;
+  align-items: flex-start;
+
+  &:hover { background: #faf7f4; }
+}
+
+.feed-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  i { font-size: 13px; }
+}
+
+.feed-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.feed-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.feed-user {
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'Jost', sans-serif;
+  color: #1e1a16;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.feed-status {
+  font-size: 10px;
+  font-weight: 700;
+  font-family: 'Jost', sans-serif;
+  padding: 2px 8px;
+  border-radius: 100px;
+  flex-shrink: 0;
+
+  &--ok   { background: rgba(74,124,89,0.08);  color: #4a7c59; }
+  &--fail { background: rgba(185,64,64,0.08);   color: #b94040; }
+}
+
+.feed-desc {
+  font-size: 12px;
+  color: #8a7e78;
+  font-family: 'Jost', sans-serif;
+}
+
+.feed-meta {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+
+  span {
+    font-size: 10px;
+    color: #c5bdb7;
+    font-family: 'Jost', sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    i { font-size: 9px; }
+  }
+}
+
+.feed-time { margin-left: auto; }

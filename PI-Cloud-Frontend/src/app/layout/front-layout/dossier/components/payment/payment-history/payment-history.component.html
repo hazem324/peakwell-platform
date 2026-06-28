@@ -1,0 +1,49 @@
+<div class="pay-history">
+
+  <!-- Loading -->
+  <div class="ph-loading" *ngIf="loading">
+    <div class="spinner"></div>
+    <span>Loading payment history…</span>
+  </div>
+
+  <!-- Empty -->
+  <div class="ph-empty" *ngIf="!loading && payments.length === 0">
+    <div class="ph-empty-icon">📭</div>
+    <h3>No payment history</h3>
+    <p>Your transactions will be listed here chronologically.</p>
+  </div>
+
+  <!-- Grouped Timeline -->
+  <div class="ph-timeline" *ngIf="!loading && grouped.length > 0">
+    <div class="ph-group" *ngFor="let g of grouped">
+      <div class="ph-month">{{ g.month }}</div>
+      <div class="ph-items">
+        <div class="ph-item" *ngFor="let p of g.items">
+          <div class="ph-dot" [style.background]="statusColor(p.status)"></div>
+          <div class="ph-icon">{{ typeIcon(p.payableType) }}</div>
+          <div class="ph-body">
+            <strong>{{ p.payableLabel || typeLabel(p.payableType) }}</strong>
+            <span class="ph-date">{{ formatDate(p.createdAt) }}</span>
+          </div>
+          <div class="ph-right">
+            <span class="ph-amount"
+                  [class.ph-amount--refunded]="p.status === 'REFUNDED'">
+              {{ format(p.amount, p.currency) }}
+            </span>
+            <span class="ph-status"
+                  [style.background]="statusColor(p.status) + '15'"
+                  [style.color]="statusColor(p.status)">
+              {{ statusLabel(p.status) }}
+            </span>
+          </div>
+          <button class="ph-receipt" *ngIf="p.receiptUrl" (click)="openReceipt(p.receiptUrl)">🧾</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary -->
+  <div class="ph-summary" *ngIf="!loading && payments.length > 0">
+    <span>{{ payments.length }} transaction{{ payments.length > 1 ? 's' : '' }} total</span>
+  </div>
+</div>

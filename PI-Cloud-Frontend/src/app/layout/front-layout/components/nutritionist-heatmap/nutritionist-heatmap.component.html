@@ -1,0 +1,281 @@
+<div class="page">
+
+  <!-- Header -->
+  <header class="page-header">
+    <div class="container">
+      <a routerLink="/nutritionist" class="back-link">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+        Nutritionist Space
+      </a>
+      <div class="header-body">
+        <div class="header-left">
+          <div class="header-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8.56 2.75c4.37 6.03 6.02 9.42 8.03 17.72m2.54-15.38c-3.72 4.35-8.94 5.66-16.88 5.85m19.5 1.9c-3.5-.93-6.63-.82-8.94 0-2.58.92-5.01 2.86-7.44 6.32"/></svg>
+          </div>
+          <div class="header-text">
+            <h1>Patient Health Map</h1>
+            <p>Health score vs engagement across your panel</p>
+          </div>
+        </div>
+        <button class="btn-refresh" (click)="load()" [disabled]="loading">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          Refresh
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <div class="loading-wrap" *ngIf="loading">
+      <div class="spinner"></div>
+      <span>Loading patient data…</span>
+    </div>
+
+    <ng-container *ngIf="!loading && data">
+
+      <!-- KPI Row -->
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="kpi-icon kpi-icon--neutral">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <div><div class="kpi-num">{{ data.overallStats.totalPatients }}</div><div class="kpi-label">Total Patients</div></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon kpi-icon--star">⭐</div>
+          <div><div class="kpi-num kpi-num--star">{{ data.quadrantSummary.starPatients }}</div><div class="kpi-label">Star Patients</div></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon kpi-icon--churn">📉</div>
+          <div><div class="kpi-num kpi-num--churn">{{ data.quadrantSummary.atRiskChurn }}</div><div class="kpi-label">Churn Risk</div></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon kpi-icon--plan">🔄</div>
+          <div><div class="kpi-num kpi-num--plan">{{ data.quadrantSummary.needsPlanChange }}</div><div class="kpi-label">Plan Change</div></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon kpi-icon--critical">🚨</div>
+          <div><div class="kpi-num kpi-num--critical">{{ data.quadrantSummary.critical }}</div><div class="kpi-label">Critical</div></div>
+        </div>
+      </div>
+
+      <!-- Map + Actions -->
+      <div class="top-row">
+
+        <!-- MAP -->
+        <div class="map-card">
+          <div class="map-card-header">
+            <div>
+              <div class="card-title">Patient Distribution</div>
+              <div class="card-sub">Health score (x-axis) vs engagement (y-axis)</div>
+            </div>
+            <div class="map-legend">
+              <span><i style="background:#7a9e7e"></i>Low risk</span>
+              <span><i style="background:#e8b84b"></i>Moderate</span>
+              <span><i style="background:#e88f68"></i>High</span>
+              <span><i style="background:#c96a3f"></i>Critical</span>
+            </div>
+          </div>
+
+          <div class="plot-container">
+            <svg viewBox="0 0 480 360" xmlns="http://www.w3.org/2000/svg" class="plot-svg">
+
+              <!-- axis labels inside SVG -->
+              <text x="8" y="90"  text-anchor="middle" font-size="7" font-weight="700" font-family="Jost,sans-serif" fill="#b0a89e" transform="rotate(-90,8,90)" letter-spacing="1">HIGH</text>
+              <text x="8" y="180" text-anchor="middle" font-size="7" font-weight="700" font-family="Jost,sans-serif" fill="#7a726c" transform="rotate(-90,8,180)" letter-spacing="0.5">← ENGAGEMENT</text>
+              <text x="8" y="270" text-anchor="middle" font-size="7" font-weight="700" font-family="Jost,sans-serif" fill="#b0a89e" transform="rotate(-90,8,270)" letter-spacing="1">LOW</text>
+
+              <text x="100" y="352" text-anchor="middle" font-size="7" font-weight="700" font-family="Jost,sans-serif" fill="#b0a89e" letter-spacing="1">LOW</text>
+              <text x="260" y="352" text-anchor="middle" font-size="7" font-weight="700" font-family="Jost,sans-serif" fill="#7a726c" letter-spacing="0.5">HEALTH SCORE →</text>
+              <text x="420" y="352" text-anchor="middle" font-size="7" font-weight="700" font-family="Jost,sans-serif" fill="#b0a89e" letter-spacing="1">HIGH</text>
+
+              <!-- plot area starts at x=20, y=10, width=440, height=330 -->
+
+              <!-- subtle grid lines -->
+              <line x1="130" y1="10" x2="130" y2="340" stroke="#f0ece8" stroke-width="1"/>
+              <line x1="240" y1="10" x2="240" y2="340" stroke="#f0ece8" stroke-width="1"/>
+              <line x1="350" y1="10" x2="350" y2="340" stroke="#f0ece8" stroke-width="1"/>
+              <line x1="20"  y1="92" x2="460" y2="92"  stroke="#f0ece8" stroke-width="1"/>
+              <line x1="20"  y1="175" x2="460" y2="175" stroke="#f0ece8" stroke-width="1"/>
+              <line x1="20"  y1="258" x2="460" y2="258" stroke="#f0ece8" stroke-width="1"/>
+
+              <!-- quadrant backgrounds -->
+              <rect x="20"  y="10"  width="220" height="165" rx="4" fill="rgba(232,143,104,0.07)" stroke="rgba(232,143,104,0.15)" stroke-width="0.5"/>
+              <rect x="244" y="10"  width="216" height="165" rx="4" fill="rgba(232,184,75,0.07)"  stroke="rgba(232,184,75,0.15)"  stroke-width="0.5"/>
+              <rect x="20"  y="179" width="220" height="161" rx="4" fill="rgba(201,106,63,0.09)"  stroke="rgba(201,106,63,0.18)"  stroke-width="0.5"/>
+              <rect x="244" y="179" width="216" height="161" rx="4" fill="rgba(122,158,126,0.07)" stroke="rgba(122,158,126,0.15)" stroke-width="0.5"/>
+
+              <!-- quadrant labels -->
+              <text x="130" y="26" text-anchor="middle" font-size="7.5" font-weight="700" font-family="Jost,sans-serif" fill="#d4713a" letter-spacing="0.8" opacity="0.85">PLAN CHANGE</text>
+              <text x="352" y="26" text-anchor="middle" font-size="7.5" font-weight="700" font-family="Jost,sans-serif" fill="#c8a83a" letter-spacing="0.8" opacity="0.85">CHURN RISK</text>
+              <text x="130" y="330" text-anchor="middle" font-size="7.5" font-weight="700" font-family="Jost,sans-serif" fill="#b84a2a" letter-spacing="0.8" opacity="0.85">CRITICAL</text>
+              <text x="352" y="330" text-anchor="middle" font-size="7.5" font-weight="700" font-family="Jost,sans-serif" fill="#4a7a50" letter-spacing="0.8" opacity="0.85">STAR PATIENTS</text>
+
+              <!-- quadrant dividers -->
+              <line x1="240" y1="10"  x2="240" y2="340" stroke="#ddd6ce" stroke-width="1.5" stroke-dasharray="5,4"/>
+              <line x1="20"  y1="175" x2="460" y2="175" stroke="#ddd6ce" stroke-width="1.5" stroke-dasharray="5,4"/>
+
+              <!-- bubbles -->
+              <g *ngFor="let p of data.patients"
+                 style="cursor:pointer"
+                 (mouseenter)="hoveredPatient = p"
+                 (mouseleave)="hoveredPatient = null"
+                 (click)="openDossier(p)">
+                <!-- outer ring -->
+                <circle
+                  [attr.cx]="xPos(p)" [attr.cy]="yPos(p)" [attr.r]="bubbleR(p) + 3"
+                  [attr.stroke]="p.riskColor" stroke-width="1.5"
+                  [attr.fill]="p.riskColor + '20'"
+                  opacity="0.85"/>
+                <!-- inner filled circle -->
+                <circle
+                  [attr.cx]="xPos(p)" [attr.cy]="yPos(p)" [attr.r]="bubbleR(p)"
+                  [attr.fill]="p.riskColor"
+                  stroke="#fff" stroke-width="1.5" opacity="0.95"
+                  style="filter:drop-shadow(0 1px 3px rgba(0,0,0,0.18))"/>
+                <text
+                  [attr.x]="xPos(p)" [attr.y]="yPos(p) + 3"
+                  text-anchor="middle" fill="#fff"
+                  font-size="6.5" font-weight="700" font-family="Jost,sans-serif"
+                  pointer-events="none">{{ p.initials }}</text>
+              </g>
+            </svg>
+
+            <!-- Tooltip -->
+            <div class="plot-tooltip" *ngIf="hoveredPatient">
+              <div class="tt-header">
+                <div class="tt-avatar" [style.background]="hoveredPatient.riskColor+'20'" [style.color]="hoveredPatient.riskColor">{{ hoveredPatient.initials }}</div>
+                <div>
+                  <div class="tt-name">{{ hoveredPatient.name }}</div>
+                  <div class="tt-quad" [style.color]="quadrantColor(hoveredPatient.quadrant)">{{ quadrantLabel(hoveredPatient.quadrant) }}</div>
+                </div>
+              </div>
+              <div class="tt-metrics">
+                <div class="tt-metric"><span>Health</span><strong [style.color]="hoveredPatient.riskColor">{{ hoveredPatient.healthScore }}</strong></div>
+                <div class="tt-metric"><span>Engage</span><strong style="color:#3a9ec8">{{ hoveredPatient.engagementScore }}</strong></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="map-footer">
+            <div class="mf-stat"><span class="mf-num">{{ data.overallStats.avgHealthScore }}</span><span class="mf-label">Avg Health</span></div>
+            <div class="mf-div"></div>
+            <div class="mf-stat"><span class="mf-num mf-num--blue">{{ data.overallStats.avgEngagementScore }}</span><span class="mf-label">Avg Engagement</span></div>
+            <div class="mf-div"></div>
+            <div class="mf-stat"><span class="mf-num">{{ data.overallStats.totalPatients }}</span><span class="mf-label">Patients plotted</span></div>
+          </div>
+        </div>
+
+        <!-- Action Items -->
+        <div class="actions-card">
+          <div class="sc-header">
+            <div class="card-title">Action Items</div>
+            <span class="sc-badge" [class.empty]="!data.actionItems.length">{{ data.actionItems.length }}</span>
+          </div>
+          <div class="filter-row">
+            <button [class.active]="actionFilter==='ALL'" (click)="actionFilter='ALL'">All</button>
+            <button *ngIf="actionCount('URGENT')>0" [class.active]="actionFilter==='URGENT'" (click)="actionFilter='URGENT'" class="f-urgent">Urgent</button>
+            <button *ngIf="actionCount('HIGH')>0"   [class.active]="actionFilter==='HIGH'"   (click)="actionFilter='HIGH'"   class="f-high">High</button>
+            <button *ngIf="actionCount('MEDIUM')>0" [class.active]="actionFilter==='MEDIUM'" (click)="actionFilter='MEDIUM'" class="f-medium">Medium</button>
+            <button *ngIf="actionCount('LOW')>0"    [class.active]="actionFilter==='LOW'"    (click)="actionFilter='LOW'"    class="f-low">Low</button>
+          </div>
+          <div class="action-list">
+            <div class="action-row" *ngFor="let a of filteredActions"
+                 [style.--c]="priorityColor(a.priority)"
+                 (click)="openDossier(a)">
+              <span class="ar-icon">{{ a.icon }}</span>
+              <div class="ar-body">
+                <strong>{{ a.title }}</strong>
+                <span>{{ a.description }}</span>
+              </div>
+              <span class="ar-prio" [style.background]="priorityColor(a.priority)+'14'" [style.color]="priorityColor(a.priority)">{{ a.priority }}</span>
+            </div>
+            <div class="action-empty" *ngIf="filteredActions.length === 0">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              <p>All clear</p>
+            </div>
+          </div>
+
+          <!-- Quadrant Breakdown -->
+          <div class="qb-section">
+            <div class="qb-title">Quadrant Breakdown</div>
+            <div class="qb-grid">
+              <div class="qb-item qb-item--star">
+                <div class="qb-icon">⭐</div>
+                <div class="qb-num">{{ data.quadrantSummary.starPatients }}</div>
+                <div class="qb-label">Star</div>
+              </div>
+              <div class="qb-item qb-item--churn">
+                <div class="qb-icon">📉</div>
+                <div class="qb-num">{{ data.quadrantSummary.atRiskChurn }}</div>
+                <div class="qb-label">Churn</div>
+              </div>
+              <div class="qb-item qb-item--plan">
+                <div class="qb-icon">🔄</div>
+                <div class="qb-num">{{ data.quadrantSummary.needsPlanChange }}</div>
+                <div class="qb-label">Plan</div>
+              </div>
+              <div class="qb-item qb-item--critical">
+                <div class="qb-icon">🚨</div>
+                <div class="qb-num">{{ data.quadrantSummary.critical }}</div>
+                <div class="qb-label">Critical</div>
+              </div>
+            </div>
+            <div class="qb-bar">
+              <div class="qb-seg qb-seg--star"   [style.flex]="data.quadrantSummary.starPatients"></div>
+              <div class="qb-seg qb-seg--churn"  [style.flex]="data.quadrantSummary.atRiskChurn"></div>
+              <div class="qb-seg qb-seg--plan"   [style.flex]="data.quadrantSummary.needsPlanChange"></div>
+              <div class="qb-seg qb-seg--critical" [style.flex]="data.quadrantSummary.critical"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- All Patients Table (full width below) -->
+      <div class="patients-card">
+        <div class="sc-header">
+          <div>
+            <div class="card-title">All Patients</div>
+            <div class="card-sub">{{ data.patients.length }} patient{{ data.patients.length !== 1 ? 's' : '' }} in your panel</div>
+          </div>
+        </div>
+        <div class="pt-table">
+          <div class="pt-head">
+            <span>Patient</span><span>Health</span><span>Engagement</span><span>Quadrant</span><span>Entries</span><span></span>
+          </div>
+          <div class="pt-row" *ngFor="let p of data.patients" (click)="openDossier(p)">
+            <div class="pt-patient">
+              <div class="pt-av" [style.background]="p.riskColor+'15'" [style.color]="p.riskColor">{{ p.initials }}</div>
+              <div>
+                <strong>{{ p.name }}</strong>
+                <em>{{ p.gender }}</em>
+              </div>
+            </div>
+            <div class="pt-metric">
+              <div class="pm-track"><div class="pm-fill" [style.width.%]="p.healthScore" [style.background]="p.riskColor"></div></div>
+              <b [style.color]="p.riskColor">{{ p.healthScore }}</b>
+            </div>
+            <div class="pt-metric">
+              <div class="pm-track"><div class="pm-fill" [style.width.%]="p.engagementScore" style="background:#4ab8f0"></div></div>
+              <b style="color:#4ab8f0">{{ p.engagementScore }}</b>
+            </div>
+            <div>
+              <span class="pt-badge" [style.background]="quadrantColor(p.quadrant)+'12'" [style.color]="quadrantColor(p.quadrant)">
+                {{ quadrantLabel(p.quadrant) }}
+              </span>
+            </div>
+            <div class="pt-count">{{ p.entryCount }}</div>
+            <div>
+              <button class="btn-view" (click)="$event.stopPropagation(); openDossier(p)">
+                View Dossier
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </ng-container>
+  </div>
+</div>

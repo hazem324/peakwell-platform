@@ -1,0 +1,157 @@
+<section class="form-section">
+  <div class="form-container">
+    <h1 class="form-title">{{ isEditMode ? 'Edit Article' : 'Create New Article' }}</h1>
+
+    <div class="error-message" *ngIf="error">
+      <p>{{ error }}</p>
+    </div>
+
+    <div class="draft-restored-message" *ngIf="draftRestored">
+      <p>📝 Draft restored from your previous session</p>
+    </div>
+
+    <div class="loading-spinner" *ngIf="loading">Loading article...</div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="article-form" *ngIf="!loading">
+      <div class="form-group">
+        <label for="title" class="form-label">Article Title</label>
+        <input
+          type="text"
+          id="title"
+          formControlName="title"
+          class="form-input"
+          placeholder="Enter article title"
+          [class.error]="title?.invalid && (title?.dirty || title?.touched)">
+        <span class="error-text" *ngIf="title?.invalid && (title?.dirty || title?.touched)">
+          <span *ngIf="title?.errors?.['required']">Title is required</span>
+          <span *ngIf="title?.errors?.['minlength']">Title must be at least 3 characters</span>
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="content" class="form-label">Article Content</label>
+        <textarea
+          id="content"
+          formControlName="content"
+          class="form-textarea"
+          placeholder="Enter article content"
+          rows="12"
+          [class.error]="content?.invalid && (content?.dirty || content?.touched)">
+        </textarea>
+        <span class="error-text" *ngIf="content?.invalid && (content?.dirty || content?.touched)">
+          <span *ngIf="content?.errors?.['required']">Content is required</span>
+          <span *ngIf="content?.errors?.['minlength']">Content must be at least 10 characters</span>
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="embedUrl" class="form-label">Embed Link (Optional)</label>
+        <input
+          type="url"
+          id="embedUrl"
+          formControlName="embedUrl"
+          class="form-input"
+          placeholder="https://www.youtube.com/watch?v=... or Vimeo URL">
+        <span class="form-hint">YouTube, Vimeo, or any embeddable content URL</span>
+      </div>
+
+      <div class="form-group">
+        <label for="image-input" class="form-label">Article Image</label>
+        <div class="image-upload-box">
+          <input
+            type="file"
+            id="image-input"
+            accept="image/*"
+            (change)="onImageSelected($event)"
+            class="image-input">
+          <div class="upload-prompt">
+            <span class="upload-icon">📸</span>
+            <span class="upload-text">Click to upload image</span>
+          </div>
+        </div>
+        <div class="image-preview-container" *ngIf="imagePreview">
+          <img [src]="imagePreview" alt="Preview" class="image-preview">
+          <button type="button" class="remove-image-btn" (click)="removeImage()">✕ Remove Image</button>
+        </div>
+      </div>
+
+      <div class="form-group attachment-section">
+        <div class="attachment-section-title">📎 Attach Reference Files</div>
+
+        <div class="attachment-upload-zone" (click)="attachmentFileInput.click()">
+          <input
+            #attachmentFileInput
+            type="file"
+            id="attachment-input"
+            multiple
+            accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png,.gif,.webp"
+            (change)="onAttachmentSelected($event)"
+            class="attachment-input">
+          <div class="attachment-upload-prompt">
+            <span class="attachment-upload-icon">📁</span>
+            <span class="attachment-upload-text">Click to select files</span>
+            <span class="form-hint">PDF, Office, text, or images (Max 10MB per file)</span>
+          </div>
+        </div>
+
+        <div class="attachment-list-container" *ngIf="existingAttachments.length > 0">
+          <div class="attachment-list-title">Existing Attachments</div>
+          <div *ngFor="let attachment of existingAttachments" class="attachment-item">
+            <div class="attachment-item-left">
+              <div class="attachment-item-icon">{{ getFileIcon(attachment.fileName) }}</div>
+              <div class="attachment-item-info">
+                <div class="attachment-item-name">{{ attachment.fileName }}</div>
+                <div class="attachment-item-size">{{ formatFileSize(attachment.fileSize) }}</div>
+              </div>
+            </div>
+            <div class="attachment-item-actions">
+              <button
+                type="button"
+                class="attachment-btn attachment-btn-delete"
+                (click)="deleteExistingAttachment(attachment.id)"
+                title="Delete attachment">
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="attachment-list-container" *ngIf="selectedAttachmentPreviews.length > 0">
+          <div class="attachment-list-title">Selected Files</div>
+          <div *ngFor="let preview of selectedAttachmentPreviews; let i = index" class="attachment-item">
+            <div class="attachment-item-left">
+              <div class="attachment-item-icon">{{ getFileIcon(preview.name) }}</div>
+              <div class="attachment-item-info">
+                <div class="attachment-item-name">{{ preview.name }}</div>
+                <div class="attachment-item-size">{{ preview.size }}</div>
+              </div>
+            </div>
+            <div class="attachment-item-actions">
+              <button
+                type="button"
+                class="attachment-btn attachment-btn-delete"
+                (click)="removeSelectedAttachment(i)"
+                title="Remove file">
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="attachment-status" *ngIf="uploadingAttachments">
+          ⏳ Uploading attachments...
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button
+          type="submit"
+          class="btn-submit"
+          [disabled]="form.invalid || submitting || uploadingAttachments">
+          {{ submitting ? (uploadingAttachments ? 'Saving & Uploading...' : 'Saving...') : (isEditMode ? 'Update Article' : 'Create Article') }}
+        </button>
+        <button type="button" class="btn-cancel" (click)="cancel()" [disabled]="submitting">Cancel</button>
+      </div>
+    </form>
+  </div>
+</section>

@@ -1,0 +1,115 @@
+<div [formGroup]="form">
+
+  <div class="field-group">
+    <label>Specialization</label>
+    <div class="input-wrap">
+      <span class="input-icon">🔬</span>
+      <input type="text" formControlName="specialization"
+             placeholder="e.g. Sports nutrition, Pediatrics"/>
+    </div>
+  </div>
+
+  <div class="field-group">
+    <label>Certification</label>
+    <div class="input-wrap">
+      <span class="input-icon">🏅</span>
+      <input type="text" formControlName="certification"
+             placeholder="e.g. RD, CDN, CNS"/>
+    </div>
+  </div>
+
+  <div class="field-row">
+    <div class="field-group">
+      <label>Experience (years)</label>
+      <div class="input-wrap">
+        <input type="number" formControlName="experienceYears" placeholder="5"/>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label>Consultation price</label>
+      <div class="input-wrap">
+        <span class="input-icon price-prefix">$</span>
+        <input type="number" formControlName="consultationPrice" placeholder="80"/>
+      </div>
+    </div>
+  </div>
+
+  <div class="field-group">
+    <label>Portfolio URL</label>
+    <div class="input-wrap">
+      <span class="input-icon">🔗</span>
+      <input type="text" formControlName="linkUrl"
+             placeholder="https://yoursite.com"/>
+    </div>
+  </div>
+
+  <!-- Certification Upload -->
+  <div class="field-group">
+    <label>Certification document</label>
+    <div class="upload-zone"
+         [class.upload-zone--has-file]="certificationFile"
+         (click)="certInput.click()"
+         (dragover)="$event.preventDefault()"
+         (drop)="onDrop($event, 'cert')">
+      <input #certInput type="file" accept=".pdf,.jpg,.jpeg,.png"
+             (change)="onFileChange($event, 'cert')" hidden/>
+
+      <ng-container *ngIf="!certificationFile">
+        <span class="upload-icon">📄</span>
+        <span class="upload-label">Click or drag to upload</span>
+        <span class="upload-hint">PDF, JPG or PNG — max 5MB</span>
+      </ng-container>
+
+      <ng-container *ngIf="certificationFile">
+        <span class="upload-icon">✅</span>
+        <span class="upload-label upload-label--success">{{ certificationFile.name }}</span>
+        <span class="upload-hint">{{ formatSize(certificationFile.size) }}</span>
+        <button class="upload-remove" type="button"
+                (click)="removeFile('cert', $event)">✕ Remove</button>
+      </ng-container>
+    </div>
+    <span class="field-error" *ngIf="certError">{{ certError }}</span>
+  </div>
+
+  <!-- Profile Photo Upload -->
+  <div class="field-group">
+    <label>Profile photo</label>
+
+    <div class="photo-upload-row">
+
+      <!-- Preview -->
+      <div class="photo-preview">
+        <img *ngIf="photoPreview" [src]="photoPreview" alt="Profile photo"/>
+        <span *ngIf="!photoPreview" class="photo-placeholder">🩺</span>
+      </div>
+
+      <!-- Drop zone -->
+      <div class="upload-zone upload-zone--compact"
+           [class.upload-zone--has-file]="photoFile"
+           (click)="photoInput.click()"
+           (dragover)="$event.preventDefault()"
+           (drop)="onDrop($event, 'photo')">
+        <input #photoInput type="file" accept=".jpg,.jpeg,.png,.webp"
+               (change)="onFileChange($event, 'photo')" hidden/>
+
+        <ng-container *ngIf="!photoFile">
+          <span class="upload-icon">🖼️</span>
+          <span class="upload-label">Click or drag photo</span>
+          <span class="upload-hint">JPG, PNG or WEBP — max 3MB</span>
+        </ng-container>
+
+        <ng-container *ngIf="photoFile">
+          <span class="upload-icon">✅</span>
+          <span class="upload-label upload-label--success">{{ photoFile.name }}</span>
+          <span class="upload-hint">{{ formatSize(photoFile.size) }}</span>
+          <button class="upload-remove" type="button"
+                  (click)="removeFile('photo', $event)">✕ Remove</button>
+        </ng-container>
+      </div>
+
+    </div>
+    <span class="field-error" *ngIf="photoError">{{ photoError }}</span>
+  </div>
+
+</div>

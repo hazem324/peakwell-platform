@@ -1,0 +1,98 @@
+.users-table-wrap {
+  background: #fff;
+  border: 1px solid #ede8e3;
+  border-radius: 16px;
+  overflow: hidden;
+  padding: 20px 20px 0;
+}
+
+.chart-header {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #f5f0eb;
+  padding-bottom: 14px;
+}
+
+.chart-title {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: #2d2d2d;
+  font-family: 'Jost', sans-serif;
+}
+
+.chart-subtitle {
+  font-size: 11px;
+  color: #c5bdb7;
+  font-family: 'Jost', sans-serif;
+  margin-left: auto;
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  thead tr { background: #faf7f4; border-bottom: 1px solid #ede8e3; }
+
+  th {
+    padding: 13px 16px;
+    font-size: 10px;
+    font-family: 'Jost', sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #8a7e78;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid #f5f0eb;
+    transition: background 0.15s;
+    &:last-child { border-bottom: none; }
+    &:hover { background: #faf7f4; }
+  }
+
+  td {
+    padding: 14px 16px;
+    font-size: 13px;
+    font-family: 'Jost', sans-serif;
+    color: #1e1a16;
+    vertical-align: middle;
+  }
+}
+
+.td-muted { color: #8a7e78; }
+
+.status-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: 'Jost', sans-serif;
+}
+
+.attempt-count {
+  font-size: 15px;
+  font-weight: 700;
+  font-family: 'Jost', sans-serif;
+}
+
+.attempt-track {
+  width: 120px;
+  height: 6px;
+  background: #f5f0eb;
+  border-radius: 100px;
+  overflow: hidden;
+}
+
+.attempt-fill {
+  height: 100%;
+  border-radius: 100px;
+  transition: width 0.5s ease;
+  min-width: 3px;
+}

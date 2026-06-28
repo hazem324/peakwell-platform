@@ -1,0 +1,464 @@
+<div class="menu-container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <h2 class="title">Menus</h2>
+      <p class="subtitle">Gérez vos menus et repas</p>
+    </div>
+
+    <div class="filters">
+      <button class="filter-btn" [class.active]="selectedFilter==='today'" (click)="setFilter('today')">
+        Aujourd'hui
+      </button>
+
+      <button class="filter-btn" [class.active]="selectedFilter==='week'" (click)="setFilter('week')">
+        Semaine
+      </button>
+
+      <button class="filter-btn" [class.active]="selectedFilter==='all'" (click)="setFilter('all')">
+        Tous
+      </button>
+
+    </div>
+  </div>
+
+
+  <!-- TODAY -->
+  <div *ngIf="selectedFilter === 'today' && todayMenu" class="menu-card">
+
+    <div class="menu-header">
+      <span class="badge">Menu du jour</span>
+    </div>
+
+    <div class="reservation-count">
+      {{ reservationCounts[todayMenu.id] || 0 }}  Menus réservés
+      <span class="clickable" (click)="openPlanPopup()">
+        {{ planReservationCount }} Plans réservés
+      </span>
+    </div>
+
+      <!-- DATE -->
+      <div class="day-header">
+        <div class="day-line"></div>
+        <span class="day-date">{{ todayMenu.date | date:'EEEE dd/MM/yyyy' | titlecase}}</span>
+      </div>
+
+      <!-- MEALS -->
+      <div class="meals-row" >
+
+      <!-- BREAKFAST -->
+      <div class="meal-card modern" (click)="selectMeal(todayMenu.breakfast)">
+
+        <!-- IMAGE -->
+        <div class="meal-image">
+          <img [src]="'http://localhost:8090/peakwell/uploads/' + todayMenu.breakfast.image" alt="meal">
+        </div>
+
+        <!-- CONTENT -->
+        <div class="meal-content">
+
+          <div class="meal-top">
+            <span class="meal-type">Breakfast</span>
+            <span class="badge">{{todayMenu.breakfast.tags}}</span>
+          </div>
+
+          <h3 class="meal-name">{{ todayMenu.breakfast.name }}</h3>
+
+          <!-- TEXT NUTRITION -->
+          <p class="nutrition-text">
+            Les valeurs nutritionnelles de ce repas :
+          </p>
+
+          <div class="nutrition-values">
+            <span>Calories = {{ todayMenu.breakfast.totalCalories | number:'1.1-2' }} kcal</span>
+            <span>Protéines = {{ todayMenu.breakfast.totalProtein | number:'1.1-2' }} g</span>
+            <span>Glucides = {{ todayMenu.breakfast.totalCarbs | number:'1.1-2' }} g</span>
+            <span>Lipides = {{ todayMenu.breakfast.totalFats | number:'1.1-2' }} g</span>
+          </div>
+
+          <!-- INGREDIENTS -->
+          <p class="ingredients-text">
+            Ce repas est composé de :
+          </p>
+
+          <div class="ingredients-preview">
+            <span *ngFor="let ing of todayMenu.breakfast.ingredients | slice:0:4">
+              {{ ing.productName }}
+            </span>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- LUNCH -->
+      <div class="meal-card modern" (click)="selectMeal(todayMenu.lunch)">
+
+        <!-- IMAGE -->
+        <div class="meal-image">
+          <img [src]="'http://localhost:8090/peakwell/uploads/' + todayMenu.lunch.image" alt="meal">
+        </div>
+
+        <!-- CONTENT -->
+        <div class="meal-content">
+
+          <div class="meal-top">
+            <span class="meal-type">Lunch</span>
+            <span class="badge">{{todayMenu.lunch.tags}}</span>
+          </div>
+
+          <h3 class="meal-name">{{ todayMenu.lunch.name }}</h3>
+
+          <!-- TEXT NUTRITION -->
+          <p class="nutrition-text">
+            Les valeurs nutritionnelles de ce repas :
+          </p>
+
+          <div class="nutrition-values">
+            <span>Calories = {{ todayMenu.lunch.totalCalories | number:'1.1-2' }} kcal</span>
+            <span>Protéines = {{ todayMenu.lunch.totalProtein | number:'1.1-2' }} g</span>
+            <span>Glucides = {{ todayMenu.lunch.totalCarbs | number:'1.1-2' }} g</span>
+            <span>Lipides = {{ todayMenu.lunch.totalFats | number:'1.1-2' }} g</span>
+          </div>
+
+          <!-- INGREDIENTS -->
+          <p class="ingredients-text">
+            Ce repas est composé de :
+          </p>
+
+          <div class="ingredients-preview">
+            <span *ngFor="let ing of todayMenu.lunch.ingredients | slice:0:4">
+              {{ ing.productName }}
+            </span>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- DINNER -->
+      <div class="meal-card modern" (click)="selectMeal(todayMenu.dinner)">
+
+        <!-- IMAGE -->
+        <div class="meal-image">
+          <img [src]="'http://localhost:8090/peakwell/uploads/' + todayMenu.dinner.image" alt="meal">
+        </div>
+
+        <!-- CONTENT -->
+        <div class="meal-content">
+
+          <div class="meal-top">
+            <span class="meal-type">Dinner</span>
+            <span class="badge">{{todayMenu.dinner.tags}}</span>
+          </div>
+
+          <h3 class="meal-name">{{ todayMenu.dinner.name }}</h3>
+
+          <!-- TEXT NUTRITION -->
+          <p class="nutrition-text">
+            Les valeurs nutritionnelles de ce repas :
+          </p>
+
+          <div class="nutrition-values">
+            <span>Calories = {{ todayMenu.dinner.totalCalories | number:'1.1-2' }} kcal</span>
+            <span>Protéines = {{ todayMenu.dinner.totalProtein | number:'1.1-2' }} g</span>
+            <span>Glucides = {{ todayMenu.dinner.totalCarbs | number:'1.1-2' }} g</span>
+            <span>Lipides = {{ todayMenu.dinner.totalFats | number:'1.1-2' }} g</span>
+          </div>
+
+          <!-- INGREDIENTS -->
+          <p class="ingredients-text">
+            Ce repas est composé de :
+          </p>
+
+          <div class="ingredients-preview">
+            <span *ngFor="let ing of todayMenu.dinner.ingredients | slice:0:4">
+              {{ ing.productName }}
+            </span>
+          </div>
+
+        </div>
+      </div>
+  </div>
+  </div>
+
+  <!-- WEEK / ALL -->
+  <div *ngIf="selectedFilter !== 'today'" class="timeline">
+
+    <div 
+      class="day-block"
+      *ngFor="let menu of paginatedMenus"
+    >
+
+      <!-- DATE -->
+      <div class="day-header">
+        <div class="day-line"></div>
+        <span class="day-date">{{ menu.date  | date:'EEEE dd/MM/yyyy' | titlecase}}</span>
+        <div class="reservation-count2">
+          {{ reservationCounts[menu.id] || 0 }} réservations
+        </div>
+        <div class="actions" *ngIf="selectedFilter == 'week'">
+          <button (click)="moveUp(menu)">↑</button>
+          <button (click)="moveDown(menu)">↓</button>
+        </div>
+      </div>
+
+      <!-- MEALS -->
+      <div class="meals-row" >
+
+      <!-- BREAKFAST -->
+      <div class="meal-card modern" (click)="selectMeal(menu.breakfast)">
+
+        <!-- IMAGE -->
+        <div class="meal-image">
+          <img [src]="'http://localhost:8090/peakwell/uploads/' + menu.breakfast.image" alt="meal">
+        </div>
+
+        <!-- CONTENT -->
+        <div class="meal-content">
+
+          <div class="meal-top">
+            <span class="meal-type">Breakfast</span>
+            <span class="badge">{{menu.breakfast.tags}}</span>
+          </div>
+
+          <h3 class="meal-name">{{ menu.breakfast.name }}</h3>
+
+          <!-- TEXT NUTRITION -->
+          <p class="nutrition-text">
+            Les valeurs nutritionnelles de ce repas :
+          </p>
+
+          <div class="nutrition-values">
+            <span>Calories = {{ menu.breakfast.totalCalories | number:'1.1-2' }} kcal</span>
+            <span>Protéines = {{ menu.breakfast.totalProtein | number:'1.1-2' }} g</span>
+            <span>Glucides = {{ menu.breakfast.totalCarbs | number:'1.1-2' }} g</span>
+            <span>Lipides = {{ menu.breakfast.totalFats | number:'1.1-2' }} g</span>
+          </div>
+
+          <!-- INGREDIENTS -->
+          <p class="ingredients-text">
+            Ce repas est composé de :
+          </p>
+
+          <div class="ingredients-preview">
+            <span *ngFor="let ing of menu.breakfast.ingredients | slice:0:4">
+              {{ ing.productName }}
+            </span>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- LUNCH -->
+      <div class="meal-card modern" (click)="selectMeal(menu.lunch)">
+
+        <!-- IMAGE -->
+        <div class="meal-image">
+          <img [src]="'http://localhost:8090/peakwell/uploads/' + menu.lunch.image" alt="meal">
+        </div>
+
+        <!-- CONTENT -->
+        <div class="meal-content">
+
+          <div class="meal-top">
+            <span class="meal-type">Lunch</span>
+            <span class="badge">{{menu.lunch.tags}}</span>
+          </div>
+
+          <h3 class="meal-name">{{ menu.lunch.name }}</h3>
+
+          <!-- TEXT NUTRITION -->
+          <p class="nutrition-text">
+            Les valeurs nutritionnelles de ce repas :
+          </p>
+
+          <div class="nutrition-values">
+            <span>Calories = {{ menu.lunch.totalCalories | number:'1.1-2' }} kcal</span>
+            <span>Protéines = {{ menu.lunch.totalProtein | number:'1.1-2' }} g</span>
+            <span>Glucides = {{ menu.lunch.totalCarbs | number:'1.1-2' }} g</span>
+            <span>Lipides = {{ menu.lunch.totalFats | number:'1.1-2' }} g</span>
+          </div>
+
+          <!-- INGREDIENTS -->
+          <p class="ingredients-text">
+            Ce repas est composé de :
+          </p>
+
+          <div class="ingredients-preview">
+            <span *ngFor="let ing of menu.lunch.ingredients | slice:0:4">
+              {{ ing.productName }}
+            </span>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- DINNER -->
+      <div class="meal-card modern" (click)="selectMeal(menu.dinner)">
+
+        <!-- IMAGE -->
+        <div class="meal-image">
+          <img [src]="'http://localhost:8090/peakwell/uploads/' + menu.dinner.image" alt="meal">
+        </div>
+
+        <!-- CONTENT -->
+        <div class="meal-content">
+
+          <div class="meal-top">
+            <span class="meal-type">Dinner</span>
+            <span class="badge">{{menu.dinner.tags}}</span>
+          </div>
+
+          <h3 class="meal-name">{{ menu.dinner.name }}</h3>
+
+          <!-- TEXT NUTRITION -->
+          <p class="nutrition-text">
+            Les valeurs nutritionnelles de ce repas :
+          </p>
+
+          <div class="nutrition-values">
+            <span>Calories = {{ menu.dinner.totalCalories | number:'1.1-2' }} kcal</span>
+            <span>Protéines = {{ menu.dinner.totalProtein | number:'1.1-2' }} g</span>
+            <span>Glucides = {{ menu.dinner.totalCarbs | number:'1.1-2' }} g</span>
+            <span>Lipides = {{ menu.dinner.totalFats | number:'1.1-2' }} g</span>
+          </div>
+
+          <!-- INGREDIENTS -->
+          <p class="ingredients-text">
+            Ce repas est composé de :
+          </p>
+
+          <div class="ingredients-preview">
+            <span *ngFor="let ing of menu.dinner.ingredients | slice:0:4">
+              {{ ing.productName }}
+            </span>
+          </div>
+
+        </div>
+      </div>
+
+      </div>
+    </div>
+
+  </div>
+  <div 
+    class="pagination"
+    *ngIf="selectedFilter !== 'today'"
+  >
+
+    <button (click)="prevPage()" [disabled]="currentPage === 1">
+      ← Précédent
+    </button>
+
+    <span>
+      Page {{ currentPage }} / {{ totalPages }}
+    </span>
+
+    <button (click)="nextPage()" [disabled]="currentPage === totalPages">
+      Suivant →
+    </button>
+
+  </div>
+
+  <!-- MODAL -->
+  <div *ngIf="selectedMeal" class="modal-backdrop" (click)="selectedMeal = null">
+
+    <div class="modal" (click)="$event.stopPropagation()">
+
+      <div class="modal-header">
+        <h3>{{ selectedMeal.name }}</h3>
+        <button class="close-btn" (click)="selectedMeal = null">✖</button>
+      </div>
+
+      <div class="macros">
+
+        <div class="macro-box">
+          <span class="label">Calories :</span>
+          <strong>{{ selectedMeal.totalCalories | number:'1.1-2' }} kcal</strong>
+        </div>
+
+        <div class="macro-box">
+          <span class="label">Protéines :</span>
+          <strong>{{ selectedMeal.totalProtein | number:'1.1-2' }} g</strong>
+        </div>
+
+        <div class="macro-box">
+          <span class="label">Glucides :</span>
+          <strong>{{ selectedMeal.totalCarbs | number:'1.1-2' }} g</strong>
+        </div>
+
+        <div class="macro-box">
+          <span class="label">Lipides :</span>
+          <strong>{{ selectedMeal.totalFats | number:'1.1-2' }} g</strong>
+        </div>
+
+      </div>
+
+      <div class="products">
+        <h4>Ingrédients</h4>
+
+        <div *ngFor="let ing of selectedMeal.ingredients" class="ingredient-item">
+          <span class="dot"></span>
+          {{ ing.productName }} — {{ ing.quantity }} g
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<div *ngIf="showPlanPopup" class="modal-backdrop" (click)="closePlanPopup()">
+
+  <div class="modal large" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <h3>Plans réservés</h3>
+      <button class="close-btn" (click)="closePlanPopup()">✖</button>
+    </div>
+
+    <!-- EMPTY -->
+    <div *ngIf="planReservations.length === 0" class="empty">
+      Aucun plan réservé
+    </div>
+
+    <!-- LIST -->
+    <div *ngFor="let p of planReservations" class="plan-card">
+
+      <!-- USER -->
+      <div class="user">
+        Nom de l'Etudiant : {{ p.userName }}
+      </div>
+
+      <!-- MEALS -->
+      <div class="meals">
+
+        <!-- BREAKFAST -->
+        <div class="meal">
+          <img *ngIf="p.breakfastImage"
+               [src]="'http://localhost:8090/peakwell/uploads/' + p.breakfastImage">
+          <span>{{ p.breakfastName || '---' }}</span>
+        </div>
+
+        <!-- LUNCH -->
+        <div class="meal">
+          <img *ngIf="p.lunchImage"
+               [src]="'http://localhost:8090/peakwell/uploads/' + p.lunchImage">
+          <span>{{ p.lunchName || '---' }}</span>
+        </div>
+
+        <!-- DINNER -->
+        <div class="meal">
+          <img *ngIf="p.dinnerImage"
+               [src]="'http://localhost:8090/peakwell/uploads/' + p.dinnerImage">
+          <span>{{ p.dinnerName || '---' }}</span>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

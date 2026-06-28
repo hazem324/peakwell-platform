@@ -1,0 +1,49 @@
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-title-block">
+      <h1 class="page-title">{{ pageTitle }}</h1>
+      <span class="topbar-date">{{ greeting }}, {{ userName }} &nbsp;·&nbsp; {{ currentDate }}</span>
+    </div>
+  </div>
+
+  <div class="topbar-center" *ngIf="quickStats.length > 0">
+    <div class="quick-stat" *ngFor="let stat of quickStats">
+      <span class="quick-stat-icon">{{ stat.icon }}</span>
+      <div class="quick-stat-body">
+        <strong>{{ stat.value }}</strong>
+        <span>{{ stat.label }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="topbar-right">
+    <button class="topbar-icon-btn" title="Notifications">🔔</button>
+    <button class="btn-add" (click)="openNewClient()">+ New Client</button>
+  </div>
+</div>
+
+<!-- New Client Modal -->
+<div class="modal-overlay" [class.modal-overlay--open]="showNewClient" (click)="closeNewClient()">
+  <div class="admin-modal" (click)="$event.stopPropagation()">
+    <div class="admin-modal-header">
+      <h3>Add New Client</h3>
+      <button class="modal-close" (click)="closeNewClient()">✕</button>
+    </div>
+    <div class="admin-modal-body">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" [(ngModel)]="newClientName" placeholder="e.g. Jane Smith"/>
+      </div>
+      <div class="form-group">
+        <label>Primary Goal</label>
+        <select [(ngModel)]="newClientGoal">
+          <option *ngFor="let g of goals">{{ g }}</option>
+        </select>
+      </div>
+    </div>
+    <div class="admin-modal-footer">
+      <button class="btn-cancel" (click)="closeNewClient()">Cancel</button>
+      <button class="btn-save" (click)="saveClient()">Add Client</button>
+    </div>
+  </div>
+</div>

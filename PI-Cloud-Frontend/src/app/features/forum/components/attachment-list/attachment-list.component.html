@@ -1,0 +1,22 @@
+<div class="attachments-section" *ngIf="attachments.length > 0 || loading">
+  <div *ngIf="error" class="error-message">{{ error }}</div>
+
+  <div *ngIf="loading" class="loading-state">Loading attachments...</div>
+
+  <div *ngIf="!loading && attachments.length > 0" class="attachments-list">
+    <div class="attachments-title">Attached References</div>
+    <div *ngFor="let attachment of attachments; let last = last" class="attachment-item">
+      <div class="attachment-content">
+        <span class="attachment-icon">{{ getFileIcon(attachment.fileType) }}</span>
+        <div class="attachment-info">
+          <div class="attachment-name">{{ attachment.fileName }}</div>
+          <div class="attachment-meta">{{ formatFileSize(attachment.fileSize) }} • {{ formatDate(attachment.createdAt) }}</div>
+        </div>
+      </div>
+      <div class="attachment-actions">
+        <button class="btn-download" (click)="downloadAttachment(attachment)" title="Download">Download</button>
+        <button *ngIf="!readOnly" class="btn-delete" (click)="deleteAttachment(attachment.id)" title="Delete">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>

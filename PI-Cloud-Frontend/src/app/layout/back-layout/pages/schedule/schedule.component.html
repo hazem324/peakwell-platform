@@ -1,0 +1,209 @@
+<div class="schedule-page">
+
+  <!-- ── Section 1 : Emploi du temps ────────────────────── -->
+  <div class="working-hours-card">
+    <div class="wh-title">
+      <span class="wh-icon">🗓️</span>
+      <div>
+        <h3>Emploi du temps</h3>
+        <p>Définissez vos jours et horaires de travail. Ces paramètres sont utilisés pour l'approbation automatique des consultations.</p>
+      </div>
+    </div>
+
+    <div class="wh-body">
+      <!-- Jours -->
+      <div class="wh-section">
+        <label class="wh-label">Jours de travail</label>
+        <div class="days-row">
+          <button
+            *ngFor="let d of dayOptions"
+            class="day-btn"
+            [class.day-btn--active]="isDayActive(d.value)"
+            (click)="toggleDay(d.value)">
+            {{ d.label }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Heures -->
+      <div class="wh-section">
+        <label class="wh-label">Horaires</label>
+        <div class="hours-row">
+          <div class="hour-select-wrap">
+            <span class="hour-icon">🌅</span>
+            <select [(ngModel)]="workStartHour" class="hour-select">
+              <option *ngFor="let h of hours" [value]="h">{{ h < 10 ? '0'+h : h }}:00</option>
+            </select>
+          </div>
+          <span class="hours-sep">→</span>
+          <div class="hour-select-wrap">
+            <span class="hour-icon">🌆</span>
+            <select [(ngModel)]="workEndHour" class="hour-select">
+              <option *ngFor="let h of hours" [value]="h">{{ h < 10 ? '0'+h : h }}:00</option>
+            </select>
+          </div>
+
+          <button class="btn-save-schedule" (click)="saveSchedule()" [disabled]="savingSchedule">
+            {{ savingSchedule ? 'Enregistrement...' : '💾 Enregistrer' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Résumé -->
+      <div class="wh-summary">
+        <span class="wh-summary-pill" *ngFor="let d of dayOptions" [class.active]="isDayActive(d.value)">
+          {{ d.label }}
+        </span>
+        <span class="wh-summary-hours">
+          {{ workStartHour < 10 ? '0'+workStartHour : workStartHour }}:00 –
+          {{ workEndHour   < 10 ? '0'+workEndHour   : workEndHour   }}:00
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── AI Insights Panel ──────────────────────────────── -->
+  <div class="ai-panel" *ngIf="!insightsLoading && insights.length > 0">
+    <div class="ai-panel-header" (click)="showInsights = !showInsights">
+      <div class="ai-panel-title">
+        <span class="ai-icon">🧠</span>
+        <h3>AI Patient Insights</h3>
+        <span class="ai-badge ai-badge--risk" *ngIf="atRiskPatients.length > 0">
+          {{ atRiskPatients.length }} at risk
+        </span>
+        <span class="ai-badge ai-badge--book" *ngIf="willingToBook.length > 0">
+          {{ willingToBook.length }} likely to book
+        </span>
+      </div>
+      <button class="ai-toggle">{{ showInsights ? '▲' : '▼' }}</button>
+    </div>
+
+    <div class="ai-panel-body" *ngIf="showInsights">
+      <!-- At Risk Patients -->
+      <div class="ai-section" *ngIf="atRiskPatients.length > 0">
+        <h4>Patients at Risk of Dropout</h4>
+        <div class="ai-cards">
+          <div class="ai-card" *ngFor="let p of atRiskPatients"
+               [class.ai-card--discouraged]="p.dropoutType === 'discouraged'"
+               [class.ai-card--healed]="p.dropoutType === 'healed'">
+            <div class="ai-card-top">
+              <div class="ai-card-avatar" [style.background]="avatarColor(p.patientName)">
+                {{ initials(p.patientName) }}
+              </div>
+              <div class="ai-card-info">
+                <p class="ai-card-name">{{ p.patientName }}</p>
+                <p class="ai-card-type">
+                  <span class="ai-type-dot" [style.background]="dropoutColor(p.dropoutType)"></span>
+                  {{ p.dropoutType === 'discouraged' ? 'Discouraged' : 'Healed' }}
+                  — {{ p.dropoutConfidence }}% confidence
+                </p>
+              </div>
+              <span class="ai-card-emoji">{{ dropoutIcon(p.dropoutType) }}</span>
+            </div>
+
+            <div class="ai-card-metrics">
+              <div class="ai-metric">
+                <span>Last visit</span>
+                <strong>{{ p.daysSinceLastConsultation }}d ago</strong>
+              </div>
+              <div class="ai-metric">
+                <span>Weight</span>
+                <strong [ngClass]="trendClass(p.weightTrend, true)">
+                  {{ trendArrow(p.weightTrend) }} {{ p.weightTrend > 0 ? '+' : '' }}{{ p.weightTrend }}kg
+                </strong>
+              </div>
+              <div class="ai-metric">
+                <span>Rating</span>
+                <strong>{{ p.avgRating > 0 ? p.avgRating.toFixed(1) : '—' }}/5</strong>
+              </div>
+              <div class="ai-metric">
+                <span>Goal</span>
+                <strong>{{ p.goalProgressPct.toFixed(0) }}%</strong>
+              </div>
+            </div>
+
+            <p class="ai-card-action">{{ p.recommendedAction }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Likely to Book -->
+      <div class="ai-section" *ngIf="willingToBook.length > 0">
+        <h4>Likely to Book Soon</h4>
+        <div class="ai-book-list">
+          <div class="ai-book-row" *ngFor="let p of willingToBook">
+            <div class="ai-book-avatar" [style.background]="avatarColor(p.patientName)">
+              {{ initials(p.patientName) }}
+            </div>
+            <span class="ai-book-name">{{ p.patientName }}</span>
+            <div class="ai-book-bar-wrap">
+              <div class="ai-book-bar" [style.width.%]="p.bookingProbability"></div>
+            </div>
+            <span class="ai-book-pct">{{ p.bookingProbability }}%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Section 2 : Calendrier ─────────────────────────── -->
+  <div class="schedule-header">
+    <div class="schedule-nav">
+      <button (click)="prevWeek()">◀</button>
+      <h3>{{ weekLabel }}</h3>
+      <button (click)="goToToday()">Aujourd'hui</button>
+      <button (click)="nextWeek()">▶</button>
+    </div>
+    <div class="cal-stats">
+      <span class="cal-stat"><span>📅</span> {{ thisWeekCount }} cette semaine</span>
+      <span class="cal-stat cal-stat--green"><span>✅</span> {{ confirmedCount }} confirmées</span>
+      <span class="cal-stat cal-stat--amber"><span>⏳</span> {{ pendingCount }} en attente</span>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="cal-loading">Chargement du calendrier…</div>
+
+  <div *ngIf="!loading" class="schedule-grid">
+    <!-- Colonne heure -->
+    <div class="schedule-time-col">
+      <div class="schedule-day-header"></div>
+      <div
+        *ngFor="let slot of timeSlots"
+        class="time-slot"
+        [class.time-slot--off]="!isWorkingHour(slot)">
+        {{ slot }}
+      </div>
+    </div>
+
+    <!-- Colonnes jours Lun–Ven -->
+    <div
+      *ngFor="let day of weekDays"
+      class="schedule-day-col"
+      [class.col--off]="!isWorkingDay(day.dayName)">
+
+      <div class="schedule-day-header" [class.schedule-day-header--today]="day.isToday">
+        <span class="day-label">{{ day.label }}</span>
+        <span class="day-num" [class.day-num--today]="day.isToday">{{ day.dayNum }}</span>
+        <span *ngIf="!isWorkingDay(day.dayName)" class="day-off-badge">Repos</span>
+      </div>
+
+      <div
+        *ngFor="let slot of timeSlots"
+        class="schedule-cell"
+        [class.cell--off]="!isWorkingDay(day.dayName) || !isWorkingHour(slot)">
+
+        <div
+          *ngFor="let c of getConsultationsForSlot(day.dateStr, slot)"
+          class="apt-block"
+          [style.background]="aptBg(c)"
+          [style.border-left]="'3px solid ' + aptBorderColor(c)"
+          (click)="toastService.show(statusBadge(c.status) + ' ' + (c.patientName || 'Patient') + ' — ' + formatTime(c.scheduledAt))">
+          <strong>{{ c.patientName || 'Patient' }}</strong>
+          <span>{{ typeIcon(c.consultationType) }} {{ formatTime(c.scheduledAt) }}</span>
+          <span class="apt-status">{{ statusBadge(c.status) }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

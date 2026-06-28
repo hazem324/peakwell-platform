@@ -1,0 +1,32 @@
+<div class="chart-card">
+
+  <div class="chart-header">
+    <span class="chart-title">Most Active Users</span>
+    <span class="chart-subtitle">by event count</span>
+  </div>
+
+  <div class="active-list">
+    <div class="active-row" *ngFor="let u of data; let i = index">
+
+      <div class="active-avatar" [style.background]="avatarColor(i)">
+        {{ initials(u.fullName) }}
+      </div>
+
+      <div class="active-body">
+        <div class="active-top">
+          <span class="active-name">{{ u.fullName }}</span>
+          <span class="active-count">{{ u.activityCount }}</span>
+        </div>
+        <span class="active-email">{{ u.email }}</span>
+        <div class="active-track">
+          <div class="active-fill"
+               [style.width.%]="(u.activityCount / maxCount) * 100"
+               [style.background]="avatarColor(i)">
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>

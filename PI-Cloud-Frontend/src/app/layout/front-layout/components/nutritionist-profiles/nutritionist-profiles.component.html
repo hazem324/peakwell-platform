@@ -1,0 +1,203 @@
+<div class="page-wrap">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="container">
+      <a routerLink="/nutritionist" class="back-link">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+        Nutritionist Space
+      </a>
+      <div class="ph-content">
+        <div class="ph-title-wrap">
+          <div class="ph-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+          </div>
+          <div>
+            <h1>Medical Profiles</h1>
+            <p>Browse, search and review all patient medical records.</p>
+          </div>
+        </div>
+        <div class="ph-count" *ngIf="!loading">
+          <span class="count-num">{{ profiles.length }}</span>
+          <span class="count-label">Profiles</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- Search -->
+    <div class="search-bar">
+      <svg class="sb-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+      <input type="text" [(ngModel)]="search" (ngModelChange)="onSearch()"
+             placeholder="Search by name, condition, allergy or medication…"/>
+      <span class="sb-count" *ngIf="!loading">{{ filtered.length }} / {{ profiles.length }}</span>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-state" *ngIf="loading">
+      <div class="spinner"></div>
+      <span>Loading medical profiles…</span>
+    </div>
+
+    <!-- Empty -->
+    <div class="empty-state" *ngIf="!loading && filtered.length === 0">
+      <div class="empty-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+        </svg>
+      </div>
+      <h3>{{ profiles.length === 0 ? 'No profiles yet' : 'No results for "' + search + '"' }}</h3>
+      <p>{{ profiles.length === 0 ? 'Patients will appear here once they complete their medical profile.' : 'Try a different search term.' }}</p>
+    </div>
+
+    <!-- Grid -->
+    <div class="profiles-grid" *ngIf="!loading && filtered.length > 0">
+      <div class="profile-card"
+           *ngFor="let p of filtered; let i = index"
+           [style.--card-accent]="avatarColor(i)">
+
+        <!-- Card Header -->
+        <div class="pc-header">
+          <div class="pc-avatar"
+               [style.background]="avatarBg(i)"
+               [style.color]="avatarColor(i)"
+               [style.box-shadow]="'0 0 0 3px ' + avatarColor(i) + '22'">
+            {{ initials(p) }}
+          </div>
+          <div class="pc-identity">
+            <h4>{{ p.firstName }} {{ p.lastName }}</h4>
+            <div class="pc-meta">
+              <span>{{ age(p.dateOfBirth) }}</span>
+              <span class="pc-sep">·</span>
+              <span>{{ p.gender | titlecase }}</span>
+              <span class="pc-blood"
+                    [style.background]="bloodTypeColor(p.bloodType) + '14'"
+                    [style.color]="bloodTypeColor(p.bloodType)"
+                    [style.border-color]="bloodTypeColor(p.bloodType) + '35'">
+                {{ p.bloodType || '—' }}
+              </span>
+            </div>
+          </div>
+          <button class="btn-dossier" (click)="openDossier(p)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
+            Dossier
+          </button>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="pc-stats">
+
+          <div class="pcs-item">
+            <div class="pcs-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2v20M4 9l8-7 8 7M4 15l8 7 8-7"/>
+              </svg>
+            </div>
+            <strong>{{ p.height ? p.height : '—' }}</strong>
+            <span class="pcs-lbl">{{ p.height ? 'cm' : 'Height' }}</span>
+          </div>
+
+          <div class="pcs-item">
+            <div class="pcs-icon pcs-icon--allergy">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+            </div>
+            <strong>{{ p.allergies?.length || 0 }}</strong>
+            <span class="pcs-lbl">Allergies</span>
+          </div>
+
+          <div class="pcs-item">
+            <div class="pcs-icon pcs-icon--condition">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+              </svg>
+            </div>
+            <strong>{{ p.conditions?.length || 0 }}</strong>
+            <span class="pcs-lbl">Conditions</span>
+          </div>
+
+          <div class="pcs-item">
+            <div class="pcs-icon pcs-icon--medication">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/>
+                <path d="M8.5 8.5 16 16"/>
+              </svg>
+            </div>
+            <strong>{{ p.medications?.length || 0 }}</strong>
+            <span class="pcs-lbl">Medications</span>
+          </div>
+
+        </div>
+
+        <!-- Tag sections -->
+        <div class="pc-tags" *ngIf="p.conditions?.length > 0 || p.allergies?.length > 0">
+          <div class="pt-row" *ngIf="p.conditions?.length > 0">
+            <div class="pt-cat">
+              <span class="pt-dot pt-dot--condition"></span>
+              Conditions
+            </div>
+            <div class="pt-chips">
+              <span class="chip chip--condition" *ngFor="let c of p.conditions">{{ c }}</span>
+            </div>
+          </div>
+          <div class="pt-row" *ngIf="p.allergies?.length > 0">
+            <div class="pt-cat">
+              <span class="pt-dot pt-dot--allergy"></span>
+              Allergies
+            </div>
+            <div class="pt-chips">
+              <span class="chip chip--allergy" *ngFor="let a of p.allergies">{{ a }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Expand toggle -->
+        <button class="btn-expand" (click)="toggle(p.id)" [class.is-open]="expandedId === p.id">
+          <span>Medications & emergency contact</span>
+          <svg class="expand-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m6 9 6 6 6-6"/>
+          </svg>
+        </button>
+
+        <!-- Expanded panel -->
+        <div class="pc-expanded" *ngIf="expandedId === p.id">
+          <div class="pe-row" *ngIf="p.medications?.length > 0">
+            <div class="pt-cat">
+              <span class="pt-dot pt-dot--medication"></span>
+              Medications
+            </div>
+            <div class="pt-chips">
+              <span class="chip chip--medication" *ngFor="let m of p.medications">{{ m }}</span>
+            </div>
+          </div>
+          <div class="pe-row pe-row--contact" *ngIf="p.emergencyContact">
+            <div class="pt-cat">
+              <span class="pt-dot"></span>
+              Emergency Contact
+            </div>
+            <span class="pe-value">{{ p.emergencyContact }}</span>
+          </div>
+          <div class="pe-row" *ngIf="!p.medications?.length && !p.emergencyContact">
+            <span class="pe-empty">No additional information on file.</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+

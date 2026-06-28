@@ -1,0 +1,50 @@
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+
+      <!-- Brand -->
+      <div class="footer-brand">
+        <div class="footer-logo">Peak<span>Well</span></div>
+        <p>Your all-in-one health platform — connecting patients, registered dietitians, and wellness partners to make lasting health change possible.</p>
+        <div class="footer-tags">
+          <span>🩺 Dietitian-led</span>
+          <span>📊 Biometric tracking</span>
+          <span>🎯 Goal-driven</span>
+        </div>
+        <div class="footer-socials">
+          <button class="social-btn" *ngFor="let s of socials" (click)="toastService.show(s.msg)">{{ s.icon }}</button>
+        </div>
+      </div>
+
+      <!-- Dynamic columns -->
+      <div class="footer-col" *ngFor="let col of columns">
+        <h4>{{ col.heading }}</h4>
+        <ul>
+          <li *ngFor="let link of col.links">
+            <a *ngIf="link.route"   [routerLink]="link.route">{{ link.label }}</a>
+            <a *ngIf="link.anchor"  (click)="scrollTo(link.anchor!)">{{ link.label }}</a>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- Divider with tagline -->
+    <div class="footer-mid">
+      <div class="footer-mid-stat" *ngFor="let s of stats">
+        <strong>{{ s.value }}</strong>
+        <span>{{ s.label }}</span>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span>&copy; {{ currentYear }} PeakWell. All rights reserved.</span>
+      <div class="footer-legal">
+        <a (click)="toastService.show('📄 Privacy Policy')">Privacy Policy</a>
+        <a (click)="toastService.show('📄 Terms of Use')">Terms of Use</a>
+        <a (click)="toastService.show('🍪 Cookie Settings')">Cookie Settings</a>
+        <a routerLink="/admin" class="admin-link">Staff Login</a>
+      </div>
+    </div>
+  </div>
+</footer>

@@ -1,0 +1,154 @@
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="section-header">
+    <div class="header-left">
+      <h2 class="section-title">Mes Repas</h2>
+      <p class="subtitle">Gérez vos repas et leurs valeurs nutritionnelles</p>
+    </div>
+
+    <button class="btn-primary" (click)="openForm()">
+      + Ajouter un repas
+    </button>
+  </div>
+
+  <!-- SEARCH -->
+  <div class="search-bar">
+    <input 
+      type="text"
+      placeholder="Rechercher un repas..."
+      [(ngModel)]="searchTerm"
+      (input)="applyFilters()"
+    />
+  </div>
+
+  <!-- TAGS -->
+  <div class="filter-tags">
+    <button 
+      *ngFor="let tag of tags"
+      [class.active]="selectedTags.includes(tag)"
+      (click)="toggleTag(tag)">
+      {{ tag }}
+    </button>
+  </div>
+
+  <!-- GRID -->
+  <div class="meal-grid">
+
+    <div class="meal-card" *ngFor="let meal of paginatedMeals">
+
+      <!-- IMAGE -->
+      <div class="meal-image">
+        <img *ngIf="meal.image"
+             [src]="'http://localhost:8090/peakwell/uploads/' + meal.image"
+             alt="meal">
+
+        <img *ngIf="!meal.image"
+             src="default-food.png"
+             alt="meal">
+
+        <div class="image-overlay"></div>
+
+        <span class="category-badge">
+          {{ meal.category }}
+        </span>
+      </div>
+
+      <!-- CONTENT -->
+      <div class="meal-content">
+
+<div class="top">
+  <h3 class="meal-title">{{ meal.name }}</h3>
+  <span class="tag-chip">#{{ meal.tags }}</span>
+</div>
+
+        <!-- ALLERGEN BADGE -->
+        <div 
+          class="allergen-warning"
+          *ngIf="meal.predictedAllergens?.length">
+
+          <span class="warning-label">Allergènes :</span>
+
+          <div class="allergen-list">
+            <span 
+              class="allergen-chip"
+              *ngFor="let allergen of meal.predictedAllergens">
+              {{ allergen }}
+            </span>
+          </div>
+
+        </div>
+
+        <!-- DETAILS -->
+        <div class="details">
+          <div class="detail-item">
+            <span class="label">Calories</span>
+            <span class="value">{{ meal.totalCalories | number:'1.0-2' }} kcal</span>
+          </div>
+
+          <div class="detail-item">
+            <span class="label">Protein</span>
+            <span class="value">{{ meal.totalProtein | number:'1.0-2' }} g</span>
+          </div>
+
+          <div class="detail-item">
+            <span class="label">Carbs</span>
+            <span class="value">{{ meal.totalCarbs | number:'1.0-2' }} g</span>
+          </div>
+
+          <div class="detail-item">
+            <span class="label">Fats</span>
+            <span class="value">{{ meal.totalFats | number:'1.1-2' }} g</span>
+          </div>
+        </div>
+
+        <!-- INGREDIENTS -->
+        <button class="btn-toggle" (click)="toggleIngredients(meal.id)">
+          {{ showIngredientsMap[meal.id] ? 'Masquer ingrédients' : 'Voir ingrédients' }}
+        </button>
+
+        <div *ngIf="showIngredientsMap[meal.id]" class="ingredients-box">
+          <div *ngFor="let ing of meal.ingredients" class="ingredient-item">
+            <span class="dot"></span>
+            {{ ing.productName }} — {{ ing.quantity }} g
+          </div>
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="actions">
+          <button class="btn-edit" (click)="editMeal(meal)">
+            ✏️ Modifier
+          </button>
+
+          <button class="btn-delete" (click)="deleteMeal(meal.id)">
+            🗑️ Supprimer
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<div class="pagination">
+
+  <button 
+    (click)="prevPage()" 
+    [disabled]="currentPage === 1">
+    ← Précédent
+  </button>
+
+  <span>
+    Page {{ currentPage }} / {{ totalPages }}
+  </span>
+
+  <button 
+    (click)="nextPage()" 
+    [disabled]="currentPage === totalPages">
+    Suivant →
+  </button>
+
+</div>

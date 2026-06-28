@@ -1,0 +1,11 @@
+<div class="kpi-grid">
+  <div class="kpi-card" *ngFor="let card of cards()">
+    <div class="kpi-icon" [style.background]="card.bg">
+      <i [class]="card.icon" [style.color]="card.accent"></i>
+    </div>
+    <div class="kpi-body">
+      <div class="kpi-value" [style.color]="card.accent">{{ card.value }}</div>
+      <div class="kpi-label">{{ card.label }}</div>
+    </div>
+  </div>
+</div>

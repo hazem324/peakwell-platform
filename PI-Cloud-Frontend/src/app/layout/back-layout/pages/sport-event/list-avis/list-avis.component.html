@@ -1,0 +1,73 @@
+<div class="reviews-modal-backdrop" (click)="onClose()">
+  <div class="reviews-modal" (click)="$event.stopPropagation()">
+
+    <button class="close-btn" type="button" (click)="onClose()">✕</button>
+
+    <div class="modal-header">
+      <div class="header-badge">⭐ Event Reviews</div>
+      <h2>{{ eventTitle || 'Avis des étudiants' }}</h2>
+      <p>Consultez les retours des étudiants sur cet événement.</p>
+    </div>
+
+    <div class="alert error" *ngIf="errorMessage">
+      {{ errorMessage }}
+    </div>
+
+    <div class="summary-grid" *ngIf="!loading">
+      <div class="summary-card">
+        <span class="summary-label">Nombre d’avis</span>
+        <strong>{{ reviews.length }}</strong>
+      </div>
+
+      <div class="summary-card">
+        <span class="summary-label">Moyenne</span>
+        <strong>{{ getAverageRating() | number:'1.1-1' }}/5</strong>
+      </div>
+    </div>
+
+    <div class="loading-state" *ngIf="loading">
+      Chargement des avis...
+    </div>
+
+    <div class="reviews-list" *ngIf="!loading && reviews.length > 0">
+      <article class="review-card" *ngFor="let review of reviews">
+
+        <div class="review-user">
+          <div class="avatar" *ngIf="!review.studentImageUrl">
+            {{ getInitials(review.studentName) }}
+          </div>
+
+          <img
+            *ngIf="review.studentImageUrl"
+            class="avatar-img"
+            [src]="review.studentImageUrl"
+            [alt]="review.studentName || 'Student'"
+          >
+
+          <div class="user-meta">
+            <h4>{{ review.studentName || 'Student' }}</h4>
+            <span>{{ review.reviewDate | date:'medium' }}</span>
+          </div>
+        </div>
+
+        <div class="review-rating">
+          <span class="rating-value">{{ review.rating }}/5</span>
+          <div class="stars">
+            <span *ngFor="let star of getStarsArray(review.rating)">★</span>
+          </div>
+        </div>
+
+        <p class="review-comment">
+          {{ review.comment || 'Aucun commentaire.' }}
+        </p>
+      </article>
+    </div>
+
+    <div class="empty-state" *ngIf="!loading && reviews.length === 0">
+      <div class="empty-icon">💬</div>
+      <h3>Aucun avis pour le moment</h3>
+      <p>Les reviews des étudiants apparaîtront ici après la fin de l’événement.</p>
+    </div>
+
+  </div>
+</div>

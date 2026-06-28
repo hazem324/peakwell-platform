@@ -1,0 +1,182 @@
+## ── nginx ConfigMap with stub_status for metrics ────────────────────────────
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-nginx-config
+  namespace: peakwell
+data:
+  default.conf: |
+    server {
+        listen 80;
+        server_name _;
+        root /usr/share/nginx/html;
+        index index.html;
+
+        location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+            expires 1y;
+            add_header Cache-Control "public, immutable";
+            try_files $uri =404;
+        }
+
+        location ^~ /peakwell/ {
+            proxy_pass http://backend:8090/peakwell/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_read_timeout 60s;
+        }
+
+        location ^~ /ai-events/ {
+            proxy_pass http://ai-sport:8004/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_read_timeout 60s;
+        }
+
+        location / {
+            try_files $uri $uri/ /index.html;
+        }
+
+        location /stub_status {
+            stub_status;
+            allow 127.0.0.1;
+            deny all;
+        }
+
+        add_header X-Frame-Options "SAMEORIGIN";
+        add_header X-Content-Type-Options "nosniff";
+        add_header X-XSS-Protection "1; mode=block";
+
+        gzip on;
+        gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+        gzip_min_length 1024;
+    }
+---
+## ── Frontend Deployment (adds nginx-exporter sidecar) ───────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: peakwell
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9113"
+        prometheus.io/path: "/metrics"
+    spec:
+      initContainers:
+        - name: wait-for-backend
+          image: busybox:1.36
+          command: ['sh', '-c', 'until nslookup backend.peakwell.svc.cluster.local; do echo waiting; sleep 3; done']
+      containers:
+        - name: frontend
+          image: oussamaghalioun/peakwell-frontend:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/conf.d/default.conf
+              subPath: default.conf
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "100m"
+        - name: nginx-exporter
+          image: nginx/nginx-prometheus-exporter:1.1.0
+          args:
+            - --nginx.scrape-uri=http://localhost/stub_status
+          ports:
+            - name: metrics
+              containerPort: 9113
+          resources:
+            requests:
+              memory: "16Mi"
+              cpu: "10m"
+            limits:
+              memory: "32Mi"
+              cpu: "50m"
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: frontend-nginx-config
+---
+## ── Frontend Service (exposes metrics port) ──────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: peakwell
+  labels:
+    app: frontend
+spec:
+  selector:
+    app: frontend
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+    - name: metrics
+      port: 9113
+      targetPort: 9113
+---
+## ── Backend Service (named ports for ServiceMonitor) ─────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: peakwell
+  labels:
+    app: backend
+spec:
+  selector:
+    app: backend
+  ports:
+    - name: http
+      port: 8090
+      targetPort: 8090
+---
+## ── ServiceMonitor: frontend nginx metrics ───────────────────────────────────
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: frontend-monitor
+  namespace: peakwell
+  labels:
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: frontend
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 15s
+---
+## ── ServiceMonitor: backend Spring Boot actuator ─────────────────────────────
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: backend-monitor
+  namespace: peakwell
+  labels:
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: backend
+  endpoints:
+    - port: http
+      path: /actuator/prometheus
+      interval: 15s

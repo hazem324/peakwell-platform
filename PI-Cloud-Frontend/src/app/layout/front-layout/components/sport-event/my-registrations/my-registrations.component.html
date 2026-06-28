@@ -1,0 +1,222 @@
+<section class="registrations-page">
+  <div class="container">
+
+    <div class="section-header">
+      <div class="header-left">
+        <h2 class="section-title">My Registrations</h2>
+        <p class="section-subtitle">
+          Manage your events and reviews easily.
+        </p>
+      </div>
+    </div>
+
+    <div class="registrations-panel">
+
+      <!-- LOADING -->
+      <div class="loading-state" *ngIf="loading">
+        Loading your registrations...
+      </div>
+
+      <!-- EMPTY -->
+      <div class="empty-state" *ngIf="!loading && registrations.length === 0">
+        You have not joined any events yet.
+      </div>
+
+      <!-- GRID -->
+      <div class="registrations-grid" *ngIf="!loading && registrations.length > 0">
+
+        <article class="registration-card" *ngFor="let reg of registrations">
+
+          <!-- IMAGE -->
+          <div class="registration-image">
+            <img
+              [src]="reg.event?.imageUrl || 'assets/events/default.jpg'"
+              [alt]="reg.event?.title">
+          </div>
+
+          <!-- CONTENT -->
+          <div class="registration-content">
+
+            <!-- HEADER -->
+            <div class="card-header">
+              <div class="event-info">
+                <h3>{{ reg.event?.title }}</h3>
+                <p class="event-description">
+                  {{ reg.event?.description || 'No description available.' }}
+                </p>
+              </div>
+
+              <span class="badge category">
+                {{ reg.event?.category }}
+              </span>
+            </div>
+
+            <!-- META -->
+            <div class="event-meta-grid">
+              <div class="meta-item">
+                <span class="label">Date</span>
+                <strong>{{ reg.event?.eventDate | date:'mediumDate' }}</strong>
+              </div>
+
+              <div class="meta-item">
+                <span class="label">Time</span>
+                <strong>{{ reg.event?.eventDate | date:'shortTime' }}</strong>
+              </div>
+
+              <div class="meta-item location-item">
+                <span class="label">Location</span>
+                <strong>{{ reg.event?.location }}</strong>
+              </div>
+
+              <div class="meta-item">
+                <span class="label">Participants</span>
+                <strong>{{ reg.event?.currentParticipants }}/{{ reg.event?.maxParticipants }}</strong>
+              </div>
+            </div>
+
+
+
+            <!-- FOOTER -->
+            <div class="card-footer">
+
+              <div class="status-container">
+                <span class="stock-badge" [ngClass]="reg.status.toLowerCase()">
+                  {{ reg.status }}
+                </span>
+              </div>
+
+              <div class="actions">
+
+                <button
+                  *ngIf="canLeaveReview(reg)"
+                  class="action-btn primary"
+                  (click)="openCreateReviewModal(reg)">
+                  ⭐ Leave Review
+                </button>
+
+                <button
+                  *ngIf="reg.myReview"
+                  class="action-btn secondary"
+                  (click)="openViewReviewModal(reg)">
+                  👁 View
+                </button>
+
+                <button
+                  *ngIf="canCancelRegistration(reg)"
+                  class="action-btn danger"
+                  (click)="cancelRegistration(reg)">
+                  ❌ Cancel
+                </button>
+
+              </div>
+
+            </div>
+          </div>
+        </article>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ⭐ REVIEW MODAL -->
+<div class="modal-backdrop" *ngIf="showReviewModal">
+  <div class="review-modal">
+
+    <!-- HEADER -->
+    <div class="modal-header">
+      <div>
+        <h3>
+          {{ selectedReviewId ? 'My Review' : 'Leave Review' }}
+        </h3>
+
+        <p class="modal-subtitle">
+          {{ selectedRegistration?.event?.title }}
+        </p>
+      </div>
+
+      <button class="close-btn" (click)="closeReviewModal()">✕</button>
+    </div>
+
+    <!-- FORM -->
+    <form #reviewFormRef="ngForm" (ngSubmit)="submitReview(reviewFormRef)">
+
+      <!-- ⭐ RATING -->
+      <div class="form-group">
+        <label>Rating</label>
+
+        <div class="star-rating">
+          <span 
+            *ngFor="let star of [1,2,3,4,5]"
+            (click)="setRating(star)"
+            (mouseenter)="hoverRating = star"
+            (mouseleave)="hoverRating = 0"
+            [class.active]="star <= (hoverRating || (reviewForm.rating ?? 0))">
+            ★
+          </span>
+        </div>
+
+        <small class="rating-text" *ngIf="reviewForm.rating">
+          {{ reviewForm.rating }}/5 -
+          {{
+            reviewForm.rating === 5 ? 'Excellent 🔥' :
+            reviewForm.rating === 4 ? 'Very Good 👍' :
+            reviewForm.rating === 3 ? 'Good 🙂' :
+            reviewForm.rating === 2 ? 'Bad 😕' :
+            'Very Bad 😡'
+          }}
+        </small>
+      </div>
+
+      <!-- COMMENT -->
+      <div class="form-group">
+        <label for="comment">Comment</label>
+        <textarea
+          id="comment"
+          name="comment"
+          rows="5"
+          [(ngModel)]="reviewForm.comment"
+          [readonly]="selectedReviewId !== null && !isEditMode"
+          required>
+        </textarea>
+      </div>
+
+      <!-- ACTIONS -->
+      <div class="modal-actions">
+
+        <button
+          *ngIf="selectedReviewId === null || isEditMode"
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="reviewFormRef.invalid || !reviewForm.rating">
+          {{ selectedReviewId ? 'Save' : 'Submit Review' }}
+        </button>
+
+        <button
+          *ngIf="selectedReviewId !== null && !isEditMode"
+          type="button"
+          class="btn btn-secondary"
+          (click)="enableEditMode()">
+          Edit
+        </button>
+
+        <button
+          *ngIf="selectedReviewId !== null"
+          type="button"
+          class="btn btn-danger"
+          (click)="deleteReview()">
+          Delete
+        </button>
+
+        <button
+          type="button"
+          class="btn btn-light"
+          (click)="closeReviewModal()">
+          Cancel
+        </button>
+
+      </div>
+
+    </form>
+  </div>
+</div>

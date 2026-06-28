@@ -1,0 +1,99 @@
+<div class="modal-overlay" [class.modal-overlay--open]="visible" (click)="close.emit()">
+  <div class="admin-modal" (click)="$event.stopPropagation()" *ngIf="user">
+
+    <div class="admin-modal-header">
+      <h3>{{ statusAction === 'BANNED' ? 'Ban User' : 'Unban User' }}</h3>
+      <button class="modal-close" (click)="close.emit()">✕</button>
+    </div>
+
+    <div class="admin-modal-body">
+
+      <!-- User info -->
+      <div class="status-target">
+        <div class="user-avatar-sm" [style.background]="avatarBg(user.role)">
+          <img *ngIf="user.imageUrl" [src]="user.imageUrl" alt="avatar"/>
+          <span *ngIf="!user.imageUrl" [style.color]="roleColor(user.role)">
+            {{ initials(user) }}
+          </span>
+        </div>
+        <div>
+          <div class="target-name">{{ user.firstName }} {{ user.lastName }}</div>
+          <div class="target-email">{{ user.email }}</div>
+        </div>
+      </div>
+
+      <!-- Ban form -->
+      <ng-container *ngIf="statusAction === 'BANNED'">
+
+        <div class="form-group">
+          <label>Reason</label>
+          <select [(ngModel)]="banReason" (change)="onReasonChange()">
+            <option value="" disabled>Select a reason</option>
+            <option value="Spam and unsolicited promotions">Spam and unsolicited promotions</option>
+            <option value="Fraudulent activity or scam attempts">Fraudulent activity or scam attempts</option>
+            <option value="Impersonation of another person or entity">Impersonation of another person or entity</option>
+            <option value="Hate speech or offensive content">Hate speech or offensive content</option>
+            <option value="False information">False information</option>
+            <option value="Terms violation">Terms of service violation</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>
+            Description
+            <span class="label-hint">(sent to user)</span>
+            <span *ngIf="isGenerating" class="label-hint"> — generating...</span>
+          </label>
+          <textarea
+            [(ngModel)]="description"
+            rows="4"
+            placeholder="Explain why this account is being banned. This message will be visible to the user.">
+          </textarea>
+        </div>
+
+      </ng-container>
+
+      <!-- Unban form -->
+      <ng-container *ngIf="statusAction === 'ACTIVE'">
+
+        <div class="form-group">
+          <label>Subject</label>
+          <select [(ngModel)]="banReason" (change)="onReasonChange()">
+            <option value="" disabled>Select a subject</option>
+            <option value="Account Reactivated">Account Reactivated</option>
+            <option value="Access Restored">Access Restored</option>
+            <option value="Account Reinstated">Account Reinstated</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>
+            Message
+            <span class="label-hint">(sent to user)</span>
+            <span *ngIf="isGenerating" class="label-hint"> — generating...</span>
+          </label>
+          <textarea
+            [(ngModel)]="description"
+            rows="4"
+            placeholder="This message will be sent to the user after reactivation.">
+          </textarea>
+        </div>
+
+      </ng-container>
+
+    </div>
+
+    <div class="admin-modal-footer">
+      <button class="btn-cancel" (click)="close.emit()">Cancel</button>
+      <button
+        class="btn-confirm"
+        [disabled]="loading || !isValid"
+        [class.btn-confirm--ban]="statusAction === 'BANNED'"
+        [class.btn-confirm--unban]="statusAction === 'ACTIVE'"
+        (click)="onConfirm()">
+        {{ statusAction === 'BANNED' ? 'Confirm Ban' : 'Confirm Unban' }}
+      </button>
+    </div>
+
+  </div>
+</div>

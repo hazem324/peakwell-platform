@@ -1,0 +1,51 @@
+<div class="health-dashboard" *ngIf="latest">
+
+  <!-- Last updated -->
+  <div class="dash-meta">
+    <span>Last measurement: <strong>{{ latest.date }}</strong></span>
+    <span class="bmi-badge" [style.background]="bmiCategory.color + '18'" [style.color]="bmiCategory.color">
+      BMI Category: {{ bmiCategory.label }}
+    </span>
+  </div>
+
+  <!-- Metric Cards -->
+  <div class="metrics-grid">
+    <div class="metric-card" *ngFor="let m of metrics">
+      <div class="metric-top">
+        <span class="metric-icon">{{ m.icon }}</span>
+        <span class="metric-status" *ngIf="m.status"
+              [style.background]="m.statusColor + '18'"
+              [style.color]="m.statusColor">
+          {{ m.status }}
+        </span>
+        <span class="metric-change"
+              *ngIf="m.change !== null && m.change !== 0"
+              [class.metric-change--good]="m.good"
+              [class.metric-change--bad]="!m.good">
+          {{ changeLabel(m.change, m.good) }} {{ m.unit }}
+        </span>
+      </div>
+      <div class="metric-value" [style.color]="m.color">{{ m.value }}</div>
+      <div class="metric-label">{{ m.label }}</div>
+      <span class="metric-badge" *ngIf="m.badge"
+            [style.background]="m.color + '18'" [style.color]="m.color">
+        {{ m.badge }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Notes from last entry -->
+  <div class="latest-notes" *ngIf="latest.notes">
+    <span class="notes-icon">📋</span>
+    <div>
+      <strong>Clinician Note — {{ latest.date }}</strong>
+      <p>{{ latest.notes }}</p>
+    </div>
+  </div>
+
+</div>
+
+<div class="empty-state" *ngIf="!latest">
+  <span>📊</span>
+  <p>No biometric data recorded yet.</p>
+</div>

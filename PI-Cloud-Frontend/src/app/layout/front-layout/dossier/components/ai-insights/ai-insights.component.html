@@ -1,0 +1,142 @@
+<!-- Empty state -->
+<div class="empty-dash" *ngIf="!hasData && !loading">
+  <div class="empty-dash-icon">🤖</div>
+  <h3>No data for analysis</h3>
+  <p>Add biometric measurements to receive personalized AI health insights and recommendations.</p>
+</div>
+
+<div class="empty-dash" *ngIf="loading">
+  <div class="empty-dash-icon">⏳</div>
+  <h3>Analyzing your health data…</h3>
+  <p>Our AI engine is reviewing your measurements, profile, and medical history.</p>
+</div>
+
+<!-- Insights Dashboard -->
+<div class="insights" *ngIf="hasData && !loading">
+
+  <!-- Weekly Summary Card -->
+  <div class="summary-card" *ngIf="weeklySummary">
+    <div class="summary-left">
+      <div class="score-ring" [style.--score-color]="overallScoreColor">
+        <svg viewBox="0 0 100 100" class="score-svg">
+          <circle cx="50" cy="50" r="42" fill="none" stroke="#ede8e3" stroke-width="8"/>
+          <circle cx="50" cy="50" r="42" fill="none"
+                  [attr.stroke]="overallScoreColor" stroke-width="8"
+                  stroke-linecap="round"
+                  [attr.stroke-dasharray]="(weeklySummary.overallScore / 100 * 264) + ' 264'"
+                  transform="rotate(-90 50 50)"/>
+        </svg>
+        <div class="score-value" [style.color]="overallScoreColor">
+          {{ weeklySummary.overallScore }}
+        </div>
+      </div>
+      <div class="score-label">Health Score</div>
+    </div>
+    <div class="summary-right">
+      <div class="summary-trend">
+        <span class="trend-icon">{{ trendIcon(weeklySummary.trend) }}</span>
+        <span class="trend-label">Trend: <strong>{{ weeklySummary.trend | titlecase }}</strong></span>
+      </div>
+      <p class="summary-text">{{ weeklySummary.topInsight }}</p>
+      <div class="summary-stats">
+        <span class="stat-pill stat-pill--critical" *ngIf="(insights | filterBySeverity:'critical').length > 0">
+          🚨 {{ (insights | filterBySeverity:'critical').length }} Critical
+        </span>
+        <span class="stat-pill stat-pill--warning" *ngIf="(insights | filterBySeverity:'warning').length > 0">
+          ⚠️ {{ (insights | filterBySeverity:'warning').length }} Warning
+        </span>
+        <span class="stat-pill stat-pill--positive">
+          ✅ {{ (insights | filterBySeverity:'positive').length }} Positive
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Risk Assessment -->
+  <div class="risk-section" *ngIf="riskFactors.length > 0">
+    <div class="section-header">
+      <span class="section-icon">🛡️</span>
+      <div>
+        <h4>Risk Assessment</h4>
+        <p>Based on your biometric data and medical profile</p>
+      </div>
+    </div>
+    <div class="risk-grid">
+      <div class="risk-card" *ngFor="let risk of riskFactors">
+        <div class="risk-top">
+          <span class="risk-label">{{ risk.label }}</span>
+          <span class="risk-level" [style.background]="riskColor(risk.level) + '18'" [style.color]="riskColor(risk.level)">
+            {{ risk.level | titlecase }}
+          </span>
+        </div>
+        <div class="risk-bar-track">
+          <div class="risk-bar-fill"
+               [style.width.%]="risk.score"
+               [style.background]="riskColor(risk.level)">
+          </div>
+        </div>
+        <p class="risk-desc">{{ risk.description }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Category Filters -->
+  <div class="insight-filters">
+    <button *ngFor="let cat of categories"
+            class="filter-btn"
+            [class.filter-btn--active]="activeCategory === cat.value"
+            (click)="activeCategory = cat.value">
+      {{ cat.label }}
+    </button>
+  </div>
+
+  <!-- Insights List -->
+  <div class="insights-list">
+    <div class="insight-card"
+         *ngFor="let insight of filteredInsights; let i = index"
+         [class.insight-card--expanded]="expandedInsight === i"
+         (click)="toggleInsight(i)">
+
+      <div class="insight-header">
+        <div class="insight-left">
+          <span class="insight-icon">{{ insight.icon }}</span>
+          <div>
+            <div class="insight-title">{{ insight.title }}</div>
+            <span class="insight-category">{{ insight.category | titlecase }}</span>
+          </div>
+        </div>
+        <div class="insight-right">
+          <span class="severity-badge"
+                [style.background]="severityColor(insight.severity) + '15'"
+                [style.color]="severityColor(insight.severity)">
+            {{ severityIcon(insight.severity) }} {{ insight.severity | titlecase }}
+          </span>
+          <span class="metric-badge" *ngIf="insight.metricValue">
+            {{ insight.metricValue }}
+          </span>
+        </div>
+      </div>
+
+      <div class="insight-body" *ngIf="expandedInsight === i">
+        <p class="insight-desc">{{ insight.description }}</p>
+        <div class="action-items">
+          <div class="action-label">Recommended actions</div>
+          <div class="action-item" *ngFor="let action of insight.actionItems">
+            <span class="action-check">→</span>
+            <span>{{ action }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="insight-expand">
+        {{ expandedInsight === i ? 'Less ▲' : 'Details ▼' }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Disclaimer -->
+  <div class="disclaimer">
+    <span>ℹ️</span>
+    <p>These insights are generated by an AI algorithm based on your recorded data and should not replace professional medical advice. Always consult your healthcare provider before making changes to your treatment plan.</p>
+  </div>
+</div>

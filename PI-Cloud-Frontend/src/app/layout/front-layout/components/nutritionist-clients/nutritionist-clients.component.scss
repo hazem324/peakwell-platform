@@ -1,0 +1,533 @@
+@keyframes ns-page-in {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+:host { display: block; }
+
+.page-header { animation: ns-page-in 0.4s cubic-bezier(.25,.8,.25,1) both; }
+.toolbar     { animation: ns-page-in 0.4s cubic-bezier(.25,.8,.25,1) 0.08s both; }
+.empty-state { animation: ns-page-in 0.4s cubic-bezier(.25,.8,.25,1) 0.12s both; }
+
+.client-card {
+  @for $i from 1 through 12 {
+    &:nth-child(#{$i}) { animation: ns-page-in 0.45s cubic-bezier(.25,.8,.25,1) #{0.12 + ($i - 1) * 0.06}s both; }
+  }
+}
+
+// ── Design Tokens ──────────────────────────────────────────────────────
+$primary:    #C9693F;
+$bg:         #F5F2EE;
+$card:       #FFFFFF;
+$border:     #E5DDD5;
+$border-lt:  #EDE7E1;
+$text-dark:  #1A1612;
+$text-mid:   #7A6E68;
+$text-light: #B0A49E;
+$serif:      'Cormorant Garamond', Georgia, serif;
+$sans:       'Jost', sans-serif;
+
+$shadow-sm:  0 1px 4px rgba(26,22,18,0.06);
+$shadow-md:  0 4px 20px rgba(26,22,18,0.08);
+$shadow-lg:  0 10px 36px rgba(26,22,18,0.12);
+
+// ── Base ────────────────────────────────────────────────────────────────
+.page-wrap {
+  background: $bg;
+  min-height: 100vh;
+  padding-bottom: 80px;
+  font-family: $sans;
+}
+
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+// ── Page Header ──────────────────────────────────────────────────────────
+.page-header {
+  background: $card;
+  border-bottom: 1px solid $border;
+  padding: 28px 0;
+  margin-bottom: 32px;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  color: $text-mid;
+  text-decoration: none;
+  letter-spacing: 0.4px;
+  margin-bottom: 16px;
+  transition: color 0.2s;
+  &:hover { color: $primary; }
+}
+
+.ph-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.ph-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.ph-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: rgba(201,105,63,0.08);
+  border: 1px solid rgba(201,105,63,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $primary;
+  flex-shrink: 0;
+}
+
+.ph-content h1 {
+  font-family: $serif;
+  font-size: 30px;
+  font-weight: 700;
+  color: $text-dark;
+  margin: 0 0 4px;
+  line-height: 1.1;
+}
+
+.ph-content p {
+  font-size: 13px;
+  color: $text-mid;
+  margin: 0;
+}
+
+.ph-count { text-align: right; }
+
+.count-num {
+  display: block;
+  font-family: $serif;
+  font-size: 36px;
+  font-weight: 700;
+  color: $text-dark;
+  line-height: 1;
+}
+
+.count-label {
+  display: block;
+  font-size: 10px;
+  color: $text-light;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  font-weight: 700;
+  margin-top: 3px;
+}
+
+// ── Toolbar ───────────────────────────────────────────────────────────────
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+
+// ── Search Bar ───────────────────────────────────────────────────────────
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: $card;
+  border: 1.5px solid $border;
+  border-radius: 14px;
+  padding: 11px 18px;
+  flex: 1;
+  min-width: 260px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+
+  &:focus-within {
+    border-color: $primary;
+    box-shadow: 0 0 0 3px rgba(201,105,63,0.08);
+  }
+}
+
+.sb-icon { color: $text-light; flex-shrink: 0; }
+
+.search-bar input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  font-family: $sans;
+  background: transparent;
+  color: $text-dark;
+  &::placeholder { color: $text-light; }
+}
+
+.sb-clear {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: $text-light;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  transition: color 0.2s;
+  &:hover { color: $text-dark; }
+}
+
+.sb-count {
+  font-size: 12px;
+  color: $text-light;
+  font-weight: 600;
+  flex-shrink: 0;
+  background: $bg;
+  border: 1px solid $border;
+  border-radius: 100px;
+  padding: 2px 10px;
+}
+
+// ── Status Tabs ───────────────────────────────────────────────────────────
+.status-tabs {
+  display: flex;
+  gap: 4px;
+  background: $card;
+  border: 1.5px solid $border;
+  border-radius: 12px;
+  padding: 4px;
+}
+
+.st-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  border-radius: 9px;
+  border: none;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: $sans;
+  color: $text-mid;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+
+  &:hover { background: $bg; color: $text-dark; }
+
+  &.is-active {
+    background: $primary;
+    color: #fff;
+  }
+}
+
+.st-count {
+  font-size: 10px;
+  font-weight: 700;
+  background: rgba(255,255,255,0.25);
+  border-radius: 100px;
+  padding: 1px 7px;
+
+  .st-btn:not(.is-active) & {
+    background: $bg;
+    color: $text-light;
+  }
+
+  &--inactive {
+    .st-btn:not(.is-active) & { background: $bg; }
+  }
+}
+
+// ── Loading / Empty ───────────────────────────────────────────────────────
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 80px 0;
+  color: $text-mid;
+  font-size: 14px;
+}
+
+.spinner {
+  width: 28px;
+  height: 28px;
+  border: 2.5px solid $border;
+  border-top-color: $primary;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.empty-state {
+  background: $card;
+  border: 1px dashed $border;
+  border-radius: 20px;
+  padding: 64px 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+
+  h3 {
+    font-family: $serif;
+    font-size: 20px;
+    color: $text-dark;
+    margin: 0;
+  }
+
+  p {
+    font-size: 13px;
+    color: $text-mid;
+    margin: 0;
+  }
+}
+
+.empty-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: $bg;
+  border: 1px solid $border;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $text-light;
+  margin-bottom: 4px;
+}
+
+.empty-reset {
+  margin-top: 4px;
+  padding: 8px 20px;
+  border-radius: 10px;
+  border: 1.5px solid $border;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: $sans;
+  color: $text-mid;
+  cursor: pointer;
+  transition: all 0.2s;
+  &:hover { background: $primary; color: #fff; border-color: $primary; }
+}
+
+// ── Clients Grid ──────────────────────────────────────────────────────────
+.clients-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+
+  @media (max-width: 1100px) { grid-template-columns: 1fr 1fr; }
+  @media (max-width: 680px)  { grid-template-columns: 1fr; }
+}
+
+// ── Client Card ───────────────────────────────────────────────────────────
+.client-card {
+  background: $card;
+  border: 1px solid $border;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  transition: box-shadow 0.25s, transform 0.25s, border-color 0.25s;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--card-accent, #{$primary});
+    border-radius: 20px 20px 0 0;
+  }
+
+  &:hover {
+    box-shadow: $shadow-lg;
+    transform: translateY(-4px);
+    border-color: rgba(0,0,0,0.1);
+  }
+}
+
+// ── Card Header ──────────────────────────────────────────────────────────
+.cc-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 22px 22px 16px;
+  border-bottom: 1px solid $border-lt;
+}
+
+.cc-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: $serif;
+  font-size: 18px;
+  font-weight: 700;
+  flex-shrink: 0;
+  letter-spacing: 0.5px;
+  overflow: hidden;
+
+  .cc-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+  }
+}
+
+.cc-identity {
+  flex: 1;
+  min-width: 0;
+
+  h4 {
+    font-family: $serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: $text-dark;
+    margin: 0 0 3px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.cc-email {
+  font-size: 11px;
+  color: $text-light;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+}
+
+.cc-status {
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 10px;
+  font-weight: 700;
+  border: 1px solid;
+  letter-spacing: 0.4px;
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+
+// ── Goal ─────────────────────────────────────────────────────────────────
+.cc-goal {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 22px;
+  font-size: 12px;
+  font-weight: 600;
+  color: $text-mid;
+  border-bottom: 1px solid $border-lt;
+  background: rgba(201,105,63,0.02);
+
+  svg { color: $primary; flex-shrink: 0; }
+}
+
+// ── Stats Row ────────────────────────────────────────────────────────────
+.cc-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-bottom: 1px solid $border-lt;
+}
+
+.ccs-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 14px 8px;
+  border-right: 1px solid $border-lt;
+  text-align: center;
+
+  &:last-child { border-right: none; }
+
+  strong {
+    font-family: $serif;
+    font-size: 19px;
+    font-weight: 700;
+    color: $text-dark;
+    line-height: 1;
+  }
+
+  span {
+    font-size: 9px;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: $text-light;
+    font-weight: 700;
+  }
+}
+
+// ── BMI / Profile Row ─────────────────────────────────────────────────────
+.cc-bmi-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 22px;
+  border-bottom: 1px solid $border-lt;
+}
+
+.cc-bmi-badge {
+  padding: 3px 11px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid;
+}
+
+.cc-profile-status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: $text-light;
+  font-weight: 500;
+}
+
+// ── Dossier Button ────────────────────────────────────────────────────────
+.cc-dossier-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  padding: 13px 22px;
+  background: none;
+  border: none;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: $sans;
+  color: $primary;
+  cursor: pointer;
+  letter-spacing: 0.3px;
+  transition: background 0.2s, color 0.2s;
+  margin-top: auto;
+
+  &:hover {
+    background: $primary;
+    color: #fff;
+  }
+}
+
+// ── Responsive ───────────────────────────────────────────────────────────
+@media (max-width: 768px) {
+  .container   { padding: 0 20px; }
+  .ph-content  { flex-direction: column; align-items: flex-start; }
+  .ph-count    { text-align: left; }
+  .toolbar     { flex-direction: column; align-items: stretch; }
+  .search-bar  { min-width: unset; }
+  .status-tabs { justify-content: center; }
+}

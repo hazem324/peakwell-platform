@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Account Status</title>
+</head>
+<body style="margin:0;padding:0;background:#f5f1ed;font-family:'Segoe UI',Arial,sans-serif;">
+
+<table width="100%" cellpadding="0" cellspacing="0" style="padding:32px 0;">
+  <tr><td align="center">
+
+    <table width="560" cellpadding="0" cellspacing="0"
+           style="background:#ffffff;border-radius:16px;overflow:hidden;">
+
+      <!-- Header -->
+      <tr>
+        <td style="background:linear-gradient(135deg,#c96a3f,#e88f68);padding:32px;text-align:center;">
+          <h1 style="margin:0;color:#ffffff;font-family:'Segoe UI',Arial,sans-serif;">🌿 PeakWell</h1>
+          <p style="margin:6px 0 0;color:rgba(255,255,255,0.8);font-size:14px;font-family:'Segoe UI',Arial,sans-serif;">
+            Health &amp; Wellness Platform
+          </p>
+        </td>
+      </tr>
+
+      <!-- Body -->
+      <tr>
+        <td style="padding:32px 40px;color:#3d3530;font-size:15px;line-height:1.7;font-family:'Segoe UI',Arial,sans-serif;">
+
+          <p style="margin:0 0 16px;">
+            Hello, <strong th:text="${name}">User</strong>
+          </p>
+
+          <p style="margin:0 0 16px;" th:text="${message}">
+            Your account status has been updated.
+          </p>
+
+          <p style="margin:0 0 20px;">
+            Status:
+            <span th:text="${status}"
+                  th:style="${status == 'ACTIVE'}
+                    ? 'display:inline-block;padding:4px 14px;border-radius:20px;font-size:13px;font-weight:600;background:#e6f7ed;color:#1a7f37;'
+                    : 'display:inline-block;padding:4px 14px;border-radius:20px;font-size:13px;font-weight:600;background:#fdecea;color:#b42318;'">
+              ACTIVE
+            </span>
+          </p>
+
+          <!-- CTA only if ACTIVE -->
+          <p th:if="${status == 'ACTIVE'}" style="text-align:center;margin:28px 0;">
+            <a th:href="${appUrl}"
+               style="background:#c96a3f;color:#ffffff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-family:'Segoe UI',Arial,sans-serif;">
+              Go to Platform →
+            </a>
+          </p>
+
+          <p style="margin:28px 0 0;">
+            Regards,<br>
+            <strong>PeakWell Team</strong>
+          </p>
+
+        </td>
+      </tr>
+
+      <!-- Footer -->
+      <tr>
+        <td style="background:#f9f6f3;padding:20px 32px;text-align:center;">
+          <p style="margin:0 0 6px;font-size:14px;font-weight:600;color:#3d3530;font-family:'Segoe UI',Arial,sans-serif;">
+            Nourish &amp; Bloom
+          </p>
+          <p style="margin:0 0 14px;font-size:12px;color:#888;line-height:1.6;font-family:'Segoe UI',Arial,sans-serif;">
+            Helping you eat well and live fully —<br>
+            with real food, real science, and real community since 2018.
+          </p>
+          <div style="margin-bottom:14px;">
+            <a href="https://facebook.com" target="_blank" style="margin:0 6px;">
+              <img src="https://res.cloudinary.com/dbmb50bso/image/upload/v1775412787/facebook-brands-solid_d2bf0z.png"
+                   width="22" height="22" alt="Facebook" style="opacity:0.5;">
+            </a>
+            <a href="https://instagram.com" target="_blank" style="margin:0 6px;">
+              <img src="https://res.cloudinary.com/dbmb50bso/image/upload/v1775412787/instagram-brands-solid_cfl1ls.png"
+                   width="22" height="22" alt="Instagram" style="opacity:0.5;">
+            </a>
+          </div>
+          <p style="margin:0;font-size:12px;color:#aaa;font-family:'Segoe UI',Arial,sans-serif;">
+            © 2026 PeakWell · All rights reserved.
+          </p>
+        </td>
+      </tr>
+
+    </table>
+
+  </td></tr>
+</table>
+
+</body>
+</html>

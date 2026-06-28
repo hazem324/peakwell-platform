@@ -1,0 +1,147 @@
+<div class="mealplans-page">
+
+  <!-- Toolbar -->
+  <div class="mp-toolbar">
+    <div class="mp-tabs">
+      <button class="mp-tab"
+              *ngFor="let tab of tabs"
+              [class.mp-tab--active]="activeTab === tab"
+              (click)="activeTab = tab">
+        {{ tab | titlecase }}
+<span class="tab-count">
+  {{ tab === 'all' ? plans.length : countByStatus(tab) }}
+</span>
+      </button>
+    </div>
+    <button class="btn-create" (click)="openCreate()">+ New Plan</button>
+  </div>
+
+  <!-- Plans Grid -->
+  <div class="mp-grid" *ngIf="filteredPlans.length > 0">
+    <div class="mp-card" *ngFor="let plan of filteredPlans">
+
+      <div class="mp-card-header">
+        <div class="mp-client">
+          <div class="mp-avatar" [style.background]="plan.avatarColor">
+            {{ plan.clientInitials }}
+          </div>
+          <div class="mp-client-info">
+            <strong>{{ plan.clientName }}</strong>
+            <span>{{ plan.goal }}</span>
+          </div>
+        </div>
+        <span class="mp-status"
+              [style.background]="statusColor(plan.status) + '18'"
+              [style.color]="statusColor(plan.status)">
+          {{ statusLabel(plan.status) }}
+        </span>
+      </div>
+
+      <div class="mp-dates">
+        <span>📅 {{ plan.startDate }} → {{ plan.endDate }}</span>
+        <span class="mp-calories">{{ plan.calories }} kcal/day</span>
+      </div>
+
+      <!-- Adherence Bar -->
+      <div class="mp-adherence">
+        <div class="mp-adherence-label">
+          <span>Adherence</span>
+          <strong [style.color]="plan.adherence >= 80 ? '#7a9e7e' : plan.adherence >= 65 ? '#e88f68' : '#c96a3f'">
+            {{ plan.adherence }}%
+          </strong>
+        </div>
+        <div class="mp-adherence-track">
+          <div class="mp-adherence-fill"
+               [style.width]="plan.adherence + '%'"
+               [style.background]="plan.adherence >= 80 ? '#7a9e7e' : plan.adherence >= 65 ? '#e88f68' : '#c96a3f'">
+          </div>
+        </div>
+      </div>
+
+      <!-- Macros -->
+      <div class="mp-macros">
+        <div class="mp-macro">
+          <strong>{{ plan.protein }}g</strong>
+          <span>Protein</span>
+        </div>
+        <div class="mp-macro">
+          <strong>{{ plan.carbs }}g</strong>
+          <span>Carbs</span>
+        </div>
+        <div class="mp-macro">
+          <strong>{{ plan.fat }}g</strong>
+          <span>Fat</span>
+        </div>
+        <div class="mp-macro">
+          <strong>{{ plan.mealsPerDay }}</strong>
+          <span>Meals/day</span>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="mp-actions">
+        <button class="btn-edit" (click)="editPlan(plan)">✏️ Edit Plan</button>
+        <button class="btn-renew"
+                *ngIf="plan.status === 'expiring' || plan.status === 'expired'"
+                (click)="renewPlan(plan)">
+          🔄 Renew
+        </button>
+        <button class="btn-renew"
+                *ngIf="plan.status === 'active'"
+                (click)="toastService.show('📤 Sending plan to ' + plan.clientName)">
+          📤 Send
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div class="mp-empty" *ngIf="filteredPlans.length === 0">
+    <span>📋</span>
+    <p>No {{ activeTab === 'all' ? '' : activeTab }} plans found</p>
+    <button class="btn-create" (click)="openCreate()">+ Create First Plan</button>
+  </div>
+
+</div>
+
+<!-- Create Plan Modal -->
+<div class="modal-overlay" [class.modal-overlay--open]="showCreateModal" (click)="closeCreate()">
+  <div class="admin-modal" (click)="$event.stopPropagation()">
+    <div class="admin-modal-header">
+      <h3>Create New Meal Plan</h3>
+      <button class="modal-close" (click)="closeCreate()">✕</button>
+    </div>
+    <div class="admin-modal-body">
+      <div class="form-group">
+        <label>Client Name</label>
+        <input type="text" [(ngModel)]="newPlan.clientName" placeholder="e.g. Jane Smith"/>
+      </div>
+      <div class="form-group">
+        <label>Primary Goal</label>
+        <select [(ngModel)]="newPlan.goal">
+          <option *ngFor="let g of goals">{{ g }}</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Daily Calories</label>
+          <input type="number" [(ngModel)]="newPlan.calories" placeholder="1800"/>
+        </div>
+        <div class="form-group">
+          <label>Meals Per Day</label>
+          <select [(ngModel)]="newPlan.mealsPerDay">
+            <option [value]="3">3 meals</option>
+            <option [value]="4">4 meals</option>
+            <option [value]="5">5 meals</option>
+            <option [value]="6">6 meals</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="admin-modal-footer">
+      <button class="btn-cancel" (click)="closeCreate()">Cancel</button>
+      <button class="btn-save" (click)="createPlan()">Create Plan</button>
+    </div>
+  </div>
+</div>

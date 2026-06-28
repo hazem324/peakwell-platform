@@ -1,0 +1,219 @@
+<section class="auth-section">
+  <div class="auth-container">
+
+    <div class="auth-brand">
+      <div class="brand-content">
+        <span class="brand-icon">🌿</span>
+        <h1>Join <em>PeakWell</em></h1>
+        <p>
+          Start your personalized health journey. Get AI-powered insights,
+          track your progress, and connect with nutrition professionals.
+        </p>
+
+        <div class="brand-stats">
+          <div class="brand-stat">
+            <span class="stat-num">240K+</span>
+            <span class="stat-label">Members</span>
+          </div>
+          <div class="brand-stat">
+            <span class="stat-num">500+</span>
+            <span class="stat-label">Recipes</span>
+          </div>
+          <div class="brand-stat">
+            <span class="stat-num">98%</span>
+            <span class="stat-label">Satisfaction</span>
+          </div>
+        </div>
+      </div>
+      <div class="brand-footer">
+        <span>PeakWell — Optimize your health</span>
+      </div>
+    </div>
+
+    <!-- Right: Signup Form -->
+    <div class="auth-form-panel">
+      <div class="auth-form-wrap">
+
+        <!-- Email sent success state (unchanged) -->
+        <div *ngIf="success" class="auth-header">
+          <h2>Check your email 📧</h2>
+          <p>We've sent you a verification link</p>
+          <p style="margin-top:10px; font-size:13px; color:#8a7e78;">
+            Redirecting to login...
+          </p>
+        </div>
+
+        <ng-container *ngIf="!success">
+          <div class="auth-header">
+            <h2>Create account</h2>
+            <p>Get started with PeakWell for free</p>
+          </div>
+
+          <!-- Google Button (unchanged) -->
+          <button class="btn-google" (click)="signupWithGoogle()" 
+          [disabled]="!captchaPassed"
+          [class.btn-google--disabled]="!captchaPassed" >
+            <svg width="18" height="18" viewBox="0 0 24 24">
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+            </svg>
+            Sign up with Google
+          </button>
+
+          <div class="auth-divider"><span>or register with email</span></div>
+
+          <form [formGroup]="signupForm" (ngSubmit)="signup()">
+
+            <!-- Name Row (unchanged) -->
+            <div class="field-row">
+              <div class="field-group">
+                <label>First name</label>
+                <div class="input-wrap">
+                  <input type="text" formControlName="firstName" placeholder="Jane"/>
+                </div>
+                <span class="field-error"
+                      *ngIf="f['firstName'].touched && f['firstName'].invalid">
+                  First name is required
+                </span>
+              </div>
+              <div class="field-group">
+                <label>Last name</label>
+                <div class="input-wrap">
+                  <input type="text" formControlName="lastName" placeholder="Smith"/>
+                </div>
+                <span class="field-error"
+                      *ngIf="f['lastName'].touched && f['lastName'].invalid">
+                  Last name is required
+                </span>
+              </div>
+            </div>
+
+            <!-- Email (unchanged) -->
+            <div class="field-group">
+              <label>Email address</label>
+              <div class="input-wrap">
+                <span class="input-icon">✉️</span>
+                <input type="email" formControlName="email" placeholder="you@example.com"/>
+              </div>
+              <span class="field-error"
+                    *ngIf="f['email'].touched && f['email'].invalid">
+                Enter a valid email
+              </span>
+            </div>
+
+            <!-- Role -->
+            <div class="field-group">
+  <label>Account type</label>
+  <div class="input-wrap" [class.input-wrap--open]="roleDropdownOpen" (click)="toggleRoleDropdown()">
+    <span class="input-icon">👤</span>
+    <span class="custom-select-value" [class.placeholder]="!f['role'].value">
+      {{ getRoleLabel() || 'Select account type' }}
+    </span>
+    <span class="select-arrow" [class.select-arrow--open]="roleDropdownOpen">▾</span>
+  </div>
+
+  <div class="custom-dropdown" *ngIf="roleDropdownOpen">
+    <div class="custom-dropdown-option"
+         *ngFor="let opt of roleOptions"
+         (click)="selectRole(opt.value)">
+      {{ opt.label }}
+    </div>
+  </div>
+
+  <span class="field-error"
+        *ngIf="f['role'].touched && f['role'].invalid">
+    Please select an account type
+  </span>
+</div>
+
+            <!-- Password (unchanged) -->
+            <div class="field-group">
+              <label>Password</label>
+              <div class="input-wrap">
+                <input [type]="showPassword ? 'text' : 'password'"
+                       formControlName="password"
+                       placeholder="Enter your password"/>
+                <button class="toggle-pw" type="button" (click)="togglePassword()">
+                  {{ showPassword ? '🙈' : '👁️' }}
+                </button>
+              </div>
+              <span class="field-error"
+                    *ngIf="f['password'].touched && f['password'].errors">
+                <span *ngIf="f['password'].errors['required']">Password is required</span>
+                <span *ngIf="f['password'].errors['minlength']">Min 8 characters</span>
+                <span *ngIf="f['password'].errors['pattern']">
+                  Must contain uppercase, lowercase, number and special character
+                </span>
+              </span>
+            </div>
+
+            <!-- Confirm Password (unchanged) -->
+            <div class="field-group">
+              <label>Confirm password</label>
+              <div class="input-wrap"
+                   [class.input-wrap--error]="f['confirmPassword'].touched && !passwordsMatch()">
+                <input [type]="showConfirmPassword ? 'text' : 'password'"
+                       formControlName="confirmPassword"
+                       placeholder="Repeat your password"/>
+                <button class="toggle-pw" type="button" (click)="toggleConfirmPassword()">
+                  {{ showConfirmPassword ? '🙈' : '👁️' }}
+                </button>
+              </div>
+              <span class="field-error"
+                    *ngIf="f['confirmPassword'].touched && !passwordsMatch()">
+                Passwords do not match
+              </span>
+              <span class="field-success"
+                    *ngIf="f['confirmPassword'].touched && passwordsMatch()">
+                Passwords match
+              </span>
+            </div>
+
+            <!-- Terms (unchanged) -->
+            <label class="terms-row">
+              <input type="checkbox" formControlName="agreeTerms"/>
+              <span>
+                I agree to the
+                <a href="#">Terms of Service</a> and
+                <a href="#">Privacy Policy</a>
+              </span>
+            </label>
+            <span class="field-error"
+                  *ngIf="f['agreeTerms'].touched && f['agreeTerms'].invalid">
+              You must accept the terms
+            </span>
+
+            <!-- ─── CAPTCHA — inserted here, above submit ─── -->
+            <div class="field-group" style="margin-top: 4px;">
+              <label>Human verification</label>
+              <app-captcha
+                (captchaTokenChange)="onCaptchaTokenChange($event)">
+              </app-captcha>
+            </div>
+            <!-- ─────────────────────────────────────────────── -->
+
+            <!-- Submit — disabled until CAPTCHA passes -->
+            <button
+              class="btn-submit"
+              type="submit"
+              [disabled]="loading || signupForm.invalid || !passwordsMatch() || !captchaPassed"
+            >
+              {{ loading ? 'Creating account…' : 'Create Account' }}
+            </button>
+
+          </form>
+
+          <p class="auth-footer-text">
+            Already have an account?
+            <a (click)="goToLogin()">Sign in</a>
+          </p>
+        </ng-container>
+
+      </div>
+
+    </div>
+
+  </div>
+</section>

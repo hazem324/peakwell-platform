@@ -1,0 +1,21 @@
+<div class="chart-card">
+
+  <div class="chart-header">
+    <span class="chart-title">Top IP Addresses</span>
+    <span class="chart-subtitle">most active</span>
+  </div>
+
+  <div class="ip-list">
+    <div class="ip-row" *ngFor="let item of data; let i = index">
+      <span class="ip-rank">#{{ i + 1 }}</span>
+      <span class="ip-addr">{{ item.ipAddress }}</span>
+      <div class="ip-track">
+        <div class="ip-fill"
+             [style.width.%]="(item.count / maxCount) * 100">
+        </div>
+      </div>
+      <span class="ip-count">{{ item.count }}</span>
+    </div>
+  </div>
+
+</div>

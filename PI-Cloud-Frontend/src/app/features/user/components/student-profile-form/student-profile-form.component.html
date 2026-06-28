@@ -1,0 +1,95 @@
+<div [formGroup]="form">
+
+  <div class="field-row">
+    <div class="field-group">
+      <label>Height (cm)</label>
+      <div class="input-wrap">
+        <span class="input-icon">📏</span>
+        <input type="number" formControlName="height" placeholder="170"/>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label>Weight (kg)</label>
+      <div class="input-wrap">
+        <span class="input-icon">⚖️</span>
+        <input type="number" formControlName="weight" placeholder="65"/>
+      </div>
+    </div>
+  </div>
+
+  <div class="field-group">
+    <label>Date of birth</label>
+    <div class="input-wrap">
+      <span class="input-icon">🎂</span>
+      <input type="date" formControlName="dob"/>
+    </div>
+  </div>
+
+  <div class="field-group">
+    <label>Activity level</label>
+    <div class="input-wrap">
+      <span class="input-icon">🏃</span>
+      <select formControlName="activityLevel" class="auth-select">
+        <option [ngValue]="null" disabled>Select activity level</option>
+        <option value="LOW">Low — mostly sedentary</option>
+        <option value="MEDIUM">Medium — light exercise</option>
+        <option value="HIGH">High — very active</option>
+      </select>
+      <span class="select-arrow">▾</span>
+    </div>
+  </div>
+
+  <div class="field-group">
+    <label>Health goal</label>
+    <div class="input-wrap">
+      <span class="input-icon">🎯</span>
+      <select formControlName="goal" class="auth-select">
+        <option [ngValue]="null" disabled>Select your goal</option>
+        <option value="LOSE_WEIGHT">Lose weight</option>
+        <option value="GAIN_WEIGHT">Gain weight</option>
+        <option value="MAINTAIN">Maintain weight</option>
+      </select>
+      <span class="select-arrow">▾</span>
+    </div>
+  </div>
+
+  <!-- Profile Photo Upload -->
+  <div class="field-group">
+    <label>Profile photo</label>
+
+    <div class="photo-upload-row">
+
+      <div class="photo-preview">
+        <img *ngIf="photoPreview" [src]="photoPreview" alt="Profile photo"/>
+        <span *ngIf="!photoPreview" class="photo-placeholder">🎓</span>
+      </div>
+
+      <div class="upload-zone upload-zone--compact"
+           [class.upload-zone--has-file]="photoFile"
+           (click)="photoInput.click()"
+           (dragover)="$event.preventDefault()"
+           (drop)="onDrop($event)">
+        <input #photoInput type="file" accept=".jpg,.jpeg,.png,.webp"
+               (change)="onFileChange($event)" hidden/>
+
+        <ng-container *ngIf="!photoFile">
+          <span class="upload-icon">🖼️</span>
+          <span class="upload-label">Click or drag photo</span>
+          <span class="upload-hint">JPG, PNG or WEBP — max 3MB</span>
+        </ng-container>
+
+        <ng-container *ngIf="photoFile">
+          <span class="upload-icon">✅</span>
+          <span class="upload-label upload-label--success">{{ photoFile.name }}</span>
+          <span class="upload-hint">{{ formatSize(photoFile.size) }}</span>
+          <button class="upload-remove" type="button"
+                  (click)="removeFile($event)">✕ Remove</button>
+        </ng-container>
+      </div>
+
+    </div>
+    <span class="field-error" *ngIf="photoError">{{ photoError }}</span>
+  </div>
+
+</div>

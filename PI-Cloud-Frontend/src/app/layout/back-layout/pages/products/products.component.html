@@ -1,0 +1,147 @@
+<div class="products-page">
+
+  <table class="products-table">
+
+    <thead>
+      <tr>
+        <th>Image</th>
+        <th>Nom</th>
+        <th>Catégorie</th>
+        <th>Calories</th>
+        <th>Protéines</th>
+        <th>Glucides</th>
+        <th>Lipides</th>
+        <th>Stock</th>
+        <th>Status</th>
+        <th>Min</th>
+        <th>Unité</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr *ngFor="let p of products">
+
+        <!-- IMAGE -->
+        <td>
+          <img 
+            [src]="'http://localhost:8090/peakwell/uploads/' + p.image"
+            class="product-img"
+            *ngIf="p.image"
+          />
+        </td>
+
+        <!-- INFOS -->
+        <td>
+          <strong>{{ p.name }}</strong>
+          <div class="desc">{{ p.description }}</div>
+        </td>
+
+        <td>{{ p.category_Product }}</td>
+        <td>{{ p.calories }}</td>
+        <td>{{ p.protein }}</td>
+        <td>{{ p.carbs }}</td>
+        <td>{{ p.fats }}</td>
+
+        <td>{{ p.stock }}</td>
+
+        <!-- STATUS -->
+        <td>
+          <span 
+            class="status"
+            [ngClass]="{
+              'low': p.stockStatus === 'LOW_STOCK',
+              'ok': p.stockStatus === 'IN_STOCK',
+              'out': p.stockStatus === 'OUT_OF_STOCK'
+            }">
+            {{ p.stockStatus }}
+          </span>
+        </td>
+
+        <td>{{ p.minStock }}</td>
+        <td>{{ p.unit }}</td>
+
+        <!-- ACTIONS -->
+        <td class="actions">
+        <button class="edit" (click)="editProduct(p)">✏</button>
+        <button class="delete" (click)="deleteProduct(p.id)">🗑</button>
+        </td>
+
+      </tr>
+    </tbody>
+
+  </table>
+
+</div>
+
+<!-- POPUP OVERLAY -->
+<div class="popup-overlay" *ngIf="showEditPopup" (click)="closePopup()">
+
+  <div class="popup" (click)="$event.stopPropagation()">
+
+    <h2>Modifier produit</h2>
+
+    <!-- FORM -->
+    <div class="form-grid">
+
+      <!-- NOM -->
+      <input [(ngModel)]="selectedProduct.name" placeholder="Nom">
+
+      <!-- CATEGORY -->
+      <select [(ngModel)]="selectedProduct.category_Product">
+        <option value="PROTEIN">Protéines</option>
+        <option value="CARB">Glucides</option>
+        <option value="FAT">Lipides</option>
+        <option value="VEGETABLE">Légumes</option>
+        <option value="DAIRY">Produits laitiers</option>
+      </select>
+
+      <!-- CALORIES -->
+      <input type="number" [(ngModel)]="selectedProduct.calories" placeholder="Calories">
+
+      <!-- PROTEIN -->
+      <input type="number" [(ngModel)]="selectedProduct.protein" placeholder="Protein">
+
+      <!-- CARBS -->
+      <input type="number" [(ngModel)]="selectedProduct.carbs" placeholder="Carbs">
+
+      <!-- FATS -->
+      <input type="number" [(ngModel)]="selectedProduct.fats" placeholder="Fats">
+
+      <!-- STOCK -->
+      <input type="number" [(ngModel)]="selectedProduct.stock" placeholder="Stock">
+
+      <!-- MIN STOCK -->
+      <input type="number" [(ngModel)]="selectedProduct.minStock" placeholder="Min Stock">
+
+      <!-- UNIT -->
+      <select [(ngModel)]="selectedProduct.unit">
+        <option value="G">Grammes</option>
+        <option value="KG">Kilogrammes</option>
+      </select>
+
+    </div>
+
+    <!-- DESCRIPTION -->
+    <textarea [(ngModel)]="selectedProduct.description" placeholder="Description"></textarea>
+
+    <!-- IMAGE -->
+    <div class="image-section">
+
+      <input type="file" (change)="onFileSelected($event)">
+
+      <!-- PREVIEW -->
+      <img *ngIf="getImagePreview()" [src]="getImagePreview()" class="preview">
+
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="popup-actions">
+      <button class="cancel" (click)="closePopup()">Annuler</button>
+      <button class="save" (click)="updateProduct()">Enregistrer</button>
+    </div>
+
+  </div>
+
+</div>
+

@@ -1,0 +1,176 @@
+<div class="page-wrap">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="container">
+      <a routerLink="/nutritionist" class="back-link">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+        Nutritionist Space
+      </a>
+      <div class="ph-content">
+        <div class="ph-title-wrap">
+          <div class="ph-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </div>
+          <div>
+            <h1>Clients</h1>
+            <p>Browse, search and manage all registered clients.</p>
+          </div>
+        </div>
+        <div class="ph-count" *ngIf="!loading">
+          <span class="count-num">{{ clients.length }}</span>
+          <span class="count-label">Clients</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="search-bar">
+        <svg class="sb-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        <input type="text" [(ngModel)]="search" (ngModelChange)="onSearch()"
+               placeholder="Search by name, goal or email…"/>
+        <button class="sb-clear" *ngIf="search" (click)="clearSearch()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+        <span class="sb-count" *ngIf="!loading">{{ filtered.length }} / {{ clients.length }}</span>
+      </div>
+
+      <div class="status-tabs">
+        <button class="st-btn" [class.is-active]="activeStatus === 'all'"      (click)="setStatus('all')">All</button>
+        <button class="st-btn" [class.is-active]="activeStatus === 'active'"   (click)="setStatus('active')">
+          Active
+          <span class="st-count">{{ activeCount }}</span>
+        </button>
+        <button class="st-btn" [class.is-active]="activeStatus === 'inactive'" (click)="setStatus('inactive')">
+          Inactive
+          <span class="st-count st-count--inactive">{{ inactiveCount }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-state" *ngIf="loading">
+      <div class="spinner"></div>
+      <span>Loading clients…</span>
+    </div>
+
+    <!-- Empty -->
+    <div class="empty-state" *ngIf="!loading && filtered.length === 0">
+      <div class="empty-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+      </div>
+      <h3>{{ clients.length === 0 ? 'No clients yet' : 'No results for "' + search + '"' }}</h3>
+      <p>{{ clients.length === 0 ? 'Clients will appear here once registered.' : 'Try a different search term or filter.' }}</p>
+      <button class="empty-reset" *ngIf="search || activeStatus !== 'all'" (click)="clearSearch()">Clear filters</button>
+    </div>
+
+    <!-- Clients Grid -->
+    <div class="clients-grid" *ngIf="!loading && filtered.length > 0">
+      <div class="client-card"
+           *ngFor="let s of filtered"
+           [style.--card-accent]="avatarColor(s.id)">
+
+        <!-- Card Header -->
+        <div class="cc-header">
+          <div class="cc-avatar"
+               [style.background]="s.imageUrl ? 'transparent' : avatarBg(s.id)"
+               [style.color]="avatarColor(s.id)"
+               [style.box-shadow]="'0 0 0 3px ' + avatarColor(s.id) + '22'">
+            <img *ngIf="s.imageUrl"
+                 [src]="s.imageUrl"
+                 [alt]="initials(s)"
+                 class="cc-avatar-img"
+                 (error)="s.imageUrl = null">
+            <span *ngIf="!s.imageUrl">{{ initials(s) }}</span>
+          </div>
+          <div class="cc-identity">
+            <h4>{{ s.firstName }} {{ s.lastName }}</h4>
+            <span class="cc-email">{{ s.email || '—' }}</span>
+          </div>
+          <span class="cc-status"
+                [style.background]="statusColor(s.enabled) + '14'"
+                [style.color]="statusColor(s.enabled)"
+                [style.border-color]="statusColor(s.enabled) + '35'">
+            {{ s.enabled ? 'Active' : 'Inactive' }}
+          </span>
+        </div>
+
+        <!-- Goal -->
+        <div class="cc-goal" *ngIf="s.goal">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+          </svg>
+          {{ s.goal }}
+        </div>
+
+        <!-- Stats Row -->
+        <div class="cc-stats">
+          <div class="ccs-item">
+            <strong>{{ s.weight ? s.weight + ' kg' : '—' }}</strong>
+            <span>Weight</span>
+          </div>
+          <div class="ccs-item">
+            <strong [style.color]="bmiColor(s.bmi)">{{ s.bmi ? (s.bmi | number:'1.1-1') : '—' }}</strong>
+            <span>BMI</span>
+          </div>
+          <div class="ccs-item">
+            <strong>{{ s.age ? s.age + ' y/o' : '—' }}</strong>
+            <span>Age</span>
+          </div>
+          <div class="ccs-item">
+            <strong style="font-size: 11px; text-transform: capitalize;">{{ s.activityLevel || '—' }}</strong>
+            <span>Activity</span>
+          </div>
+        </div>
+
+        <!-- BMI Label -->
+        <div class="cc-bmi-row" *ngIf="s.bmi">
+          <span class="cc-bmi-badge"
+                [style.background]="bmiColor(s.bmi) + '14'"
+                [style.color]="bmiColor(s.bmi)"
+                [style.border-color]="bmiColor(s.bmi) + '35'">
+            {{ bmiLabel(s.bmi) }}
+          </span>
+          <span class="cc-profile-status">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline *ngIf="s.profileCompleted" points="20 6 9 17 4 12"/>
+              <circle *ngIf="!s.profileCompleted" cx="12" cy="12" r="10"/>
+            </svg>
+            {{ s.profileCompleted ? 'Profile complete' : 'Profile pending' }}
+          </span>
+        </div>
+
+        <!-- Action -->
+        <button class="cc-dossier-btn" (click)="openDossier(s)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+          View Dossier
+        </button>
+
+      </div>
+    </div>
+
+  </div>
+</div>

@@ -1,0 +1,295 @@
+<div class="symptom-journal">
+
+  <!-- Sub-nav -->
+  <div class="sub-nav">
+    <button [class.sub-nav--active]="activeView === 'log'" (click)="activeView = 'log'">📝 Log Symptom</button>
+    <button [class.sub-nav--active]="activeView === 'history'" (click)="activeView = 'history'">📅 History</button>
+    <button [class.sub-nav--active]="activeView === 'insights'" (click)="showInsights()">🔬 Pattern Analysis</button>
+  </div>
+
+  <!-- ═══════ LOG VIEW ═══════ -->
+  <div class="log-view" *ngIf="activeView === 'log'">
+    <div class="form-card">
+      <div class="form-card-header">
+        <h3>Log a Symptom</h3>
+        <p>Record what you're experiencing. Over time, we'll detect patterns and correlations with your biometric data.</p>
+      </div>
+
+      <!-- Date -->
+      <div class="form-section">
+        <div class="form-section-label">📅 Date</div>
+        <input type="date" [(ngModel)]="form.logDate" class="date-input"/>
+      </div>
+
+      <!-- Symptom Selection -->
+      <div class="form-section">
+        <div class="form-section-label">🩺 What are you experiencing?</div>
+        <div class="symptom-grid">
+          <button *ngFor="let s of commonSymptoms"
+                  class="symptom-btn"
+                  [class.symptom-btn--active]="form.symptom === s"
+                  (click)="selectSymptom(s)">
+            {{ s }}
+          </button>
+        </div>
+        <input *ngIf="form.symptom === 'Other'" type="text"
+               [(ngModel)]="form.customSymptom" placeholder="Describe your symptom…"
+               class="custom-input"/>
+      </div>
+
+      <!-- Severity -->
+      <div class="form-section">
+        <div class="form-section-label">📊 Severity: <strong [style.color]="severityColor(form.severity)">{{ severityLabel(form.severity) }} ({{ form.severity }}/5)</strong></div>
+        <input type="range" min="1" max="5" step="1" [(ngModel)]="form.severity" class="severity-slider"/>
+        <div class="severity-labels">
+          <span>Mild</span><span>Light</span><span>Moderate</span><span>Severe</span><span>Very Severe</span>
+        </div>
+      </div>
+
+      <!-- Time of Day -->
+      <div class="form-section">
+        <div class="form-section-label">🕐 Time of Day</div>
+        <div class="time-row">
+          <button *ngFor="let t of timesOfDay"
+                  class="time-btn"
+                  [class.time-btn--active]="form.timeOfDay === t.value"
+                  (click)="selectTime(t.value)">
+            {{ t.label }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Duration + Wellbeing -->
+      <div class="form-section">
+        <div class="form-section-label">🧠 How are you feeling overall?</div>
+        <div class="wellbeing-grid">
+          <div class="wellbeing-item">
+            <label>Duration (min)</label>
+            <input type="number" [(ngModel)]="form.duration" placeholder="e.g. 30"/>
+          </div>
+          <div class="wellbeing-item">
+            <label>Mood {{ moodEmoji(form.mood) }}</label>
+            <input type="range" min="1" max="5" step="1" [(ngModel)]="form.mood"/>
+          </div>
+          <div class="wellbeing-item">
+            <label>Energy {{ scaleLabel(form.energyLevel) }}</label>
+            <input type="range" min="1" max="5" step="1" [(ngModel)]="form.energyLevel"/>
+          </div>
+          <div class="wellbeing-item">
+            <label>Stress {{ scaleLabel(form.stressLevel) }}</label>
+            <input type="range" min="1" max="5" step="1" [(ngModel)]="form.stressLevel"/>
+          </div>
+        </div>
+      </div>
+
+      <!-- Triggers -->
+      <div class="form-section">
+        <div class="form-section-label">⚡ Possible Triggers</div>
+        <div class="trigger-grid">
+          <button *ngFor="let t of commonTriggers"
+                  class="trigger-btn"
+                  [class.trigger-btn--active]="form.triggers.includes(t)"
+                  (click)="toggleTrigger(t)">
+            {{ t }}
+          </button>
+        </div>
+        <div class="tag-input-row">
+          <input type="text" [(ngModel)]="newTrigger" placeholder="Add custom trigger…" (keyup.enter)="addCustomTrigger()"/>
+          <button class="btn-add-tag" (click)="addCustomTrigger()">+ Add</button>
+        </div>
+      </div>
+
+      <!-- Tags -->
+      <div class="form-section">
+        <div class="form-section-label">🏷️ Tags</div>
+        <div class="tag-input-row">
+          <input type="text" [(ngModel)]="newTag" placeholder="e.g. after_meal, fasting, morning_run…" (keyup.enter)="addTag()"/>
+          <button class="btn-add-tag" (click)="addTag()">+ Add</button>
+        </div>
+        <div class="tag-list" *ngIf="form.tags.length > 0">
+          <span class="tag" *ngFor="let tag of form.tags; let i = index">
+            {{ tag }} <button (click)="removeTag(i)">×</button>
+          </span>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div class="form-section">
+        <div class="form-section-label">📝 Notes</div>
+        <textarea [(ngModel)]="form.notes" placeholder="Any additional details about this episode…" rows="3"></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn-save" (click)="saveEntry()" [disabled]="saving">
+          {{ saving ? 'Saving…' : '✓ Log Symptom' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ HISTORY VIEW ═══════ -->
+  <div class="history-view" *ngIf="activeView === 'history'">
+    <div class="history-header">
+      <h3>Symptom History</h3>
+      <div class="history-filter">
+        <select [(ngModel)]="historyFilter">
+          <option value="all">All symptoms</option>
+          <option *ngFor="let s of distinctSymptoms" [value]="s">{{ s }}</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="empty-dash" *ngIf="filteredEntries.length === 0">
+      <div class="empty-dash-icon">📅</div>
+      <h3>No entries yet</h3>
+      <p>Start logging symptoms to build your health timeline.</p>
+    </div>
+
+    <div class="timeline">
+      <div class="timeline-entry" *ngFor="let entry of filteredEntries">
+        <div class="timeline-dot" [style.background]="severityColor(entry.severity)"></div>
+        <div class="timeline-card">
+          <div class="timeline-top">
+            <div class="timeline-left">
+              <strong class="timeline-symptom">{{ entry.symptom }}</strong>
+              <span class="timeline-date">{{ formatDate(entry.logDate) }}
+                <span *ngIf="entry.timeOfDay"> · {{ entry.timeOfDay }}</span>
+              </span>
+            </div>
+            <div class="timeline-right">
+              <span class="sev-badge" [style.background]="severityColor(entry.severity) + '18'" [style.color]="severityColor(entry.severity)">
+                {{ severityLabel(entry.severity) }}
+              </span>
+              <button class="btn-del" (click)="deleteEntry(entry.id)" title="Delete">×</button>
+            </div>
+          </div>
+          <div class="timeline-meta">
+            <span *ngIf="entry.mood">{{ moodEmoji(entry.mood) }} Mood</span>
+            <span *ngIf="entry.duration">⏱️ {{ entry.duration }}min</span>
+            <span *ngIf="entry.stressLevel">😰 Stress: {{ entry.stressLevel }}/5</span>
+            <span *ngIf="entry.energyLevel">⚡ Energy: {{ entry.energyLevel }}/5</span>
+          </div>
+          <div class="timeline-triggers" *ngIf="entry.triggers?.length">
+            <span class="trigger-tag" *ngFor="let t of entry.triggers">{{ t }}</span>
+          </div>
+          <p class="timeline-notes" *ngIf="entry.notes">{{ entry.notes }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ INSIGHTS VIEW ═══════ -->
+  <div class="insights-view" *ngIf="activeView === 'insights'">
+
+    <div class="empty-dash" *ngIf="loadingAnalysis">
+      <div class="empty-dash-icon">🔬</div>
+      <h3>Analyzing your symptoms…</h3>
+      <p>Cross-referencing with your biometric data to detect patterns.</p>
+    </div>
+
+    <div class="empty-dash" *ngIf="!loadingAnalysis && entries.length < 3">
+      <div class="empty-dash-icon">📊</div>
+      <h3>Not enough data yet</h3>
+      <p>Log at least 3 symptom entries to enable pattern analysis.</p>
+    </div>
+
+    <div class="analysis" *ngIf="analysis && !loadingAnalysis && entries.length >= 3">
+
+      <!-- Summary Strip -->
+      <div class="summary-strip" *ngIf="analysis.summary">
+        <div class="summary-item">
+          <span class="summary-num">{{ analysis.summary.totalEntries }}</span>
+          <span class="summary-label">Entries logged</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-num">{{ analysis.summary.uniqueSymptoms }}</span>
+          <span class="summary-label">Unique symptoms</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-num">{{ analysis.summary.correlationsFound }}</span>
+          <span class="summary-label">Correlations found</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-num">{{ moodEmoji(roundNum(analysis.summary.avgMood)) }}</span>
+          <span class="summary-label">Avg mood</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-num">{{ analysis.summary.mostFrequentSymptom }}</span>
+          <span class="summary-label">Most frequent</span>
+        </div>
+      </div>
+
+      <!-- Top Symptoms -->
+      <div class="section-card" *ngIf="analysis.topSymptoms?.length">
+        <div class="section-title-row">
+          <span>📋</span><h4>Top Symptoms</h4>
+        </div>
+        <div class="freq-grid">
+          <div class="freq-card" *ngFor="let s of analysis.topSymptoms">
+            <div class="freq-top">
+              <strong>{{ s.symptom }}</strong>
+              <span class="freq-count">{{ s.count }}×</span>
+            </div>
+            <div class="freq-meta">
+              Avg severity: <strong [style.color]="severityColor(roundNum(s.avgSeverity))">{{ s.avgSeverity }}</strong>
+              · Peak: {{ s.mostCommonTime }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pattern Insights -->
+      <div class="section-card" *ngIf="analysis.patterns?.length">
+        <div class="section-title-row">
+          <span>🧠</span><h4>Detected Patterns</h4>
+        </div>
+        <div class="pattern-list">
+          <div class="pattern-card" *ngFor="let p of analysis.patterns"
+               [style.border-left-color]="patternSeverityColor(p.severity)">
+            <span class="pattern-icon">{{ p.icon }}</span>
+            <div class="pattern-body">
+              <strong>{{ p.title }}</strong>
+              <p>{{ p.description }}</p>
+            </div>
+            <span class="pattern-severity"
+                  [style.background]="patternSeverityColor(p.severity) + '15'"
+                  [style.color]="patternSeverityColor(p.severity)">
+              {{ p.severity | titlecase }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Biometric Correlations -->
+      <div class="section-card" *ngIf="analysis.correlations?.length">
+        <div class="section-title-row">
+          <span>📊</span><h4>Biometric Correlations</h4>
+        </div>
+        <div class="corr-list">
+          <div class="corr-card" *ngFor="let c of analysis.correlations">
+            <div class="corr-header">
+              <strong>{{ c.symptom }} ↔ {{ c.biometric }}</strong>
+              <span class="corr-strength"
+                    [style.color]="c.strength >= 0.7 ? '#c96a3f' : c.strength >= 0.4 ? '#e88f68' : '#7a9e7e'">
+                {{ correlationStrengthLabel(c.strength) }} ({{ c.strength }})
+              </span>
+            </div>
+            <p class="corr-desc">{{ c.description }}</p>
+            <div class="corr-bar-track">
+              <div class="corr-bar-fill"
+                   [style.width.%]="c.strength * 100"
+                   [style.background]="c.strength >= 0.7 ? '#c96a3f' : c.strength >= 0.4 ? '#e88f68' : '#7a9e7e'">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Disclaimer -->
+      <div class="disclaimer">
+        <span>ℹ️</span>
+        <p>Pattern detection uses statistical correlation (Pearson coefficient) between your symptom severity and biometric readings recorded within ±7 days. Correlations do not imply causation. Always discuss findings with your healthcare provider.</p>
+      </div>
+    </div>
+  </div>
+</div>

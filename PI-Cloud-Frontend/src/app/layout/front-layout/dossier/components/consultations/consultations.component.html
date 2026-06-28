@@ -1,0 +1,1431 @@
+<div class="consultations">
+  <!-- Reminder Banners -->
+  <div class="reminder-banner" *ngFor="let r of reminders; let i = index">
+    <span class="reminder-icon">{{ r.type === "1_HOUR" ? "🔔" : "📅" }}</span>
+    <div class="reminder-body">
+      <strong>{{ r.type === "1_HOUR" ? "Starting soon!" : "Tomorrow" }}</strong>
+      <span>{{ r.message }}</span>
+    </div>
+    <button class="reminder-dismiss" (click)="dismissReminder(i)">×</button>
+  </div>
+
+  <!-- Sub Nav -->
+  <div class="sub-nav">
+    <button
+      [class.sub-nav--active]="view === 'upcoming'"
+      (click)="view = 'upcoming'"
+    >
+      📅 Upcoming
+    </button>
+    <button [class.sub-nav--active]="view === 'past'" (click)="view = 'past'">
+      📋 Past
+    </button>
+    <button
+      [class.sub-nav--active]="view === 'book' || view === 'select-dietitian'"
+      (click)="openBooking()"
+    >
+      ➕ Book New
+    </button>
+    <button
+      [class.sub-nav--active]="view === 'health-impact'"
+      (click)="openHealthImpact()"
+      *ngIf="past.length >= 1"
+    >
+      📈 Health Impact
+    </button>
+  </div>
+
+  <!-- ═══════ UPCOMING ═══════ -->
+  <div *ngIf="view === 'upcoming'">
+
+    <div class="empty-dash" *ngIf="upcoming.length === 0 && rejected.length === 0 && !loading">
+      <div class="empty-dash-icon">📅</div>
+      <h3>No consultations yet</h3>
+      <p>Book a consultation with a nutritionist or doctor.</p>
+      <button class="btn-book" (click)="openBooking()">+ Book Consultation</button>
+    </div>
+
+    <!-- ── Accepted ── -->
+    <div class="status-section">
+      <div class="status-section-header status-section-header--accepted">
+        <div class="ssh-left">
+          <span class="ssh-dot ssh-dot--accepted"></span>
+          <h4>Accepted</h4>
+          <span class="count-badge count-badge--accepted">{{ upcoming.length }}</span>
+        </div>
+      </div>
+      <div *ngIf="upcoming.length === 0" class="status-section-empty">No confirmed appointments.</div>
+      <div class="consult-list" *ngIf="upcoming.length > 0">
+        <div class="consult-card consult-card--accepted" *ngFor="let c of upcoming" (click)="openDetail(c)">
+          <div class="cc-left">
+            <div class="cc-date-block" [style.border-color]="'#7a9e7e'">
+              <span class="cc-day">{{ formatDate(c.scheduledAt).split(",")[0] }}</span>
+              <span class="cc-date">{{ formatDate(c.scheduledAt).split(",")[1] }}</span>
+              <span class="cc-time">{{ formatTime(c.scheduledAt) }}</span>
+            </div>
+          </div>
+          <div class="cc-body">
+            <div class="cc-top">
+              <strong>{{ c.doctorName }}</strong>
+              <span class="cc-specialty">{{ c.doctorSpecialty }}</span>
+            </div>
+            <div class="cc-meta">
+              <span>{{ typeIcon(c.consultationType) }} {{ c.consultationType.replace("_", " ") }}</span>
+              <span>⏱ {{ c.durationMinutes }} min</span>
+              <span class="status-badge" [style.background]="'#7a9e7e22'" [style.color]="'#7a9e7e'">✅ Accepted</span>
+              <span class="cc-priority" [style.color]="priorityColor(c.priority)" [style.background]="priorityColor(c.priority) + '12'">{{ c.priority }}</span>
+            </div>
+            <p class="cc-reason" *ngIf="c.reason">{{ c.reason }}</p>
+          </div>
+          <div class="cc-actions" (click)="$event.stopPropagation()">
+            <button *ngIf="c.consultationType === 'VIDEO_CALL'" [routerLink]="['/video-call', c.id]" class="btn-video">📹 Join</button>
+            <button class="btn-reschedule" (click)="openReschedule(c)" title="Reschedule">📅</button>
+            <button class="btn-change-dietitian" (click)="openChangeDietitian(c)" title="Change Dietitian">👤</button>
+            <button class="btn-cancel" (click)="cancelConsult(c.id)" title="Cancel">×</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Refused ── -->
+    <div class="status-section">
+      <div class="status-section-header status-section-header--rejected">
+        <div class="ssh-left">
+          <span class="ssh-dot ssh-dot--rejected"></span>
+          <h4>Refused</h4>
+          <span class="count-badge count-badge--rejected">{{ rejected.length }}</span>
+        </div>
+      </div>
+      <div *ngIf="rejected.length === 0" class="status-section-empty">No refused appointments.</div>
+      <div class="consult-list" *ngIf="rejected.length > 0">
+        <div class="consult-card consult-card--rejected" *ngFor="let c of rejected" (click)="openDetail(c)">
+          <div class="cc-left">
+            <div class="cc-date-block" style="border-color: #c96a3f">
+              <span class="cc-day">{{ formatDate(c.scheduledAt).split(",")[0] }}</span>
+              <span class="cc-date">{{ formatDate(c.scheduledAt).split(",")[1] }}</span>
+              <span class="cc-time">{{ formatTime(c.scheduledAt) }}</span>
+            </div>
+          </div>
+          <div class="cc-body">
+            <div class="cc-top">
+              <strong>{{ c.doctorName }}</strong>
+              <span class="cc-specialty">{{ c.doctorSpecialty }}</span>
+            </div>
+            <div class="cc-meta">
+              <span>{{ typeIcon(c.consultationType) }} {{ c.consultationType.replace("_", " ") }}</span>
+              <span>⏱ {{ c.durationMinutes }} min</span>
+              <span class="status-badge" [style.background]="statusColor('REJECTED') + '22'" [style.color]="statusColor('REJECTED')">❌ Refused</span>
+            </div>
+            <p class="cc-rejection-reason" *ngIf="c.rejectionReason">
+              <strong>Reason:</strong> {{ c.rejectionReason }}
+            </p>
+          </div>
+          <div class="cc-actions" (click)="$event.stopPropagation()">
+            <button class="btn-book" (click)="openRebook(c)" title="Book a new slot">➕ Rebook</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════ PAST ═══════ -->
+  <div *ngIf="view === 'past'">
+    <div class="section-header">
+      <h3>Past Consultations</h3>
+      <span class="count-badge"
+        >{{ filteredPast.length }}/{{ past.length }}</span
+      >
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar" *ngIf="past.length > 0">
+      <input
+        class="filter-search"
+        type="text"
+        [(ngModel)]="filterText"
+        placeholder="🔍 Search by doctor, diagnosis, reason…"
+      />
+      <select class="filter-select" [(ngModel)]="filterSpecialty">
+        <option value="">All specialties</option>
+        <option *ngFor="let s of specialties" [value]="s">{{ s }}</option>
+      </select>
+      <select class="filter-select" [(ngModel)]="filterType">
+        <option value="">All types</option>
+        <option *ngFor="let t of types" [value]="t.value">{{ t.label }}</option>
+      </select>
+      <button
+        class="filter-clear"
+        *ngIf="hasActiveFilters"
+        (click)="clearFilters()"
+      >
+        ✕ Clear
+      </button>
+    </div>
+
+    <div class="empty-dash" *ngIf="past.length === 0 && !loading">
+      <div class="empty-dash-icon">📋</div>
+      <h3>No past consultations</h3>
+      <p>Completed consultations will appear here.</p>
+    </div>
+
+    <div
+      class="empty-dash"
+      *ngIf="past.length > 0 && filteredPast.length === 0"
+    >
+      <div class="empty-dash-icon">🔍</div>
+      <h3>No matches found</h3>
+      <p>Try adjusting your filters.</p>
+      <button class="btn-book" (click)="clearFilters()">Clear Filters</button>
+    </div>
+
+    <div class="consult-list">
+      <div
+        class="consult-card consult-card--past"
+        *ngFor="let c of filteredPast"
+        (click)="openDetail(c)"
+      >
+        <div class="cc-left">
+          <div class="cc-date-block" style="border-color: #7a9e7e">
+            <span class="cc-day">{{
+              formatDate(c.scheduledAt).split(",")[0]
+            }}</span>
+            <span class="cc-date">{{
+              formatDate(c.scheduledAt).split(",")[1]
+            }}</span>
+          </div>
+        </div>
+        <div class="cc-body">
+          <div class="cc-top">
+            <strong>{{ c.doctorName }}</strong>
+            <span class="cc-specialty">{{ c.doctorSpecialty }}</span>
+          </div>
+          <p class="cc-diagnosis" *ngIf="c.diagnosis">
+            <span class="diag-label">Diagnosis:</span> {{ c.diagnosis }}
+          </p>
+
+          <!-- Rating stars -->
+          <div class="cc-rating-preview" *ngIf="c.rating">
+            <span
+              class="star-filled"
+              *ngFor="let s of starArray(c.rating['overallRating'])"
+              >★</span
+            >
+            <span
+              class="star-empty"
+              *ngFor="let s of starArray(5 - c.rating['overallRating'])"
+              >★</span
+            >
+          </div>
+
+          <div class="cc-snapshot" *ngIf="c.biometricSnapshot">
+            <span
+              *ngFor="let item of c.biometricSnapshot | keyvalue"
+              class="snap-tag"
+              >{{ item.key }}: {{ item.value }}</span
+            >
+          </div>
+        </div>
+        <div class="cc-actions" (click)="$event.stopPropagation()">
+          <button class="btn-notes" (click)="openNotes(c)">📝</button>
+          <button class="btn-rating" (click)="openRating(c)">⭐</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ SELECT DIETITIAN ═══════ -->
+  <div *ngIf="view === 'select-dietitian'">
+    <div class="section-header">
+      <h3>Choose a Dietitian</h3>
+      <span class="count-badge">{{ dietitians.length }}</span>
+    </div>
+
+    <div class="dtc-loading" *ngIf="dietitiansLoading">
+      <span>⏳</span>
+      <p>Loading dietitians…</p>
+    </div>
+
+    <div
+      class="empty-dash"
+      *ngIf="!dietitiansLoading && dietitians.length === 0"
+    >
+      <div class="empty-dash-icon">👨‍⚕️</div>
+      <h3>No dietitians available</h3>
+      <p>No registered dietitian profiles found yet.</p>
+    </div>
+
+    <div
+      class="dietitian-grid"
+      *ngIf="!dietitiansLoading && dietitians.length > 0"
+    >
+      <div
+        class="dietitian-card"
+        *ngFor="let d of dietitians"
+        (click)="selectDietitian(d)"
+      >
+        <div class="dtc-avatar">
+          <img *ngIf="d.imageUrl" [src]="d.imageUrl" [alt]="d.firstName" class="dtc-avatar-img">
+          <span *ngIf="!d.imageUrl">{{ ((d.firstName?.[0] ?? '') + (d.lastName?.[0] ?? '')) | uppercase }}</span>
+        </div>
+
+        <div class="dtc-body">
+          <h4 class="dtc-name">{{ d.firstName }} {{ d.lastName }}</h4>
+          <p class="dtc-spec">{{ d.specialization }}</p>
+
+          <p class="dtc-bio" *ngIf="d.address">📍 {{ d.address }}</p>
+          <p class="dtc-bio dtc-bio--empty" *ngIf="!d.address">No address available.</p>
+
+          <div class="dtc-rating" *ngIf="d.averageRating">
+            <span
+              class="star-filled"
+              *ngFor="let s of starArray(roundRating(d.averageRating))"
+              >★</span
+            >
+            <span
+              class="star-empty"
+              *ngFor="let s of starArray(5 - roundRating(d.averageRating))"
+              >★</span
+            >
+            <span class="dtc-rating-val">{{ d.averageRating }}</span>
+            <span class="dtc-rating-count">({{ d.totalRatings }} reviews)</span>
+          </div>
+          <div class="dtc-no-rating" *ngIf="!d.averageRating">
+            No ratings yet
+          </div>
+        </div>
+
+        <button class="btn-select-dtc">Book →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ BOOK ═══════ -->
+  <div *ngIf="view === 'book'">
+    <div class="form-card">
+      <!-- Selected dietitian banner -->
+      <div class="selected-dtc-banner" *ngIf="selectedDietitian">
+        <div class="sdb-avatar">
+          <img *ngIf="selectedDietitian.imageUrl" [src]="selectedDietitian.imageUrl" [alt]="selectedDietitian.firstName" class="dtc-avatar-img">
+          <span *ngIf="!selectedDietitian.imageUrl">{{ ((selectedDietitian.firstName?.[0] ?? '') + (selectedDietitian.lastName?.[0] ?? '')) | uppercase }}</span>
+        </div>
+        <div class="sdb-info">
+          <strong
+            >{{ selectedDietitian.firstName }}
+            {{ selectedDietitian.lastName }}</strong
+          >
+          <span>{{ selectedDietitian.specialization }}</span>
+          <span *ngIf="selectedDietitian.averageRating" class="sdb-stars">
+            <span
+              class="star-filled"
+              *ngFor="
+                let s of starArray(roundRating(selectedDietitian.averageRating))
+              "
+              >★</span
+            >
+            <span
+              class="star-empty"
+              *ngFor="
+                let s of starArray(
+                  5 - roundRating(selectedDietitian.averageRating)
+                )
+              "
+              >★</span
+            >
+            {{ selectedDietitian.averageRating }}
+          </span>
+        </div>
+        <button class="btn-change-dtc" (click)="openBooking()">Change</button>
+      </div>
+
+      <div class="form-card-header">
+        <h3>Book a Consultation</h3>
+        <p>
+          Your latest biometrics, active goals, and an AI summary will be
+          attached automatically.
+        </p>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-label">👨‍⚕️ Doctor information</div>
+        <div class="field-group">
+          <label>Doctor Name</label>
+          <input
+            type="text"
+            [(ngModel)]="doctorName"
+            [readonly]="!!selectedDietitian"
+            [class.input-locked]="!!selectedDietitian"
+            placeholder="Dr. Sarah Mitchell"
+          />
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-label">📅 Scheduling</div>
+        <div class="field-group">
+          <label>Date & Time</label>
+          <input type="datetime-local" [(ngModel)]="scheduledAt" [min]="minDateTime"
+                 (change)="scheduledAtTouched = true"
+                 [class.input-error]="scheduledAtTouched && scheduledAtError" />
+          <span class="field-error" *ngIf="scheduledAtTouched && scheduledAtError">
+            ⚠ {{ scheduledAtError }}
+          </span>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-label">📋 Details</div>
+        <div class="field-group">
+          <label>Type</label>
+          <div class="type-row">
+            <button
+              *ngFor="let t of types"
+              class="type-btn"
+              [class.type-btn--active]="consultationType === t.value"
+              (click)="consultationType = t.value"
+            >
+              {{ t.label }}
+            </button>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>Priority</label>
+          <div class="type-row">
+            <button
+              *ngFor="let p of priorities"
+              class="type-btn"
+              [class.type-btn--active]="priority === p.value"
+              [style.border-color]="priority === p.value ? p.color : ''"
+              [style.color]="priority === p.value ? p.color : ''"
+              [style.background]="priority === p.value ? p.color + '10' : ''"
+              (click)="priority = p.value"
+            >
+              {{ p.label }}
+            </button>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>Reason for visit</label>
+          <textarea
+            [(ngModel)]="reason"
+            rows="3"
+            placeholder="Describe your concern..."
+          ></textarea>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button
+          class="btn-save"
+          (click)="bookConsultation()"
+          [disabled]="bookLoading"
+        >
+          {{ bookLoading ? "⏳ Booking…" : "✅ Book Consultation" }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ EDIT ═══════ -->
+  <div *ngIf="view === 'edit' && editingConsult">
+    <div class="form-card">
+
+      <!-- Back link -->
+      <div style="margin-bottom:16px">
+        <button class="btn-back" (click)="view = 'upcoming'; editingConsult = null">← Back</button>
+      </div>
+
+      <div class="form-card-header">
+        <h3>✏️ Edit Appointment</h3>
+        <p>Modify any details for your pending consultation. The dietitian will be notified.</p>
+      </div>
+
+      <!-- Dietitian selection -->
+      <div class="form-section">
+        <div class="form-section-label">👤 Dietitian</div>
+        <div class="selected-dtc-banner" *ngIf="selectedDietitian">
+          <div class="sdb-avatar">{{ ((selectedDietitian.firstName?.[0] ?? '') + (selectedDietitian.lastName?.[0] ?? '')) | uppercase }}</div>
+          <div class="sdb-info">
+            <strong>{{ selectedDietitian.firstName }} {{ selectedDietitian.lastName }}</strong>
+            <span>{{ selectedDietitian.specialization }}</span>
+          </div>
+          <button class="btn-change-dtc" (click)="selectedDietitian = null">Change</button>
+        </div>
+        <div *ngIf="!selectedDietitian">
+          <p style="font-size:12px;color:#8a7e78;margin-bottom:10px">Currently: <strong>{{ editingConsult.doctorName }}</strong> — click a card to change</p>
+          <div *ngIf="dietitiansLoading" style="font-size:13px;color:#8a7e78;padding:12px">Loading…</div>
+          <div class="dietitian-grid" *ngIf="!dietitiansLoading">
+            <div class="dietitian-card" *ngFor="let d of dietitians" (click)="selectDietitianForEdit(d)">
+              <div class="dietitian-avatar">
+                <img *ngIf="d.imageUrl" [src]="d.imageUrl" [alt]="d.firstName" class="dtc-avatar-img">
+                <span *ngIf="!d.imageUrl">{{ (d.firstName?.[0] || '') + (d.lastName?.[0] || '') }}</span>
+              </div>
+              <div class="dietitian-info">
+                <strong>{{ d.firstName }} {{ d.lastName }}</strong>
+                <span>{{ d.specialization || 'Dietitian' }}</span>
+              </div>
+              <span class="dietitian-select-icon">→</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Doctor name / specialty (manual override if no dietitian selected) -->
+      <div class="form-section" *ngIf="!selectedDietitian">
+        <div class="form-section-label">👨‍⚕️ Or enter manually</div>
+        <div class="field-row">
+          <div class="field-group">
+            <label>Doctor Name</label>
+            <input type="text" [(ngModel)]="doctorName" placeholder="Dr. Name" />
+          </div>
+          <div class="field-group">
+            <label>Specialty</label>
+            <select [(ngModel)]="doctorSpecialty">
+              <option *ngFor="let s of specialties">{{ s }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scheduling -->
+      <div class="form-section">
+        <div class="form-section-label">📅 Scheduling</div>
+        <div class="field-row">
+          <div class="field-group">
+            <label>Date & Time</label>
+            <input type="datetime-local" [(ngModel)]="scheduledAt" />
+          </div>
+          <div class="field-group">
+            <label>Duration</label>
+            <div class="duration-row">
+              <button *ngFor="let d of durations" class="dur-btn"
+                      [class.dur-btn--active]="editDuration === d"
+                      (click)="editDuration = d">{{ d }} min</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Details -->
+      <div class="form-section">
+        <div class="form-section-label">📋 Details</div>
+        <div class="field-group">
+          <label>Type</label>
+          <div class="type-row">
+            <button *ngFor="let t of types" class="type-btn"
+                    [class.type-btn--active]="editType === t.value"
+                    (click)="editType = t.value">{{ t.label }}</button>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>Priority</label>
+          <div class="type-row">
+            <button *ngFor="let p of priorities" class="type-btn"
+                    [class.type-btn--active]="editPriority === p.value"
+                    [style.border-color]="editPriority === p.value ? p.color : ''"
+                    [style.color]="editPriority === p.value ? p.color : ''"
+                    [style.background]="editPriority === p.value ? p.color + '10' : ''"
+                    (click)="editPriority = p.value">{{ p.label }}</button>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>Reason for visit</label>
+          <textarea [(ngModel)]="editReason" rows="3" placeholder="Describe your concern..."></textarea>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn-save" (click)="saveEditDetails()" [disabled]="editLoading">
+          {{ editLoading ? '⏳ Saving…' : '✅ Save Changes' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ DETAIL ═══════ -->
+  <div *ngIf="view === 'detail' && selectedConsult">
+    <button
+      class="btn-back"
+      (click)="
+        view = selectedConsult.status === 'COMPLETED' ? 'past' : 'upcoming'
+      "
+    >
+      ← Back
+    </button>
+
+    <div class="detail-card">
+      <div
+        class="detail-header"
+        [style.border-left-color]="statusColor(selectedConsult.status)"
+      >
+        <div>
+          <h3>{{ selectedConsult.doctorName }}</h3>
+          <span class="detail-specialty">{{
+            selectedConsult.doctorSpecialty
+          }}</span>
+        </div>
+        <span
+          class="status-badge"
+          [style.background]="statusColor(selectedConsult.status)"
+          >{{ selectedConsult.status }}</span
+        >
+      </div>
+
+      <div class="detail-grid">
+        <div class="detail-item">
+          <span class="d-label">Date</span
+          ><span class="d-value">{{
+            formatDate(selectedConsult.scheduledAt)
+          }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="d-label">Time</span
+          ><span class="d-value">{{
+            formatTime(selectedConsult.scheduledAt)
+          }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="d-label">Duration</span
+          ><span class="d-value"
+            >{{ selectedConsult.durationMinutes }} min</span
+          >
+        </div>
+        <div class="detail-item">
+          <span class="d-label">Type</span
+          ><span class="d-value"
+            >{{ typeIcon(selectedConsult.consultationType) }}
+            {{ selectedConsult.consultationType.replace("_", " ") }}</span
+          >
+        </div>
+        <div class="detail-item">
+          <span class="d-label">Priority</span
+          ><span
+            class="d-value"
+            [style.color]="priorityColor(selectedConsult.priority)"
+            >{{ selectedConsult.priority }}</span
+          >
+        </div>
+        <div class="detail-item">
+          <span class="d-label">Patient</span
+          ><span class="d-value">{{ selectedConsult.patientName }}</span>
+        </div>
+      </div>
+
+      <div class="detail-section" *ngIf="selectedConsult.reason">
+        <h4>📋 Reason for visit</h4>
+        <p>{{ selectedConsult.reason }}</p>
+      </div>
+
+      <!-- Biometric Snapshot -->
+      <div class="detail-section" *ngIf="selectedConsult.biometricSnapshot">
+        <h4>📊 Biometric Snapshot</h4>
+        <div class="snap-grid">
+          <div
+            class="snap-item"
+            *ngFor="let item of selectedConsult.biometricSnapshot | keyvalue"
+          >
+            <span class="snap-label">{{ item.key }}</span
+            ><span class="snap-value">{{ item.value }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Goal Snapshot -->
+      <div class="detail-section" *ngIf="selectedConsult.goalSnapshot?.length">
+        <h4>🎯 Active Goals at Time of Visit</h4>
+        <div class="goal-snap-list">
+          <div
+            class="goal-snap-card"
+            *ngFor="let g of selectedConsult.goalSnapshot"
+          >
+            <div class="gs-top">
+              <strong>{{ g.metric }}</strong>
+              <span
+                class="gs-badge"
+                [style.background]="g.achieved ? '#7a9e7e' : '#e88f68'"
+                [style.color]="'#fff'"
+                >{{ g.achieved ? "Achieved" : g.progress + "%" }}</span
+              >
+            </div>
+            <div class="gs-bar">
+              <div
+                class="gs-bar-fill"
+                [style.width.%]="g.progress || 0"
+                [style.background]="
+                  g.achieved ? '#7a9e7e' : 'var(--terracotta)'
+                "
+              ></div>
+            </div>
+            <span class="gs-meta"
+              >{{ g.direction }} to {{ g.target }} · Deadline:
+              {{ g.deadline }}</span
+            >
+          </div>
+        </div>
+      </div>
+
+
+      <!-- Doctor Notes -->
+      <div class="detail-section" *ngIf="selectedConsult.doctorNotes">
+        <h4>📝 Doctor Notes</h4>
+        <p>{{ selectedConsult.doctorNotes }}</p>
+      </div>
+      <div class="detail-section" *ngIf="selectedConsult.diagnosis">
+        <h4>🩺 Diagnosis</h4>
+        <p>{{ selectedConsult.diagnosis }}</p>
+      </div>
+      <div class="detail-section" *ngIf="selectedConsult.prescription">
+        <h4>💊 Prescription</h4>
+        <p>{{ selectedConsult.prescription }}</p>
+      </div>
+      <div class="detail-section" *ngIf="selectedConsult.followUpInstructions">
+        <h4>📌 Follow-up</h4>
+        <p>{{ selectedConsult.followUpInstructions }}</p>
+      </div>
+
+      <!-- PDF Download -->
+      <div class="detail-section"
+           *ngIf="selectedConsult.status === 'COMPLETED' && (selectedConsult.diagnosis || selectedConsult.prescription || selectedConsult.doctorNotes)">
+        <button class="btn-download-pdf" (click)="downloadPdf(selectedConsult)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Download Consultation PDF
+        </button>
+      </div>
+
+      <!-- Rating display -->
+      <div class="detail-section" *ngIf="selectedConsult.rating">
+        <h4>⭐ Your Rating</h4>
+        <div class="rating-display">
+          <div class="rating-row">
+            <span>Overall</span>
+            <span class="stars"
+              ><span
+                class="star-filled"
+                *ngFor="
+                  let s of starArray(selectedConsult.rating['overallRating'])
+                "
+                >★</span
+              ><span
+                class="star-empty"
+                *ngFor="
+                  let s of starArray(
+                    5 - selectedConsult.rating['overallRating']
+                  )
+                "
+                >★</span
+              ></span
+            >
+          </div>
+          <div
+            class="rating-row"
+            *ngIf="selectedConsult.rating['doctorKnowledgeRating']"
+          >
+            <span>Knowledge</span>
+            <span class="stars"
+              ><span
+                class="star-filled"
+                *ngFor="
+                  let s of starArray(
+                    selectedConsult.rating['doctorKnowledgeRating']
+                  )
+                "
+                >★</span
+              ><span
+                class="star-empty"
+                *ngFor="
+                  let s of starArray(
+                    5 - selectedConsult.rating['doctorKnowledgeRating']
+                  )
+                "
+                >★</span
+              ></span
+            >
+          </div>
+          <div
+            class="rating-row"
+            *ngIf="selectedConsult.rating['communicationRating']"
+          >
+            <span>Communication</span>
+            <span class="stars"
+              ><span
+                class="star-filled"
+                *ngFor="
+                  let s of starArray(
+                    selectedConsult.rating['communicationRating']
+                  )
+                "
+                >★</span
+              ><span
+                class="star-empty"
+                *ngFor="
+                  let s of starArray(
+                    5 - selectedConsult.rating['communicationRating']
+                  )
+                "
+                >★</span
+              ></span
+            >
+          </div>
+          <p class="rating-feedback" *ngIf="selectedConsult.rating['feedback']">
+            "{{ selectedConsult.rating["feedback"] }}"
+          </p>
+        </div>
+      </div>
+
+      <div class="detail-actions">
+        <button class="btn-notes" (click)="openNotes(selectedConsult)">
+          📝 Notes
+        </button>
+        <button
+          class="btn-rating"
+          *ngIf="selectedConsult.status === 'COMPLETED'"
+          (click)="openRating(selectedConsult)"
+        >
+          ⭐ Rate
+        </button>
+        <button
+          class="btn-complete"
+          *ngIf="selectedConsult.status === 'UPCOMING'"
+          (click)="markCompleted(selectedConsult.id)"
+        >
+          ✓ Complete
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ COMPARE ═══════ -->
+  <div *ngIf="view === 'compare'">
+    <div class="form-card">
+      <div class="form-card-header">
+        <h3>Compare Consultations</h3>
+        <p>
+          Compare biometric snapshots between two consultations to track
+          improvement.
+        </p>
+      </div>
+
+      <div class="field-row">
+        <div class="field-group">
+          <label>Earlier consultation</label>
+          <select [(ngModel)]="compareId1">
+            <option *ngFor="let c of past" [ngValue]="c.id">
+              {{ formatDate(c.scheduledAt) }} — {{ c.doctorName }}
+            </option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label>Later consultation</label>
+          <select [(ngModel)]="compareId2">
+            <option *ngFor="let c of past" [ngValue]="c.id">
+              {{ formatDate(c.scheduledAt) }} — {{ c.doctorName }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <button
+        class="btn-save"
+        (click)="runComparison()"
+        [disabled]="compareLoading"
+        style="margin-top: 16px"
+      >
+        {{ compareLoading ? "⏳ Comparing…" : "📊 Compare" }}
+      </button>
+    </div>
+
+    <!-- Comparison Results -->
+    <div class="compare-results" *ngIf="comparisonResult">
+      <div
+        class="compare-verdict"
+        [style.border-left-color]="
+          comparisonResult.improved > comparisonResult.worsened
+            ? '#7a9e7e'
+            : '#c96a3f'
+        "
+      >
+        <span>{{
+          comparisonResult.improved > comparisonResult.worsened ? "📈" : "📉"
+        }}</span>
+        <div>
+          <strong>{{ comparisonResult.verdict }}</strong>
+          <span class="compare-stats"
+            >{{ comparisonResult.improved }} improved ·
+            {{ comparisonResult.worsened }} worsened</span
+          >
+        </div>
+      </div>
+
+      <div class="compare-grid">
+        <div
+          class="compare-card"
+          *ngFor="let m of comparisonResult.metrics"
+          [style.border-left-color]="trendColor(m.trend)"
+        >
+          <div class="cmp-top">
+            <strong>{{ m.metric }}</strong>
+            <span class="cmp-trend" [style.color]="trendColor(m.trend)"
+              >{{ trendIcon(m.trend) }} {{ m.trend }}</span
+            >
+          </div>
+          <div class="cmp-values">
+            <div class="cmp-val">
+              <span class="cmp-label">Before</span
+              ><span class="cmp-num">{{ m.before }}</span>
+            </div>
+            <span class="cmp-arrow">→</span>
+            <div class="cmp-val">
+              <span class="cmp-label">After</span
+              ><span class="cmp-num" [style.color]="trendColor(m.trend)">{{
+                m.after
+              }}</span>
+            </div>
+            <div class="cmp-change" [style.color]="trendColor(m.trend)">
+              {{ m.change > 0 ? "+" : "" }}{{ m.change }} {{ m.unit }} ({{
+                m.percentChange > 0 ? "+" : ""
+              }}{{ m.percentChange }}%)
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ STATS ═══════ -->
+  <div *ngIf="view === 'stats'">
+    <div class="section-header">
+      <h3>Consultation Statistics</h3>
+      <span class="count-badge">All time</span>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="stats-summary-grid">
+      <div class="stat-card">
+        <span class="stat-icon">📋</span>
+        <span class="stat-value">{{ totalConsultations }}</span>
+        <span class="stat-label">Total</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">✅</span>
+        <span class="stat-value">{{ completedCount }}</span>
+        <span class="stat-label">Completed</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">📅</span>
+        <span class="stat-value">{{ upcoming.length }}</span>
+        <span class="stat-label">Upcoming</span>
+      </div>
+      <div class="stat-card stat-card--highlight">
+        <span class="stat-icon">⭐</span>
+        <span class="stat-value">{{ avgRating > 0 ? avgRating : "—" }}</span>
+        <span class="stat-label">Avg Rating ({{ ratedCount }} rated)</span>
+      </div>
+    </div>
+
+    <!-- Specialty Breakdown -->
+    <div class="stats-section" *ngIf="specialtyBreakdown.length">
+      <h4 class="stats-section-title">👨‍⚕️ By Specialty</h4>
+      <div class="breakdown-list">
+        <div class="breakdown-row" *ngFor="let s of specialtyBreakdown">
+          <span class="breakdown-name">{{ s.name }}</span>
+          <div class="breakdown-bar-wrap">
+            <div
+              class="breakdown-bar-fill"
+              [style.width.%]="s.pct"
+              style="background: var(--terracotta)"
+            ></div>
+          </div>
+          <span class="breakdown-pct">{{ s.count }} ({{ s.pct }}%)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Type Breakdown -->
+    <div class="stats-section" *ngIf="typeBreakdown.length">
+      <h4 class="stats-section-title">📡 By Type</h4>
+      <div class="breakdown-list">
+        <div class="breakdown-row" *ngFor="let t of typeBreakdown">
+          <span class="breakdown-name">{{ t.label }}</span>
+          <div class="breakdown-bar-wrap">
+            <div
+              class="breakdown-bar-fill"
+              [style.width.%]="t.pct"
+              [style.background]="t.color"
+            ></div>
+          </div>
+          <span class="breakdown-pct">{{ t.count }} ({{ t.pct }}%)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Monthly Trend -->
+    <div class="stats-section" *ngIf="monthlyTrend.length">
+      <h4 class="stats-section-title">📈 Monthly Trend</h4>
+      <div class="trend-chart">
+        <div class="trend-col" *ngFor="let m of monthlyTrend">
+          <span class="trend-count">{{ m.count }}</span>
+          <div class="trend-bar-wrap">
+            <div
+              class="trend-bar-fill"
+              [style.height.%]="(m.count / maxMonthlyCount) * 100"
+            ></div>
+          </div>
+          <span class="trend-month">{{ m.month }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ HEALTH IMPACT TIMELINE ═══════ -->
+  <div *ngIf="view === 'health-impact'">
+    <div class="section-header">
+      <h3>Health Impact Timeline</h3>
+      <span class="count-badge"
+        >{{ impactTimeline.length }} consultations with biometrics</span
+      >
+    </div>
+
+    <!-- Empty state -->
+    <div class="empty-dash" *ngIf="impactTimeline.length === 0">
+      <div class="empty-dash-icon">📈</div>
+      <h3>No biometric data found</h3>
+      <p>
+        Book a consultation while you have biometric entries recorded — your
+        vitals will be auto-attached.
+      </p>
+      <button class="btn-book" (click)="view = 'book'">
+        + Book Consultation
+      </button>
+    </div>
+
+    <ng-container *ngIf="impactTimeline.length > 0">
+      <!-- Overall impact summary -->
+      <div class="hi-summary-grid" *ngIf="impactSummary.length > 0">
+        <div class="hi-summary-card" *ngFor="let s of impactSummary">
+          <span class="hi-sum-label">{{ s.label }}</span>
+          <span class="hi-sum-delta" [style.color]="deltaColor(s.delta, true)">
+            {{ deltaIcon(s.delta, true) }} {{ s.delta! > 0 ? "+" : ""
+            }}{{ s.delta }}{{ s.unit }}
+          </span>
+          <span class="hi-sum-sub">from first to last snapshot</span>
+        </div>
+      </div>
+
+      <!-- Timeline -->
+      <div class="hi-timeline">
+        <!-- Each consultation node -->
+        <div class="hi-node" *ngFor="let item of impactTimeline; let i = index">
+          <!-- Connector line -->
+          <div class="hi-connector" *ngIf="i > 0">
+            <div class="hi-line"></div>
+            <!-- Delta between previous and this consultation -->
+            <div class="hi-delta-row" *ngIf="item.delta">
+              <span
+                *ngIf="item.delta.weight !== null"
+                class="hi-delta-badge"
+                [style.color]="deltaColor(item.delta.weight, true)"
+                [style.border-color]="deltaColor(item.delta.weight, true)"
+              >
+                ⚖ {{ deltaIcon(item.delta.weight, true)
+                }}{{ item.delta.weight > 0 ? "+" : ""
+                }}{{ item.delta.weight }} kg
+              </span>
+              <span
+                *ngIf="item.delta.bmi !== null"
+                class="hi-delta-badge"
+                [style.color]="deltaColor(item.delta.bmi, true)"
+                [style.border-color]="deltaColor(item.delta.bmi, true)"
+              >
+                BMI {{ deltaIcon(item.delta.bmi, true)
+                }}{{ item.delta.bmi > 0 ? "+" : "" }}{{ item.delta.bmi }}
+              </span>
+              <span
+                *ngIf="item.delta.systolic !== null"
+                class="hi-delta-badge"
+                [style.color]="deltaColor(item.delta.systolic, true)"
+                [style.border-color]="deltaColor(item.delta.systolic, true)"
+              >
+                BP {{ deltaIcon(item.delta.systolic, true)
+                }}{{ item.delta.systolic > 0 ? "+" : ""
+                }}{{ item.delta.systolic }} mmHg
+              </span>
+              <span
+                *ngIf="item.delta.glucose !== null"
+                class="hi-delta-badge"
+                [style.color]="deltaColor(item.delta.glucose, true)"
+                [style.border-color]="deltaColor(item.delta.glucose, true)"
+              >
+                Glucose {{ deltaIcon(item.delta.glucose, true)
+                }}{{ item.delta.glucose > 0 ? "+" : ""
+                }}{{ item.delta.glucose }} mg/dL
+              </span>
+            </div>
+          </div>
+
+          <!-- Node card -->
+          <div class="hi-card">
+            <div class="hi-card-dot"></div>
+            <div class="hi-card-body">
+              <div class="hi-card-header">
+                <div class="hi-card-title">
+                  <strong>{{ item.consultation.doctorName }}</strong>
+                  <span class="hi-specialty">{{
+                    item.consultation.doctorSpecialty
+                  }}</span>
+                </div>
+                <div class="hi-card-date">
+                  {{ formatDate(item.consultation.scheduledAt) }}
+                </div>
+              </div>
+
+              <p class="hi-reason" *ngIf="item.consultation.reason">
+                {{ item.consultation.reason }}
+              </p>
+              <p class="hi-diagnosis" *ngIf="item.consultation.diagnosis">
+                <span class="diag-label">Dx:</span>
+                {{ item.consultation.diagnosis }}
+              </p>
+
+              <!-- Biometric snapshot grid -->
+              <div class="hi-bio-grid" *ngIf="item.snap">
+                <div class="hi-bio-item" *ngIf="item.snap['weight'] != null">
+                  <span class="hi-bio-icon">⚖</span>
+                  <span class="hi-bio-val">{{ item.snap["weight"] }} kg</span>
+                  <span class="hi-bio-key">Weight</span>
+                </div>
+                <div class="hi-bio-item" *ngIf="item.snap['bmi'] != null">
+                  <span class="hi-bio-icon">📐</span>
+                  <span class="hi-bio-val">{{ item.snap["bmi"] }}</span>
+                  <span class="hi-bio-key">BMI</span>
+                </div>
+                <div class="hi-bio-item" *ngIf="item.snap['systolic'] != null">
+                  <span class="hi-bio-icon">💓</span>
+                  <span class="hi-bio-val"
+                    >{{ item.snap["systolic"] }}/{{
+                      item.snap["diastolic"]
+                    }}</span
+                  >
+                  <span class="hi-bio-key">Blood Pressure</span>
+                </div>
+                <div class="hi-bio-item" *ngIf="item.snap['glucose'] != null">
+                  <span class="hi-bio-icon">🩸</span>
+                  <span class="hi-bio-val"
+                    >{{ item.snap["glucose"] }} mg/dL</span
+                  >
+                  <span class="hi-bio-key">Glucose</span>
+                </div>
+                <div class="hi-bio-item" *ngIf="item.snap['bodyFat'] != null">
+                  <span class="hi-bio-icon">🔥</span>
+                  <span class="hi-bio-val">{{ item.snap["bodyFat"] }}%</span>
+                  <span class="hi-bio-key">Body Fat</span>
+                </div>
+                <div
+                  class="hi-bio-item"
+                  *ngIf="item.snap['muscleMass'] != null"
+                >
+                  <span class="hi-bio-icon">💪</span>
+                  <span class="hi-bio-val"
+                    >{{ item.snap["muscleMass"] }} kg</span
+                  >
+                  <span class="hi-bio-key">Muscle Mass</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Current state node -->
+        <div class="hi-node" *ngIf="currentBiometrics">
+          <div class="hi-connector">
+            <div class="hi-line hi-line--current"></div>
+          </div>
+          <div class="hi-card hi-card--current">
+            <div class="hi-card-dot hi-card-dot--current"></div>
+            <div class="hi-card-body">
+              <div class="hi-card-header">
+                <div class="hi-card-title">
+                  <strong>Current Biometrics</strong>
+                  <span class="hi-specialty">Latest recorded</span>
+                </div>
+                <div class="hi-card-date">
+                  {{ formatDate(currentBiometrics.recordedAt) }}
+                </div>
+              </div>
+              <div class="hi-bio-grid">
+                <div class="hi-bio-item" *ngIf="currentBiometrics.weight">
+                  <span class="hi-bio-icon">⚖</span>
+                  <span class="hi-bio-val"
+                    >{{ currentBiometrics.weight }} kg</span
+                  >
+                  <span class="hi-bio-key">Weight</span>
+                </div>
+                <div class="hi-bio-item" *ngIf="currentBiometrics.bmi">
+                  <span class="hi-bio-icon">📐</span>
+                  <span class="hi-bio-val">{{ currentBiometrics.bmi }}</span>
+                  <span class="hi-bio-key">BMI</span>
+                </div>
+                <div class="hi-bio-item" *ngIf="currentBiometrics.systolic">
+                  <span class="hi-bio-icon">💓</span>
+                  <span class="hi-bio-val"
+                    >{{ currentBiometrics.systolic }}/{{
+                      currentBiometrics.diastolic
+                    }}</span
+                  >
+                  <span class="hi-bio-key">Blood Pressure</span>
+                </div>
+                <div class="hi-bio-item" *ngIf="currentBiometrics.glucose">
+                  <span class="hi-bio-icon">🩸</span>
+                  <span class="hi-bio-val"
+                    >{{ currentBiometrics.glucose }} mg/dL</span
+                  >
+                  <span class="hi-bio-key">Glucose</span>
+                </div>
+                <div class="hi-bio-item" *ngIf="currentBiometrics.bodyFat">
+                  <span class="hi-bio-icon">🔥</span>
+                  <span class="hi-bio-val"
+                    >{{ currentBiometrics.bodyFat }}%</span
+                  >
+                  <span class="hi-bio-key">Body Fat</span>
+                </div>
+                <div class="hi-bio-item" *ngIf="currentBiometrics.muscleMass">
+                  <span class="hi-bio-icon">💪</span>
+                  <span class="hi-bio-val"
+                    >{{ currentBiometrics.muscleMass }} kg</span
+                  >
+                  <span class="hi-bio-key">Muscle Mass</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+
+  <!-- ═══════ NOTES MODAL ═══════ -->
+  <div
+    class="modal-overlay"
+    *ngIf="showNotesModal"
+    (click)="showNotesModal = false"
+  >
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h4>📝 Consultation Notes</h4>
+        <button class="modal-close" (click)="showNotesModal = false">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="field-group">
+          <label>Doctor Notes</label
+          ><textarea
+            [(ngModel)]="doctorNotes"
+            rows="3"
+            placeholder="General notes..."
+          ></textarea>
+        </div>
+        <div class="field-group">
+          <label>Diagnosis</label
+          ><textarea
+            [(ngModel)]="diagnosis"
+            rows="2"
+            placeholder="Findings..."
+          ></textarea>
+        </div>
+        <div class="field-group">
+          <label>Prescription</label
+          ><textarea
+            [(ngModel)]="prescription"
+            rows="2"
+            placeholder="Medications..."
+          ></textarea>
+        </div>
+        <div class="field-group">
+          <label>Follow-up</label
+          ><textarea
+            [(ngModel)]="followUpInstructions"
+            rows="2"
+            placeholder="Instructions..."
+          ></textarea>
+        </div>
+        <div class="field-group">
+          <label>Follow-up Date</label
+          ><input type="datetime-local" [(ngModel)]="followUpDate" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-save" (click)="saveNotes()">💾 Save Notes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ RATING MODAL ═══════ -->
+  <div
+    class="modal-overlay"
+    *ngIf="showRatingModal"
+    (click)="showRatingModal = false"
+  >
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h4>⭐ Rate Consultation</h4>
+        <button class="modal-close" (click)="showRatingModal = false">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="rating-field">
+          <label>Overall Rating</label
+          ><input
+            type="range"
+            min="1"
+            max="5"
+            [(ngModel)]="overallRating"
+          /><span class="rating-val">{{ overallRating }}/5</span>
+        </div>
+        <div class="rating-field">
+          <label>Doctor Knowledge</label
+          ><input
+            type="range"
+            min="1"
+            max="5"
+            [(ngModel)]="knowledgeRating"
+          /><span class="rating-val">{{ knowledgeRating }}/5</span>
+        </div>
+        <div class="rating-field">
+          <label>Communication</label
+          ><input
+            type="range"
+            min="1"
+            max="5"
+            [(ngModel)]="communicationRating"
+          /><span class="rating-val">{{ communicationRating }}/5</span>
+        </div>
+        <div class="rating-field">
+          <label>Advice Usefulness</label
+          ><input
+            type="range"
+            min="1"
+            max="5"
+            [(ngModel)]="usefulnessRating"
+          /><span class="rating-val">{{ usefulnessRating }}/5</span>
+        </div>
+        <div class="rating-field">
+          <label>Punctuality</label
+          ><input
+            type="range"
+            min="1"
+            max="5"
+            [(ngModel)]="punctualityRating"
+          /><span class="rating-val">{{ punctualityRating }}/5</span>
+        </div>
+        <label class="checkbox-row"
+          ><input type="checkbox" [(ngModel)]="wouldRecommend" /><span
+            >I would recommend this doctor</span
+          ></label
+        >
+        <div class="field-group">
+          <label>Feedback</label
+          ><textarea
+            [(ngModel)]="feedback"
+            rows="2"
+            placeholder="What went well?"
+          ></textarea>
+        </div>
+        <div class="field-group">
+          <label>Improvements</label
+          ><textarea
+            [(ngModel)]="improvements"
+            rows="2"
+            placeholder="What could be better?"
+          ></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-save" (click)="saveRating()">⭐ Save Rating</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════ RESCHEDULE MODAL ═══════ -->
+  <div
+    class="modal-overlay"
+    *ngIf="showRescheduleModal"
+    (click)="showRescheduleModal = false"
+  >
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h4>📅 Reschedule Consultation</h4>
+        <button class="modal-close" (click)="showRescheduleModal = false">
+          ×
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="field-group">
+          <label>New Date & Time</label>
+          <input type="datetime-local" [(ngModel)]="rescheduleDate" />
+        </div>
+        <p class="reschedule-note">
+          ℹ️ The consultation will be moved to the selected date. A reminder
+          will be updated automatically.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button
+          class="btn-save"
+          (click)="rescheduleConsult()"
+          [disabled]="rescheduleLoading"
+        >
+          {{ rescheduleLoading ? "⏳ Saving…" : "📅 Confirm Reschedule" }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══ CHANGE DIETITIAN MODAL ═══ -->
+  <div class="modal-overlay" *ngIf="showChangeDietitianModal" (click)="showChangeDietitianModal = false">
+    <div class="modal-card modal-card--wide" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-header-left">
+          <span class="modal-header-icon">👤</span>
+          <div>
+            <h4>Change Nutritionist</h4>
+            <p class="modal-header-sub">The appointment date and time remain unchanged.</p>
+          </div>
+        </div>
+        <button class="modal-close" (click)="showChangeDietitianModal = false">×</button>
+      </div>
+      <div class="modal-body">
+        <div *ngIf="dietitiansLoading" class="cd-loading">
+          <div class="cd-loading-spinner"></div>
+          <span>Loading nutritionists…</span>
+        </div>
+        <div class="cd-grid" *ngIf="!dietitiansLoading && dietitians.length > 0">
+          <div class="cd-card" *ngFor="let d of dietitians"
+               [class.cd-card--loading]="changeDietitianLoading"
+               (click)="confirmChangeDietitian(d)">
+            <div class="cd-avatar">
+              <img *ngIf="d.imageUrl" [src]="d.imageUrl" [alt]="d.firstName" class="dtc-avatar-img">
+              <span *ngIf="!d.imageUrl">{{ (d.firstName?.[0] || '') + (d.lastName?.[0] || '') }}</span>
+            </div>
+            <div class="cd-body">
+              <p class="cd-name">{{ d.firstName }} {{ d.lastName }}</p>
+              <p class="cd-spec">{{ d.specialization || 'Nutritionist' }}</p>
+              <div class="cd-tags">
+                <span class="cd-tag" *ngIf="d.experienceYears">{{ d.experienceYears }} yrs exp.</span>
+                <span class="cd-tag" *ngIf="d.consultationPrice">{{ d.consultationPrice }} TND</span>
+              </div>
+            </div>
+            <button class="cd-select-btn" [disabled]="changeDietitianLoading">
+              {{ changeDietitianLoading ? '…' : 'Select' }}
+            </button>
+          </div>
+        </div>
+        <div class="cd-empty" *ngIf="!dietitiansLoading && dietitians.length === 0">
+          No nutritionists available at the moment.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,69 @@
+.mealplan-section {
+  background: var(--charcoal); position: relative; overflow: hidden;
+  &::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(ellipse at 70% 50%, rgba(201,106,63,0.2) 0%, transparent 60%),
+                radial-gradient(ellipse at 20% 80%, rgba(122,158,126,0.15) 0%, transparent 50%);
+  }
+}
+
+.mealplan-inner {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center;
+  position: relative; z-index: 1;
+  @media (max-width: 900px) { grid-template-columns: 1fr; gap: 48px; }
+}
+
+.mealplan-label {
+  font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--sage-light); font-weight: 600; margin-bottom: 16px;
+  display: flex; align-items: center; gap: 8px;
+  &::before { content: ''; width: 24px; height: 1px; background: var(--sage-light); }
+}
+
+.mealplan-title {
+  font-family: var(--font-serif); font-size: clamp(30px, 3.5vw, 50px);
+  font-weight: 300; line-height: 1.1; color: #fff; margin-bottom: 20px;
+  em { font-style: italic; color: var(--terracotta-light); }
+}
+
+.mealplan-desc { font-size: 15px; line-height: 1.8; color: rgba(255,255,255,0.55); margin-bottom: 32px; }
+
+.mealplan-features { list-style: none; display: flex; flex-direction: column; gap: 12px; margin-bottom: 36px; }
+
+.mealplan-feature {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 14px; color: rgba(255,255,255,0.8);
+}
+
+.check {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: rgba(122,158,126,0.2); border: 1px solid var(--sage-light);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; color: var(--sage-light); flex-shrink: 0;
+}
+
+.mealplan-visual { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.day-card {
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius-md); padding: 18px; cursor: pointer;
+  transition: all var(--transition);
+  &:hover { background: rgba(255,255,255,0.1); border-color: rgba(201,106,63,0.5); }
+  &--featured { grid-column: 1 / -1; background: rgba(201,106,63,0.15); border-color: rgba(201,106,63,0.4); }
+  &--more {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 6px; text-align: center;
+    span { font-size: 28px; }
+    strong { font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.7); }
+  }
+}
+
+.day-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-bottom: 12px; }
+
+.day-meal { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; &:last-child { margin-bottom: 0; } }
+.day-meal-emoji { font-size: 18px; flex-shrink: 0; }
+.day-meal-info {
+  display: flex; flex-direction: column;
+  strong { font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.85); }
+  span   { font-size: 10px; color: rgba(255,255,255,0.4); }
+}

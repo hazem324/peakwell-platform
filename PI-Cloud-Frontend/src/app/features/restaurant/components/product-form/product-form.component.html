@@ -1,0 +1,119 @@
+<div class="form-card">
+
+  <div *ngIf="successMessage" class="toast-success">
+    {{ successMessage }}
+  </div>
+
+  <!-- HEADER -->
+  <div class="form-header">
+    <div>
+      <h2>{{ isEditMode ? 'Modifier Produit' : 'Ajouter Produit' }}</h2>
+      <p>Remplissez les informations nutritionnelles</p>
+    </div>
+    <button class="close-btn" (click)="close()">✖</button>
+  </div>
+
+  <form (ngSubmit)="submit()">
+
+    <div class="form-grid">
+
+      <div class="form-group">
+        <label>Nom</label>
+        <input type="text" [(ngModel)]="product.name" name="name" required />
+        <button 
+          type="button"
+          class="btn-ai"
+          (click)="autoFillNutrition()"
+          [disabled]="!product.name || loadingNutrition">
+
+          <span *ngIf="!loadingNutrition">Auto-remplir nutrition</span>
+          <span *ngIf="loadingNutrition">Chargement...</span>
+
+        </button>
+      </div>
+
+      <div class="form-group">
+        <label>Catégorie</label>
+
+        <select [(ngModel)]="product.category_Product" name="category_Product" required>
+          <option value="" disabled selected>Choisir une catégorie</option>
+
+          <option *ngFor="let cat of categories" [value]="cat.value">
+            {{ cat.label }}
+          </option>
+        </select>
+
+      </div>
+
+      <div class="form-group">
+        <label>Calories</label>
+        <input type="number" [(ngModel)]="product.calories" name="calories" />
+      </div>
+
+      <div class="form-group">
+        <label>Protéines</label>
+        <input type="number" [(ngModel)]="product.protein" name="protein" />
+      </div>
+
+      <div class="form-group">
+        <label>Glucides</label>
+        <input type="number" [(ngModel)]="product.carbs" name="carbs" />
+      </div>
+
+      <div class="form-group">
+        <label>Lipides</label>
+        <input type="number" [(ngModel)]="product.fats" name="fats" />
+      </div>
+
+      <div class="form-group">
+        <label>Stock</label>
+        <input type="number" [(ngModel)]="product.stock" name="stock" />
+      </div>
+
+      <div class="form-group">
+        <label>Unité</label>
+        <select [(ngModel)]="product.unit" name="unit" required>
+          <option value="" disabled>Choisir unité</option>
+          <option value="G">Gramme (g)</option>
+          <option value="KG">Kilogramme (kg)</option>
+        </select>
+      </div>
+
+    </div>
+
+    <div class="form-group full">
+      <label>Description</label>
+      <textarea [(ngModel)]="product.description" name="description"></textarea>
+        <button type="button"
+          class="btn-ai"
+          (click)="generateDescription()"
+          [disabled]="!product.name || loading">
+
+          <span *ngIf="!loading">Générer description</span>
+          <span *ngIf="loading">Génération...</span>
+
+        </button>
+    </div>
+
+    <div class="form-group">
+      <label class="image">Image</label>
+      <input type="file" (change)="onFileSelected($event)" accept="image/*" />
+    </div>
+
+    <div class="image-preview" *ngIf="getImagePreview()">
+      <img [src]="getImagePreview()" alt="preview">
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn-primary">
+        <h2>{{ isEditMode ? 'Modifier Produit' : 'Ajouter Produit' }}</h2>
+      </button>
+    </div>
+
+  </form>
+
+</div>
+
+<div *ngIf="showPopupFlag" class="popup-error">
+  {{ popupMessage }}
+</div>

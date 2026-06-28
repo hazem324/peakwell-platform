@@ -1,0 +1,10 @@
+<div class="toast-container" *ngIf="(toast$ | async)?.visible">
+
+  <div class="toast"
+       [ngClass]="(toast$ | async)?.type">
+
+    {{ (toast$ | async)?.message }}
+
+  </div>
+
+</div>

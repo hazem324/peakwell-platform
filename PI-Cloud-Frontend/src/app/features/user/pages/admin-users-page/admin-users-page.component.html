@@ -1,0 +1,42 @@
+<div class="users-page">
+
+  <div class="users-loading" *ngIf="loading">
+    <div class="loading-spinner"></div>
+    <span>Loading users…</span>
+  </div>
+
+  <ng-container *ngIf="!loading">
+
+    <app-users-toolbar
+      [totalCount]="filteredUsers.length"
+      [activeStatus]="activeStatus"
+      [activeRole]="activeRole"
+      (searchChange)="onSearch($event)"
+      (statusChange)="onStatusFilter($event)"
+      (roleChange)="onRoleFilter($event)">
+    </app-users-toolbar>
+
+    <app-users-table
+      [users]="filteredUsers"
+      [searchQuery]="searchQuery"
+      (detailClick)="openDetail($event)"
+      (statusClick)="openStatus($event)">
+    </app-users-table>
+
+  </ng-container>
+
+  <app-user-detail-modal
+    [user]="detailUser"
+    [visible]="showDetail"
+    (close)="closeDetail()"
+    (openStatus)="openStatus($event)">
+  </app-user-detail-modal>
+
+  <app-user-status-modal
+    [user]="statusUser"
+    [visible]="showStatus"
+    (close)="closeStatus()"
+    (confirm)="onStatusConfirm($event)">
+  </app-user-status-modal>
+
+</div>

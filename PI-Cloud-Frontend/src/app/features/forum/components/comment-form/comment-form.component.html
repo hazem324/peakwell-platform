@@ -1,0 +1,81 @@
+<div class="comment-form-section" *ngIf="userForumService.canComment(); else noCommentAccess">
+  <div class="form-header">
+    <h3 class="form-title">✍️ Share Your Thoughts</h3>
+    <p class="form-subtitle">Join the discussion and share your insights</p>
+  </div>
+
+  <div class="success-message" *ngIf="success" [@slideUp]>
+    <div class="success-icon">✓</div>
+    <div class="success-content">
+      <p class="success-title">Comment posted!</p>
+      <p class="success-text">Thanks for your contribution to the discussion.</p>
+    </div>
+  </div>
+
+  <div class="error-message" *ngIf="error" [@slideUp]>
+    <div class="error-icon">⚠️</div>
+    <p>{{ error }}</p>
+  </div>
+
+  <!-- Moderation Warning -->
+  <div class="moderation-warning" *ngIf="moderationError" [@slideUp]>
+    <div class="warning-header">
+      <span class="warning-icon">🛡️</span>
+      <strong>Comment Blocked</strong>
+      <button class="dismiss-btn" (click)="moderationError = ''" type="button" aria-label="Dismiss warning">✕</button>
+    </div>
+
+    <p class="warning-message">{{ moderationError }}</p>
+
+    <div class="detected-words" *ngIf="detectedWords.length > 0">
+      <span class="detected-label">Detected words:</span>
+      <span class="word-tag" *ngFor="let word of detectedWords">{{ word }}</span>
+    </div>
+
+    <p class="warning-hint">
+      💡 Please rephrase your comment to be more respectful.
+    </p>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="comment-form">
+    <div class="form-group">
+      <label for="content" class="form-label">Your Comment</label>
+      <textarea
+        id="content"
+        formControlName="content"
+        class="form-textarea"
+        placeholder="Share your thoughts, ask questions, or provide feedback..."
+        rows="6"
+        [class.error]="content?.invalid && (content?.dirty || content?.touched)"
+        aria-label="Your comment">
+      </textarea>
+      <span class="error-text" *ngIf="content?.invalid && (content?.dirty || content?.touched)">
+        <span *ngIf="content?.errors?.['required']">Comment is required</span>
+        <span *ngIf="content?.errors?.['minlength']">Comment must be at least 5 characters</span>
+      </span>
+    </div>
+
+    <div class="form-footer">
+      <button
+        type="submit"
+        class="btn-submit"
+        [disabled]="form.invalid || isSubmitting"
+        [class.btn-loading]="isSubmitting">
+        <span class="btn-icon" *ngIf="!isSubmitting">💬</span>
+        <span class="loading-spinner-mini" *ngIf="isSubmitting"></span>
+        <span class="btn-text">{{ isSubmitting ? 'Posting Comment...' : 'Post Comment' }}</span>
+      </button>
+      <p class="form-hint">Comments are moderated to maintain a respectful community</p>
+    </div>
+  </form>
+</div>
+
+<ng-template #noCommentAccess>
+  <div class="no-access-message">
+    <div class="no-access-content">
+      <span class="no-access-icon">🔒</span>
+      <h3 class="no-access-title">Comments Disabled</h3>
+      <p class="no-access-text">You don't have permission to comment on this article.</p>
+    </div>
+  </div>
+</ng-template>

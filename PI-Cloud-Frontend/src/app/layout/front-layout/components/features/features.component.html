@@ -1,0 +1,13 @@
+<section class="features-section" id="about">
+  <div class="container">
+    <div class="section-label">What We Offer</div>
+    <h2 class="section-title">Everything you need to <em>reach your health goals</em></h2>
+    <div class="features-grid">
+      <div class="feature-card" *ngFor="let f of features">
+        <div class="feature-icon" [ngClass]="'feature-icon--' + f.iconBg">{{ f.icon }}</div>
+        <h3 class="feature-title">{{ f.title }}</h3>
+        <p class="feature-desc">{{ f.description }}</p>
+      </div>
+    </div>
+  </div>
+</section>

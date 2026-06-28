@@ -1,0 +1,215 @@
+<div class="measurement-page">
+
+  <!-- ── Page Header ─────────────────────────────────────── -->
+  <div class="page-header">
+    <div class="page-header-left">
+      <h2>Add New Measurement</h2>
+      <p class="page-subtitle">Review the patient's current health status before recording a new entry.</p>
+    </div>
+    <div class="page-header-right" *ngIf="latest">
+      <div class="last-update-badge">
+        <span class="badge-dot"></span>
+        Last measured: <strong>{{ latest.date }}</strong>
+      </div>
+      <span class="bmi-pill"
+            [style.background]="bmiCategory.color + '18'"
+            [style.color]="bmiCategory.color">
+        BMI {{ latest.bmi }} &middot; {{ bmiCategory.label }}
+      </span>
+    </div>
+  </div>
+
+  <!-- ── Health Snapshot ────────────────────────────────── -->
+  <div class="section-block" *ngIf="latest">
+    <div class="section-divider">
+      <span class="section-line"></span>
+      <span class="section-title-text">Current Health Snapshot</span>
+      <span class="section-line"></span>
+    </div>
+
+    <div class="snapshot-grid">
+      <div class="snapshot-card" *ngFor="let m of metrics">
+        <div class="sc-accent" [style.background]="m.color + '30'"></div>
+        <div class="sc-header">
+          <span class="sc-icon">{{ m.icon }}</span>
+          <span class="sc-status"
+                *ngIf="m.status"
+                [style.background]="m.statusColor + '18'"
+                [style.color]="m.statusColor">
+            {{ m.status }}
+          </span>
+          <span class="sc-change"
+                *ngIf="m.change !== null && m.change !== 0"
+                [class.sc-change--good]="m.good"
+                [class.sc-change--bad]="!m.good">
+            {{ m.good ? '↓' : '↑' }} {{ changeLabel(m.change, m.good) }} {{ m.unit }}
+          </span>
+        </div>
+        <div class="sc-value" [style.color]="m.color">{{ m.value }}</div>
+        <div class="sc-unit" *ngIf="m.unit">{{ m.unit }}</div>
+        <div class="sc-label">{{ m.label }}</div>
+        <span class="sc-badge"
+              *ngIf="m.badge"
+              [style.background]="m.color + '18'"
+              [style.color]="m.color">
+          {{ m.badge }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Progress Trends ────────────────────────────────── -->
+  <div class="section-block" *ngIf="entries.length > 1">
+    <div class="section-divider">
+      <span class="section-line"></span>
+      <span class="section-title-text">Progress Trends</span>
+      <span class="section-line"></span>
+    </div>
+
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <div class="chart-title-wrap">
+            <span class="chart-dot" style="background:#c96a3f"></span>
+            <span class="chart-title">Weight</span>
+          </div>
+          <span class="chart-unit">kg</span>
+        </div>
+        <div class="chart-wrap"><canvas #weightChart></canvas></div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <div class="chart-title-wrap">
+            <span class="chart-dot" style="background:#e88f68"></span>
+            <span class="chart-title">BMI</span>
+          </div>
+          <span class="chart-badge"
+                [style.background]="bmiCategory.color + '18'"
+                [style.color]="bmiCategory.color">
+            {{ bmiCategory.label }}
+          </span>
+        </div>
+        <div class="chart-wrap"><canvas #bmiChart></canvas></div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <div class="chart-title-wrap">
+            <span class="chart-dot" style="background:#a47cf0"></span>
+            <span class="chart-title">Blood Pressure</span>
+          </div>
+          <span class="chart-unit">mmHg</span>
+        </div>
+        <div class="chart-wrap"><canvas #bpChart></canvas></div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <div class="chart-title-wrap">
+            <span class="chart-dot" style="background:#4ab8f0"></span>
+            <span class="chart-title">Glucose</span>
+          </div>
+          <span class="chart-unit">mg/dL</span>
+        </div>
+        <div class="chart-wrap"><canvas #glucoseChart></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── New Entry Form ─────────────────────────────────── -->
+  <div class="section-block">
+    <div class="section-divider">
+      <span class="section-line"></span>
+      <span class="section-title-text">New Entry</span>
+      <span class="section-line"></span>
+    </div>
+
+    <div class="form-card">
+
+      <!-- BMI Live Preview -->
+      <div class="bmi-preview" *ngIf="bmi > 0">
+        <div class="bmi-preview-inner">
+          <div class="bmi-big" [style.color]="bmiColor">{{ bmi }}</div>
+          <div class="bmi-info">
+            <strong>BMI</strong>
+            <span class="bmi-cat"
+                  [style.background]="bmiColor + '18'"
+                  [style.color]="bmiColor">
+              {{ bmiLabel }}
+            </span>
+            <span class="bmi-hint">Auto-calculated from weight &amp; height</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Body Measurements -->
+      <div class="form-section">
+        <div class="form-section-title">📏 Body Measurements</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Weight (kg) <span class="required">*</span></label>
+            <input type="number" [(ngModel)]="weight"
+                   (ngModelChange)="onWeightOrHeightChange()" placeholder="e.g. 74"/>
+          </div>
+          <div class="form-group">
+            <label>Height (cm) <span class="required">*</span></label>
+            <input type="number" [(ngModel)]="height"
+                   (ngModelChange)="onWeightOrHeightChange()" placeholder="e.g. 165"/>
+          </div>
+          <div class="form-group">
+            <label>Body Fat (%)</label>
+            <input type="number" [(ngModel)]="bodyFat" placeholder="e.g. 28"/>
+          </div>
+          <div class="form-group">
+            <label>Muscle Mass (kg)</label>
+            <input type="number" [(ngModel)]="muscleMass" placeholder="e.g. 46"/>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cardiovascular -->
+      <div class="form-section">
+        <div class="form-section-title">❤️ Cardiovascular</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Systolic BP (mmHg)</label>
+            <input type="number" [(ngModel)]="systolic" placeholder="e.g. 120"/>
+          </div>
+          <div class="form-group">
+            <label>Diastolic BP (mmHg)</label>
+            <input type="number" [(ngModel)]="diastolic" placeholder="e.g. 80"/>
+          </div>
+        </div>
+      </div>
+
+      <!-- Metabolic -->
+      <div class="form-section">
+        <div class="form-section-title">🩸 Metabolic</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Fasting Glucose (mg/dL)</label>
+            <input type="number" [(ngModel)]="glucose" placeholder="e.g. 90"/>
+          </div>
+        </div>
+      </div>
+
+      <!-- Clinician Notes -->
+      <div class="form-section">
+        <div class="form-section-title">📋 Clinician Notes</div>
+        <div class="form-group form-group--full">
+          <textarea [(ngModel)]="notes" rows="3"
+                    placeholder="Add observations, remarks, or recommendations for this measurement…">
+          </textarea>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn-reset" (click)="reset()">Clear</button>
+        <button class="btn-submit" (click)="submit()">Save Entry ✓</button>
+      </div>
+
+    </div>
+  </div>
+
+</div>

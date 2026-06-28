@@ -1,0 +1,232 @@
+<a routerLink="/nutritionist" class="ns-back">
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+  Nutritionist Space
+</a>
+
+<div class="ni-page">
+
+  <!-- ── Header ── -->
+  <div class="ni-header">
+    <div>
+      <h1 class="ni-title">Patient Insights</h1>
+      <p class="ni-subtitle">AI-powered analysis · {{ insights.length }} patients</p>
+    </div>
+  </div>
+
+  <!-- ── Loading / Error ── -->
+  <div class="ni-loading" *ngIf="loading"><div class="ni-spinner"></div><span>Analysing patients…</span></div>
+  <div class="ni-error" *ngIf="error">⚠ {{ error }}</div>
+
+  <div class="ni-layout" *ngIf="!loading && !error">
+
+    <!-- ══ LEFT — Patient List ══ -->
+    <aside class="ni-sidebar">
+
+      <div class="ni-search-wrap">
+        <svg class="ni-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input class="ni-search" type="text" placeholder="Search patient…" [(ngModel)]="search" />
+      </div>
+
+      <div class="ni-empty-list" *ngIf="filtered.length === 0">
+        <p>No patients found.</p>
+      </div>
+
+      <div class="ni-patient-item"
+           *ngFor="let p of filtered"
+           [class.ni-patient-item--active]="selected?.profileId === p.profileId"
+           (click)="select(p)">
+
+        <div class="ni-item-avatar" [style.background]="avatarColor(p.patientName)">
+          {{ initials(p.patientName) }}
+        </div>
+
+        <div class="ni-item-info">
+          <p class="ni-item-name">{{ p.patientName }}</p>
+          <p class="ni-item-sub">{{ p.daysSinceLastConsultation }}d since last visit</p>
+        </div>
+
+        <span class="ni-dot" [style.background]="dropoutColor(p.dropoutType)"
+              [title]="dropoutLabel(p.dropoutType)"></span>
+      </div>
+
+    </aside>
+
+    <!-- ══ RIGHT — Patient Detail ══ -->
+    <main class="ni-main">
+
+      <!-- Empty state -->
+      <div class="ni-select-prompt" *ngIf="!selected">
+        <div class="ni-prompt-icon">👈</div>
+        <p>Select a patient to view their AI analysis</p>
+      </div>
+
+      <ng-container *ngIf="selected">
+
+        <!-- Patient header -->
+        <div class="ni-patient-header">
+          <div class="ni-patient-avatar" [style.background]="avatarColor(selected.patientName)">
+            {{ initials(selected.patientName) }}
+          </div>
+          <div class="ni-patient-meta">
+            <h2>{{ selected.patientName }}</h2>
+            <div class="ni-patient-tags">
+              <span class="ni-tag" [style.background]="dropoutBg(selected.dropoutType)"
+                    [style.color]="dropoutColor(selected.dropoutType)">
+                {{ dropoutIcon(selected.dropoutType) }} {{ dropoutLabel(selected.dropoutType) }}
+              </span>
+              <span class="ni-tag ni-tag--book" *ngIf="selected.willBookSoon">📅 Likely to book</span>
+            </div>
+          </div>
+          <div class="ni-confidence-badge">
+            <span>AI Confidence</span>
+            <strong>{{ selected.dropoutConfidence | number:'1.0-1' }}%</strong>
+          </div>
+        </div>
+
+        <!-- ── Row 1: AI Prediction cards ── -->
+        <div class="ni-cards-row">
+
+          <!-- Dropout card -->
+          <div class="ni-card ni-card--dropout" [style.border-color]="dropoutColor(selected.dropoutType)">
+            <p class="ni-card-label">Patient Status</p>
+            <div class="ni-dropout-type" [style.color]="dropoutColor(selected.dropoutType)">
+              {{ dropoutIcon(selected.dropoutType) }} {{ dropoutLabel(selected.dropoutType) }}
+            </div>
+
+            <!-- Probability bars -->
+            <div class="ni-prob-bars">
+              <div class="ni-prob-row">
+                <span>Active</span>
+                <div class="ni-bar-track">
+                  <div class="ni-bar-fill ni-bar--active"
+                       [style.width.%]="selected.dropoutProbabilities.active"></div>
+                </div>
+                <span class="ni-prob-val">{{ selected.dropoutProbabilities.active | number:'1.0-1' }}%</span>
+              </div>
+              <div class="ni-prob-row">
+                <span>Discouraged</span>
+                <div class="ni-bar-track">
+                  <div class="ni-bar-fill ni-bar--disc"
+                       [style.width.%]="selected.dropoutProbabilities.discouraged"></div>
+                </div>
+                <span class="ni-prob-val">{{ selected.dropoutProbabilities.discouraged | number:'1.0-1' }}%</span>
+              </div>
+              <div class="ni-prob-row">
+                <span>Healed</span>
+                <div class="ni-bar-track">
+                  <div class="ni-bar-fill ni-bar--healed"
+                       [style.width.%]="selected.dropoutProbabilities.healed"></div>
+                </div>
+                <span class="ni-prob-val">{{ selected.dropoutProbabilities.healed | number:'1.0-1' }}%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Booking card -->
+          <div class="ni-card ni-card--booking">
+            <p class="ni-card-label">Booking Probability</p>
+            <div class="ni-booking-prob">
+              <svg class="ni-prob-circle" viewBox="0 0 36 36">
+                <path class="ni-circle-bg" d="M18 2 a16 16 0 0 1 0 32 a16 16 0 0 1 0 -32"/>
+                <path class="ni-circle-fill"
+                      [attr.stroke-dasharray]="(selected.bookingProbability / 100 * 100.5) + ' 100.5'"
+                      d="M18 2 a16 16 0 0 1 0 32 a16 16 0 0 1 0 -32"/>
+                <text x="18" y="20.5" class="ni-circle-text">{{ selected.bookingProbability | number:'1.0-0' }}%</text>
+              </svg>
+            </div>
+            <p class="ni-booking-label" [class.ni-booking-yes]="selected.willBookSoon">
+              {{ selected.willBookSoon ? '📅 Likely to book soon' : 'Unlikely to book soon' }}
+            </p>
+            <span class="ni-confidence-pill">{{ selected.bookingConfidence }} confidence</span>
+          </div>
+
+          <!-- Key metrics card -->
+          <div class="ni-card ni-card--metrics">
+            <p class="ni-card-label">Key Metrics</p>
+            <div class="ni-metrics">
+              <div class="ni-metric">
+                <span class="ni-metric-val" [ngClass]="trendClass(selected.weightTrend, true)">
+                  {{ trendArrow(selected.weightTrend) }} {{ selected.weightTrend | number:'1.1-1' }} kg
+                </span>
+                <span class="ni-metric-lbl">Weight trend</span>
+              </div>
+              <div class="ni-metric">
+                <span class="ni-metric-val" [ngClass]="trendClass(selected.bpSystolicTrend, true)">
+                  {{ trendArrow(selected.bpSystolicTrend) }} BP
+                </span>
+                <span class="ni-metric-lbl">Blood pressure</span>
+              </div>
+              <div class="ni-metric">
+                <span class="ni-metric-val" [ngClass]="trendClass(selected.glucoseTrend, true)">
+                  {{ trendArrow(selected.glucoseTrend) }} Glucose
+                </span>
+                <span class="ni-metric-lbl">Glucose trend</span>
+              </div>
+              <div class="ni-metric">
+                <span class="ni-metric-val">{{ selected.daysSinceLastConsultation }}d</span>
+                <span class="ni-metric-lbl">Since last visit</span>
+              </div>
+              <div class="ni-metric">
+                <span class="ni-metric-val ni-stars">{{ stars(selected.avgRating) }}</span>
+                <span class="ni-metric-lbl">Avg rating</span>
+              </div>
+              <div class="ni-metric">
+                <span class="ni-metric-val">{{ selected.goalProgressPct | number:'1.0-0' }}%</span>
+                <span class="ni-metric-lbl">Goal progress</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Goal progress bar -->
+        <div class="ni-goal-section">
+          <div class="ni-goal-header">
+            <span>Goal Progress</span>
+            <strong>{{ selected.goalProgressPct | number:'1.0-0' }}%</strong>
+          </div>
+          <div class="ni-goal-track">
+            <div class="ni-goal-fill"
+                 [style.width.%]="selected.goalProgressPct"
+                 [class.ni-goal--high]="selected.goalProgressPct >= 80"
+                 [class.ni-goal--mid]="selected.goalProgressPct >= 40 && selected.goalProgressPct < 80"
+                 [class.ni-goal--low]="selected.goalProgressPct < 40"></div>
+          </div>
+        </div>
+
+        <!-- Recommended action -->
+        <div class="ni-action-box" [style.border-color]="dropoutColor(selected.dropoutType)">
+          <div class="ni-action-icon" [style.background]="dropoutBg(selected.dropoutType)">
+            <span [style.color]="dropoutColor(selected.dropoutType)">💡</span>
+          </div>
+          <div>
+            <p class="ni-action-title">Recommended Action</p>
+            <p class="ni-action-text">{{ selected.recommendedAction }}</p>
+          </div>
+        </div>
+
+        <!-- ── Consultation History ── -->
+        <div class="ni-history">
+          <h3 class="ni-history-title">Last Consultations</h3>
+
+          <div class="ni-empty-consult" *ngIf="patientConsultations.length === 0">
+            No consultations found for this patient.
+          </div>
+
+          <div class="ni-consult-item" *ngFor="let c of patientConsultations">
+            <div class="ni-consult-left">
+              <span class="ni-consult-date">{{ formatDate(c.scheduledAt) }}</span>
+              <span class="ni-consult-reason">{{ c.reason || '—' }}</span>
+            </div>
+            <div class="ni-consult-right">
+              <span class="ni-badge" [ngClass]="statusClass(c.status)">{{ statusLabel(c.status) }}</span>
+              <span class="ni-consult-type">{{ c.consultationType === 'IN_PERSON' ? '🏥' : '📹' }}</span>
+            </div>
+          </div>
+        </div>
+
+      </ng-container>
+    </main>
+
+  </div>
+</div>

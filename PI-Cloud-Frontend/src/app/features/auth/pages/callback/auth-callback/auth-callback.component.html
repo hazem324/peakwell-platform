@@ -1,0 +1,87 @@
+<section class="auth-section">
+  <div class="auth-container auth-callback-shell">
+
+    <div class="auth-brand">
+      <div class="brand-content">
+        <span class="brand-icon">🌿</span>
+        <h1>Welcome to <em>PeakWell</em></h1>
+        <p>We are finishing your account setup.</p>
+      </div>
+      <div class="brand-footer">
+        <span>PeakWell — Optimize your health</span>
+      </div>
+    </div>
+
+    <div class="auth-form-panel">
+      <div class="auth-form-wrap">
+        <div class="auth-header">
+          <h2>Signing you in…</h2>
+          <p *ngIf="loading">Please wait</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="role-modal-backdrop" *ngIf="showRoleModal">
+    <div class="role-modal-card">
+
+      <div class="modal-header">
+        <div class="modal-icon">🌿</div>
+        <div class="modal-header-text">
+          <h2>Select your role</h2>
+          <p>Choose the account type for your PeakWell profile</p>
+        </div>
+      </div>
+
+      <div class="role-options">
+
+        <label class="role-option"
+               [class.active]="selectedRole === 'STUDENT'"
+               (click)="selectedRole = 'STUDENT'">
+          <input type="radio" name="role" value="STUDENT"
+                 [checked]="selectedRole === 'STUDENT'" />
+          <div class="role-option-text">
+            <span class="role-title">Student</span>
+            <span class="role-desc">Track nutrition & wellness goals</span>
+          </div>
+        </label>
+
+        <label class="role-option"
+               [class.active]="selectedRole === 'DIETITIAN'"
+               (click)="selectedRole = 'DIETITIAN'">
+          <input type="radio" name="role" value="DIETITIAN"
+                 [checked]="selectedRole === 'DIETITIAN'" />
+          <div class="role-option-text">
+            <span class="role-title">Dietitian</span>
+            <span class="role-desc">Manage clients & meal plans</span>
+          </div>
+        </label>
+
+        <label class="role-option"
+               [class.active]="selectedRole === 'RESTAURANT'"
+               (click)="selectedRole = 'RESTAURANT'">
+          <input type="radio" name="role" value="RESTAURANT"
+                 [checked]="selectedRole === 'RESTAURANT'" />
+          <div class="role-option-text">
+            <span class="role-title">Restaurant</span>
+            <span class="role-desc">List menus & nutritional info</span>
+          </div>
+        </label>
+
+      </div>
+
+      <button class="btn-submit"
+              type="button"
+              [disabled]="!selectedRole"
+              (click)="confirmRole()">
+        Continue
+      </button>
+
+      <button class="btn-cancel" type="button" (click)="closeModal()">
+        Cancel
+      </button>
+
+    </div>
+  </div>
+</section>

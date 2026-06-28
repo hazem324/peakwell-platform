@@ -1,0 +1,358 @@
+.empty-dash {
+  background: #fff; border: 1px dashed #ede8e3; border-radius: 20px;
+  padding: 60px 24px; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+  .empty-dash-icon { font-size: 48px; }
+  h3 { font-family: var(--font-serif); font-size: 24px; color: #1e1a16; }
+  p { font-size: 14px; color: #8a7e78; max-width: 400px;
+    code { background: #faf7f4; padding: 2px 6px; border-radius: 4px; font-size: 12px; } }
+}
+
+.diagnosis-content { display: flex; flex-direction: column; gap: 20px; }
+
+// ── Input Card ──────────────────────────────────
+.input-card {
+  background: #fff; border: 1px solid #ede8e3; border-radius: 20px; padding: 32px;
+}
+
+.input-header {
+  display: flex; align-items: flex-start; gap: 18px; margin-bottom: 24px;
+  h3 { font-family: var(--font-serif); font-size: 24px; font-weight: 600; color: #1e1a16; margin-bottom: 4px; }
+  p { font-size: 13px; color: #8a7e78; line-height: 1.6; }
+}
+
+.input-icon-wrap {
+  width: 52px; height: 52px; border-radius: 14px;
+  background: linear-gradient(135deg, rgba(201,106,63,0.1), rgba(201,106,63,0.05));
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  span { font-size: 24px; }
+}
+
+.ml-badge-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+
+.ml-badge {
+  display: inline-block; padding: 5px 12px; border-radius: 100px;
+  font-size: 11px; font-weight: 600;
+  background: rgba(201,106,63,0.08); color: var(--terracotta);
+  &--bio { background: rgba(122,158,126,0.12); color: #4a7e4e; }
+  &--warn { background: rgba(232,143,104,0.12); color: #a05a30; }
+}
+
+.form-section { margin-bottom: 22px; }
+
+.form-section-label {
+  font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+  color: #c5bdb7; font-weight: 700; margin-bottom: 12px;
+  padding-bottom: 8px; border-bottom: 1px solid #f5f1ed;
+  strong { color: #1e1a16; text-transform: none; letter-spacing: 0; }
+}
+
+.symptom-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.symptom-btn {
+  padding: 8px 16px; border-radius: 100px; border: 1.5px solid #ede8e3;
+  background: #fff; font-family: var(--font-sans); font-size: 13px;
+  font-weight: 500; color: #6b6460; cursor: pointer; transition: all 0.2s;
+  &:hover { border-color: var(--terracotta); color: var(--terracotta); }
+  &--active { background: var(--terracotta); color: #fff; border-color: var(--terracotta); }
+}
+
+.slider-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  @media (max-width: 560px) { grid-template-columns: 1fr; }
+}
+
+.slider-item {
+  display: flex; flex-direction: column; gap: 6px;
+  label { font-size: 13px; color: #6b6460; strong { color: #1e1a16; } }
+  input[type="range"] { accent-color: var(--terracotta); width: 100%; }
+}
+
+.time-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.time-btn {
+  padding: 10px 18px; border-radius: 12px; border: 1.5px solid #ede8e3;
+  background: #faf7f4; font-family: var(--font-sans); font-size: 13px;
+  color: #6b6460; cursor: pointer; transition: all 0.2s;
+  &:hover { border-color: var(--terracotta); }
+  &--active { background: var(--terracotta); color: #fff; border-color: var(--terracotta); }
+}
+
+.trigger-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.trigger-btn {
+  padding: 6px 14px; border-radius: 100px; border: 1.5px solid #ede8e3;
+  background: #fff; font-family: var(--font-sans); font-size: 12px;
+  font-weight: 500; color: #8a7e78; cursor: pointer; transition: all 0.2s;
+  &:hover { border-color: #e88f68; color: #e88f68; }
+  &--active { background: #e88f68; color: #fff; border-color: #e88f68; }
+}
+
+// ── DB-sourced stat card (replaces slider) ──────
+.profile-stat-card {
+  display: flex; flex-direction: column; justify-content: center; gap: 2px;
+  background: rgba(122,158,126,0.07); border: 1.5px solid rgba(122,158,126,0.25);
+  border-radius: 14px; padding: 12px 16px;
+}
+.profile-stat-label {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px;
+  color: #8a7e78; font-weight: 600;
+}
+.profile-stat-value {
+  font-family: var(--font-serif); font-size: 26px; font-weight: 700; color: #1e1a16; line-height: 1.1;
+  small { font-size: 13px; font-weight: 400; color: #8a7e78; margin-left: 2px; }
+}
+.profile-stat-source {
+  font-size: 11px; color: #4a7e4e; font-weight: 500;
+}
+
+.checkbox-row {
+  display: flex; align-items: center; gap: 10px; margin-top: 12px; cursor: pointer;
+  input[type="checkbox"] { accent-color: var(--terracotta); width: 18px; height: 18px; }
+  span { font-size: 14px; color: #6b6460; }
+}
+
+.btn-predict {
+  width: 100%; padding: 15px; border: none; border-radius: 100px;
+  background: linear-gradient(135deg, var(--terracotta), var(--terracotta-light));
+  color: #fff; font-family: var(--font-sans); font-size: 15px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s; margin-top: 8px;
+  box-shadow: 0 6px 20px rgba(201,106,63,0.3);
+  &:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 10px 28px rgba(201,106,63,0.4); }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+// ── Multi-symptom selection ─────────────────────
+.selection-count {
+  float: right; font-size: 12px; color: var(--terracotta); font-weight: 700;
+  text-transform: none; letter-spacing: 0;
+}
+
+.selected-symptoms {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px;
+  padding-top: 12px; border-top: 1px solid #f5f1ed;
+}
+
+.selected-tag {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 12px; border-radius: 100px; font-size: 12px; font-weight: 600;
+  background: rgba(201,106,63,0.1); color: #a85430;
+  button { background: none; border: none; cursor: pointer; font-size: 14px; color: #a85430; opacity: 0.6;
+    &:hover { opacity: 1; } }
+}
+
+// ── Results ─────────────────────────────────────
+.results { display: flex; flex-direction: column; gap: 16px; animation: fadeUp 0.4s ease; }
+
+// ── Overall Card ────────────────────────────────
+.overall-card {
+  background: #fff; border: 1px solid #ede8e3; border-left: 5px solid;
+  border-radius: 20px; padding: 28px;
+}
+
+.overall-header {
+  display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+}
+
+.overall-badge {
+  width: 64px; height: 64px; border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; font-weight: 800; color: #fff; flex-shrink: 0;
+}
+
+.overall-info {
+  flex: 1;
+  h3 { font-family: var(--font-serif); font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+}
+.overall-sub { font-size: 13px; color: #8a7e78; }
+
+.overall-stats { display: flex; gap: 20px; }
+.stat-mini { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.stat-mini-val { font-family: var(--font-serif); font-size: 24px; font-weight: 700; color: #1e1a16; }
+.stat-mini-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #b5aaa5; font-weight: 600; }
+
+// ── Warning ─────────────────────────────────────
+.warning-card {
+  display: flex; align-items: flex-start; gap: 12px;
+  background: rgba(232,143,104,0.06); border: 1px solid rgba(232,143,104,0.2);
+  border-radius: 14px; padding: 18px;
+  span { font-size: 20px; flex-shrink: 0; }
+  p { font-size: 14px; color: #a85430; line-height: 1.6; }
+}
+
+// ── Section Card ────────────────────────────────
+.section-card {
+  background: #fff; border: 1px solid #ede8e3; border-radius: 18px; padding: 24px;
+}
+
+.section-title {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 18px;
+  span { font-size: 18px; }
+  h4 { font-family: var(--font-serif); font-size: 18px; font-weight: 600; color: #1e1a16; }
+}
+
+// ── Per-symptom Results ─────────────────────────
+.symptom-results { display: flex; flex-direction: column; gap: 14px; }
+
+.symptom-result-card {
+  background: #faf7f4; border-radius: 14px; padding: 18px;
+  border-left: 4px solid; transition: all 0.2s;
+  &:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.04); }
+}
+
+.sr-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 16px; flex-wrap: wrap; gap: 8px;
+  strong { font-size: 15px; color: #1e1a16; font-weight: 600; }
+}
+
+.sr-severity {
+  padding: 5px 14px; border-radius: 100px; font-size: 12px; font-weight: 700; color: #fff;
+}
+
+// ── Severity scale ───────────────────────────────
+.sr-scale { margin-bottom: 14px; }
+
+.sr-scale-track {
+  display: flex; gap: 6px; margin-bottom: 6px;
+}
+
+.sr-scale-step {
+  flex: 1; height: 8px; border-radius: 4px;
+  background: #e8e3de; transition: all 0.35s ease;
+
+  &--past {
+    background: color-mix(in srgb, var(--step-color) 45%, #e8e3de);
+  }
+  &--active {
+    background: var(--step-color);
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--step-color) 50%, transparent);
+    transform: scaleY(1.5);
+    transform-origin: bottom;
+  }
+}
+
+.sr-scale-labels {
+  display: flex; justify-content: space-between;
+  font-size: 10px; color: #b5aaa5; font-weight: 500; letter-spacing: 0.2px;
+}
+
+// ── Footer ───────────────────────────────────────
+.sr-footer {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 4px;
+}
+
+.sr-conf-chip {
+  font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 100px;
+  &--high   { background: rgba(122,158,126,0.12); color: #4a7e4e; }
+  &--medium { background: rgba(232,143,104,0.10); color: #a05a30; }
+  &--low    { background: rgba(185,175,168,0.15); color: #7a6e68; }
+}
+
+.sr-severity-num {
+  font-family: var(--font-serif); font-size: 18px; font-weight: 700; color: #1e1a16;
+}
+
+// ── Risk Factors ────────────────────────────────
+.risk-list { display: flex; flex-direction: column; gap: 10px; }
+.risk-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: 14px; color: #3d3d3d; line-height: 1.5;
+  padding: 8px 0; border-bottom: 1px solid #f5f1ed;
+  &:last-child { border-bottom: none; }
+}
+.risk-arrow { color: var(--terracotta); font-weight: 700; flex-shrink: 0; }
+
+// ── Model info ──────────────────────────────────
+.model-info { display: flex; gap: 8px; flex-wrap: wrap; }
+
+// ── Actions ─────────────────────────────────────
+.result-actions { display: flex; justify-content: center; }
+
+.btn-retry {
+  background: #faf7f4; border: 1.5px solid #ede8e3; border-radius: 100px;
+  padding: 10px 24px; font-family: var(--font-sans); font-size: 13px;
+  font-weight: 600; color: #8a7e78; cursor: pointer; transition: all 0.2s;
+  &:hover { border-color: var(--terracotta); color: var(--terracotta); }
+}
+
+// ── Disclaimer ──────────────────────────────────
+.disclaimer {
+  display: flex; align-items: flex-start; gap: 10px;
+  background: rgba(74,184,240,0.06); border: 1px solid rgba(74,184,240,0.15);
+  border-radius: 12px; padding: 14px 18px;
+  span { font-size: 16px; flex-shrink: 0; }
+  p { font-size: 12px; color: #6b6460; line-height: 1.6; }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+// ── Tab Switcher ─────────────────────────────────────────────────────────────
+.diag-tabs { display: flex; gap: 8px; margin-bottom: 24px; }
+
+.diag-tab {
+  flex: 1; padding: 12px 20px; border-radius: 14px;
+  border: 1.5px solid #ede8e3; background: #faf7f4;
+  font-family: var(--font-sans); font-size: 14px; font-weight: 600;
+  color: #8a7e78; cursor: pointer; transition: all 0.2s;
+  &:hover { border-color: var(--terracotta); color: var(--terracotta); }
+  &--active { background: var(--terracotta); color: #fff; border-color: var(--terracotta); box-shadow: 0 4px 14px rgba(201,106,63,0.3); }
+}
+
+// ── Disease predict button ────────────────────────────────────────────────────
+.btn-predict--disease {
+  background: linear-gradient(135deg, #4a6fa5, #3a5a8c);
+  box-shadow: 0 6px 20px rgba(74,111,165,0.3);
+  &:hover:not(:disabled) { box-shadow: 0 10px 28px rgba(74,111,165,0.4); }
+}
+
+// ── Disease Summary Card ──────────────────────────────────────────────────────
+.disease-summary-card {
+  background: #fff; border: 1px solid #ede8e3; border-radius: 20px;
+  padding: 24px 28px; display: flex; align-items: center; gap: 20px;
+  .ds-icon { font-size: 36px; flex-shrink: 0; }
+  .ds-info {
+    h3 { font-family: var(--font-serif); font-size: 22px; font-weight: 700; color: #1e1a16; margin-bottom: 4px; }
+    p  { font-size: 13px; color: #8a7e78; }
+  }
+}
+
+// ── Disease Cards ─────────────────────────────────────────────────────────────
+.disease-list { display: flex; flex-direction: column; gap: 14px; }
+
+.disease-card {
+  background: #fff; border: 1px solid #ede8e3; border-left: 5px solid;
+  border-radius: 18px; padding: 22px 24px; transition: box-shadow 0.2s;
+  &:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.06); }
+}
+
+.dc-header { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; flex-wrap: wrap; }
+.dc-rank { font-family: var(--font-serif); font-size: 22px; font-weight: 800; color: #c5bdb7; flex-shrink: 0; min-width: 32px; }
+.dc-name-wrap { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.dc-name { font-size: 16px; font-weight: 700; color: #1e1a16; }
+.dc-urgency-chip { display: inline-block; padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 700; color: #fff; width: fit-content; }
+
+.dc-prob-ring { display: flex; flex-direction: column; align-items: center; background: #faf7f4; border-radius: 12px; padding: 8px 14px; flex-shrink: 0; }
+.dc-prob-val { font-family: var(--font-serif); font-size: 22px; font-weight: 800; color: #1e1a16; line-height: 1; }
+.dc-prob-lbl { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #b5aaa5; font-weight: 600; }
+
+.dc-prob-bar-wrap { height: 6px; background: #f0ebe6; border-radius: 3px; margin-bottom: 14px; overflow: hidden; }
+.dc-prob-bar { height: 100%; border-radius: 3px; opacity: 0.75; }
+
+.dc-description { font-size: 14px; color: #5a5450; line-height: 1.6; margin-bottom: 12px; }
+
+.dc-matched { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 14px; }
+.dc-matched-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #b5aaa5; }
+.dc-matched-tag { padding: 3px 10px; border-radius: 100px; font-size: 12px; font-weight: 600; background: rgba(201,106,63,0.08); color: #a85430; }
+
+.dc-recommendation {
+  display: flex; align-items: flex-start; gap: 10px;
+  background: #faf7f4; border-radius: 12px; padding: 14px 16px;
+  .dc-rec-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .dc-rec-spec { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--terracotta); display: block; margin-bottom: 4px; }
+  p { font-size: 13px; color: #6b6460; line-height: 1.6; margin: 0; }
+}

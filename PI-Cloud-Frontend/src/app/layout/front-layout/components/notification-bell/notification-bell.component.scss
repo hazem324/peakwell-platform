@@ -1,0 +1,120 @@
+.notif-wrapper { position: relative; }
+
+// ── Bell Button ─────────────────────────────────
+.bell-btn {
+  position: relative;
+  width: 42px; height: 42px; border-radius: 12px;
+  border: 1px solid #ede8e3; background: #fff;
+  font-size: 20px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+  &:hover { background: #faf7f4; border-color: #c96a3f; }
+  &--has-unread { animation: bellShake 0.5s ease-in-out; }
+}
+@keyframes bellShake {
+  0%, 100% { transform: rotate(0); }
+  25% { transform: rotate(8deg); }
+  50% { transform: rotate(-8deg); }
+  75% { transform: rotate(4deg); }
+}
+
+.bell-badge {
+  position: absolute; top: -4px; right: -4px;
+  background: #c96a3f; color: #fff;
+  font-size: 10px; font-weight: 700;
+  min-width: 18px; height: 18px;
+  border-radius: 100px; padding: 0 5px;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid #fff;
+  line-height: 1;
+}
+
+// ── Dropdown Panel ──────────────────────────────
+.notif-panel {
+  position: absolute; top: 50px; right: 0;
+  width: 400px; max-width: 92vw;
+  background: #fff; border: 1px solid #ede8e3;
+  border-radius: 18px; box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+  z-index: 1000; overflow: hidden;
+  animation: slideDown 0.2s ease;
+}
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.np-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 16px 20px; border-bottom: 1px solid #f5f1ed;
+  h4 {
+    font-family: var(--font-serif, 'Cormorant Garamond', Georgia, serif);
+    font-size: 17px; font-weight: 600; color: #1e1a16; margin: 0;
+  }
+}
+.np-actions { display: flex; gap: 8px; }
+.np-btn {
+  padding: 4px 12px; border-radius: 100px; border: 1px solid #ede8e3;
+  background: #fff; font-size: 11px; font-weight: 600; color: #8a7e78; cursor: pointer;
+  &:hover { border-color: #c96a3f; color: #c96a3f; }
+  &--dim { border: none; color: #c5bdb7; &:hover { color: #c96a3f; } }
+}
+
+// ── Empty ────────────────────────────────────────
+.np-empty {
+  padding: 40px 20px; text-align: center; color: #c5bdb7;
+  span { font-size: 32px; display: block; margin-bottom: 8px; }
+  p { font-size: 13px; margin: 0; }
+}
+
+// ── Notification List ────────────────────────────
+.np-list { max-height: 420px; overflow-y: auto; }
+
+.np-item {
+  display: flex; gap: 12px; padding: 14px 20px;
+  border-bottom: 1px solid #f5f1ed; border-left: 3px solid transparent;
+  cursor: pointer; transition: background 0.15s;
+  position: relative;
+
+  &:last-child { border-bottom: none; }
+  &:hover { background: #fdfbf8; }
+
+  &--unread {
+    background: rgba(201,106,63,0.03);
+    &::before {
+      content: '';
+      position: absolute; left: 12px; top: 20px;
+      width: 6px; height: 6px; border-radius: 50%;
+      background: #c96a3f;
+    }
+  }
+}
+
+.npi-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+
+.npi-body { flex: 1; min-width: 0; }
+.npi-top {
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 4px;
+  strong { font-size: 13px; color: #1e1a16; }
+}
+.npi-time { font-size: 10px; color: #c5bdb7; white-space: nowrap; flex-shrink: 0; }
+.npi-msg {
+  font-size: 12px; color: #8a7e78; line-height: 1.5; margin: 0;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.npi-action {
+  display: inline-block; margin-top: 6px; padding: 4px 12px;
+  border-radius: 100px; border: none;
+  background: rgba(201,106,63,0.08); color: #c96a3f;
+  font-size: 11px; font-weight: 600; cursor: pointer;
+  transition: background 0.15s;
+  &:hover { background: rgba(201,106,63,0.15); }
+}
+
+.npi-dismiss {
+  width: 24px; height: 24px; border-radius: 6px; border: none;
+  background: none; font-size: 14px; color: #c5bdb7; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  &:hover { background: #f5f1ed; color: #c96a3f; }
+}

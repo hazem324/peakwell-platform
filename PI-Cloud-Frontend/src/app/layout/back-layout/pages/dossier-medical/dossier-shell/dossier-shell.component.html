@@ -1,0 +1,154 @@
+<div class="dossier-page" *ngIf="client">
+
+  <!-- Header -->
+  <div class="dossier-header">
+    <div class="dossier-header-left">
+      <button class="back-btn" (click)="goBack()">← Clients</button>
+      <div class="client-identity">
+        <div class="dossier-avatar" [style.background]="client.avatarColor">
+          {{ client.initials }}
+        </div>
+        <div class="client-meta">
+          <h2>{{ client.name }}</h2>
+          <div class="client-tags">
+            <span class="tag">{{ client.age }} y/o {{ client.gender }}</span>
+            <span class="tag">🎯 {{ client.goal }}</span>
+            <span class="tag">🩸 {{ client.bloodType }}</span>
+            <span class="tag tag--doctor">👩‍⚕️ {{ client.assignedNutritionist }}</span>
+          </div>
+          <div class="client-flags">
+            <span class="condition-tag" *ngFor="let c of client.conditions">⚕️ {{ c }}</span>
+            <span class="allergy-tag" *ngFor="let a of client.allergies">⚠️ {{ a }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="dossier-header-actions">
+      <button class="btn-print" (click)="printDossier()">🖨️ Print</button>
+      <button class="btn-export" (click)="exportPDF()">📄 Export PDF</button>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="dossier-tabs">
+    <button class="dossier-tab"
+            *ngFor="let tab of tabs"
+            [class.dossier-tab--active]="activeTab === tab.value"
+            (click)="onTabChange(tab.value)">
+      {{ tab.label }}
+    </button>
+  </div>
+
+  <!-- Tab Content -->
+  <div class="dossier-content">
+    <app-health-dashboard    *ngIf="activeTab === 'dashboard'"  [clientId]="client.id"></app-health-dashboard>
+    <app-biometric-charts    *ngIf="activeTab === 'charts'"     [clientId]="client.id"></app-biometric-charts>
+    <app-alerts-panel        *ngIf="activeTab === 'alerts'"     [clientId]="client.id"></app-alerts-panel>
+    <app-consultation-notes  *ngIf="activeTab === 'notes'"      [clientId]="client.id"></app-consultation-notes>
+    <app-biometric-form      *ngIf="activeTab === 'add'"        [clientId]="client.id"></app-biometric-form>
+
+    <!-- Goals Tab -->
+    <div class="goals-panel" *ngIf="activeTab === 'goals'">
+      <div class="goals-panel-header">
+        <div>
+          <h3>Client Goals</h3>
+          <p>View and assign health goals for this client.</p>
+        </div>
+        <button class="btn-export" (click)="openGoalModal()">+ Assign Goal</button>
+      </div>
+
+      <div class="loading-state" *ngIf="goalsLoading">Loading goals…</div>
+
+      <div class="no-goals-state" *ngIf="!goalsLoading && clientGoals.length === 0">
+        No goals set yet. Assign the first goal to this client.
+      </div>
+
+      <div class="goal-list" *ngIf="!goalsLoading">
+        <div class="goal-row" *ngFor="let g of clientGoals">
+          <div class="goal-row-left">
+            <span class="goal-row-metric">{{ g.metric }}</span>
+            <span class="goal-row-dir">{{ g.direction }}</span>
+            <span class="badge-dietitian" *ngIf="g.assignedByDietitian">👨‍⚕️ {{ g.assignedByDietitianName }}</span>
+          </div>
+          <div class="goal-row-right">
+            <span>Target: <strong>{{ g.targetValue }} {{ g.unit }}</strong></span>
+            <span>Deadline: {{ g.deadline }}</span>
+            <span class="goal-row-status"
+                  [style.color]="g.achieved ? '#7a9e7e' : g.paused ? '#b5aaa5' : '#c96a3f'">
+              {{ g.achieved ? '✓ Achieved' : g.paused ? '⏸ Paused' : '● Active' }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Assign Goal Modal -->
+      <div class="modal-overlay" *ngIf="showGoalModal" (click)="showGoalModal = false">
+        <div class="modal-card" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h4>🎯 Assign Goal to Client</h4>
+            <button class="modal-close" (click)="showGoalModal = false">×</button>
+          </div>
+          <div class="modal-step" *ngIf="!selectedGoalTemplate">
+            <p class="modal-subtitle">Choose a goal type</p>
+            <div class="template-grid">
+              <button class="template-card" *ngFor="let t of goalTemplates" (click)="selectedGoalTemplate = t">
+                <span class="template-label">{{ t.label }}</span>
+                <span class="template-dir">{{ t.direction }}</span>
+              </button>
+            </div>
+          </div>
+          <div class="modal-step" *ngIf="selectedGoalTemplate">
+            <button class="btn-back" (click)="selectedGoalTemplate = null">← Back</button>
+            <div class="config-fields" style="margin-top:16px">
+              <div class="field-group">
+                <label>Target ({{ selectedGoalTemplate.unit }})</label>
+                <input type="number" [(ngModel)]="newGoalTarget" step="0.1"/>
+              </div>
+              <div class="field-group">
+                <label>Deadline</label>
+                <input type="date" [(ngModel)]="newGoalDeadline"/>
+              </div>
+            </div>
+            <button class="btn-create-goal" (click)="createGoalForClient()">🎯 Assign Goal</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Biometric History Table -->
+    <div class="history-card" *ngIf="activeTab === 'biometrics'">
+      <div class="history-header">
+        <h3>Biometric History</h3>
+      </div>
+      <div class="history-table-wrap">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Date</th><th>Weight</th><th>BMI</th><th>Body Fat</th>
+              <th>Muscle</th><th>BP</th><th>Glucose</th><th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let entry of getEntries()">
+              <td><strong>{{ entry.date }}</strong></td>
+              <td>{{ entry.weight }} kg</td>
+              <td>
+                <span class="bmi-pill" [style.background]="getBMIColor(entry.bmi) + '18'"
+                      [style.color]="getBMIColor(entry.bmi)">
+                  {{ entry.bmi }}
+                </span>
+              </td>
+              <td>{{ entry.bodyFat ?? '—' }}{{ entry.bodyFat ? '%' : '' }}</td>
+              <td>{{ entry.muscleMass ?? '—' }}{{ entry.muscleMass ? ' kg' : '' }}</td>
+              <td>{{ entry.systolic }}/{{ entry.diastolic }} mmHg</td>
+              <td>{{ entry.glucose ?? '—' }}{{ entry.glucose ? ' mg/dL' : '' }}</td>
+              <td class="notes-cell">{{ entry.notes }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+</div>

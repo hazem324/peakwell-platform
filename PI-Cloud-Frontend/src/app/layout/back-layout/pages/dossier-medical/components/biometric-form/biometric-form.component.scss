@@ -1,0 +1,403 @@
+// ── Design tokens ──────────────────────────────────────────────────
+$primary:      #c96a3f;
+$primary-lt:   #e88f68;
+$bg:           #faf7f4;
+$border:       #ede8e3;
+$border-lt:    #f5f1ed;
+$text-dark:    #1e1a16;
+$text-mid:     #8a7e78;
+$text-light:   #b5aaa5;
+$card:         #fff;
+$serif:        'Cormorant Garamond', Georgia, serif;
+$sans:         'Jost', sans-serif;
+$radius-card:  18px;
+$radius-pill:  100px;
+
+// ── Page wrapper ────────────────────────────────────────────────────
+.measurement-page {
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+  padding-bottom: 48px;
+}
+
+// ── Page header ─────────────────────────────────────────────────────
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  flex-wrap: wrap;
+
+  h2 {
+    font-family: $serif;
+    font-size: 30px;
+    font-weight: 700;
+    color: $text-dark;
+    margin: 0 0 5px;
+    line-height: 1.2;
+  }
+}
+
+.page-subtitle {
+  font-size: 13px;
+  color: $text-mid;
+  margin: 0;
+}
+
+.page-header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.last-update-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: $text-mid;
+  strong { color: $text-dark; font-weight: 600; }
+}
+
+.badge-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #7a9e7e;
+  box-shadow: 0 0 0 3px rgba(122,158,126,0.2);
+  flex-shrink: 0;
+}
+
+.bmi-pill {
+  padding: 5px 16px;
+  border-radius: $radius-pill;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+// ── Section layout ──────────────────────────────────────────────────
+.section-block {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.section-divider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.section-line {
+  flex: 1;
+  height: 1px;
+  background: $border;
+}
+
+.section-title-text {
+  font-size: 10px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: $text-light;
+  font-weight: 700;
+  font-family: $sans;
+  white-space: nowrap;
+}
+
+// ── Snapshot cards ──────────────────────────────────────────────────
+.snapshot-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+
+  @media (max-width: 960px) { grid-template-columns: 1fr 1fr; }
+  @media (max-width: 560px) { grid-template-columns: 1fr; }
+}
+
+.snapshot-card {
+  background: $card;
+  border: 1px solid $border;
+  border-radius: 16px;
+  padding: 20px 20px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.07);
+  }
+}
+
+.sc-accent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  border-radius: 16px 16px 0 0;
+}
+
+.sc-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.sc-icon   { font-size: 20px; margin-right: auto; }
+
+.sc-status,
+.sc-change {
+  padding: 3px 9px;
+  border-radius: $radius-pill;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.sc-change--good { background: rgba(122,158,126,0.12); color: #4a7a4e; }
+.sc-change--bad  { background: rgba(201,106,63,0.1);   color: #a85430; }
+
+.sc-value {
+  font-family: $serif;
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.sc-unit  { font-size: 11px; color: $text-light; margin-top: -1px; }
+.sc-label { font-size: 12px; color: $text-mid; font-weight: 500; margin-top: 3px; }
+
+.sc-badge {
+  padding: 3px 10px;
+  border-radius: $radius-pill;
+  font-size: 10px;
+  font-weight: 700;
+  width: fit-content;
+  margin-top: 5px;
+}
+
+// ── Progress charts ─────────────────────────────────────────────────
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+
+  @media (max-width: 768px) { grid-template-columns: 1fr; }
+}
+
+.chart-card {
+  background: $card;
+  border: 1px solid $border;
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.chart-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.chart-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chart-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.chart-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: $text-dark;
+}
+
+.chart-unit {
+  font-size: 11px;
+  color: $text-light;
+  background: $bg;
+  padding: 3px 10px;
+  border-radius: $radius-pill;
+}
+
+.chart-badge {
+  padding: 3px 10px;
+  border-radius: $radius-pill;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.chart-wrap {
+  height: 160px;
+  position: relative;
+}
+
+// ── Entry Form ──────────────────────────────────────────────────────
+.form-card {
+  background: $card;
+  border: 1px solid $border;
+  border-radius: $radius-card;
+  padding: 32px;
+}
+
+// BMI live preview
+.bmi-preview {
+  background: $bg;
+  border: 1px solid $border;
+  border-radius: 14px;
+  padding: 18px 22px;
+  margin-bottom: 28px;
+}
+
+.bmi-preview-inner {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.bmi-big {
+  font-family: $serif;
+  font-size: 56px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.bmi-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  strong {
+    font-size: 13px;
+    color: $text-mid;
+    font-weight: 600;
+  }
+}
+
+.bmi-cat {
+  padding: 3px 10px;
+  border-radius: $radius-pill;
+  font-size: 11px;
+  font-weight: 700;
+  display: inline-block;
+}
+
+.bmi-hint { font-size: 11px; color: $text-light; }
+
+// Form sections
+.form-section { margin-bottom: 26px; }
+
+.form-section-title {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: $text-light;
+  font-weight: 700;
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid $border-lt;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+
+  @media (max-width: 560px) { grid-template-columns: 1fr; }
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  &--full { grid-column: 1 / -1; }
+
+  label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: $text-mid;
+    font-weight: 700;
+  }
+
+  input, textarea {
+    border: 1.5px solid $border;
+    border-radius: 10px;
+    padding: 11px 14px;
+    font-size: 14px;
+    font-family: $sans;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+    background: $bg;
+    width: 100%;
+    box-sizing: border-box;
+
+    &:focus { border-color: $primary; background: #fff; }
+  }
+
+  textarea { resize: vertical; }
+}
+
+.required { color: $primary; }
+
+// Actions
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+  padding-top: 20px;
+  border-top: 1px solid $border-lt;
+}
+
+.btn-reset {
+  background: none;
+  border: 1.5px solid $border;
+  border-radius: $radius-pill;
+  padding: 11px 24px;
+  font-size: 13px;
+  font-family: $sans;
+  font-weight: 600;
+  cursor: pointer;
+  color: $text-mid;
+  transition: all 0.2s;
+
+  &:hover { border-color: $primary; color: $primary; }
+}
+
+.btn-submit {
+  background: linear-gradient(135deg, $primary, $primary-lt);
+  color: #fff;
+  border: none;
+  border-radius: $radius-pill;
+  padding: 11px 28px;
+  font-size: 13px;
+  font-family: $sans;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 14px rgba(201,106,63,0.3);
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(201,106,63,0.4);
+  }
+}

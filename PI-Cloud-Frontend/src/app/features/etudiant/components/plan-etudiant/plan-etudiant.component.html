@@ -1,0 +1,131 @@
+<div class="plan-container" *ngIf="plan">
+
+  <h2 class="title">Mon Plan Nutritionnel Personnalisé</h2>
+
+  <div class="subtitle">
+    Plan personnalisé généré selon mon profile.
+  </div>
+
+  <div class="meals-grid">
+
+    <!-- BREAKFAST -->
+    <div class="meal-card empty" *ngIf="!plan.breakfast">
+      Aucun petit-déjeuner compatible avec votre allergies alimentaire.
+    </div>
+
+    <div class="meal-card" *ngIf="plan.breakfast">
+      <h4>Breakfast</h4>
+      <img [src]="'http://localhost:8090/peakwell/uploads/' + plan.breakfast.image">
+      
+      <p class="meal-name">{{ plan.breakfast.name }}</p>
+
+      <div class="macros">
+        <span>{{ format(plan.breakfast.totalCalories) }} kcal</span>
+        <span>{{ format(plan.breakfast.totalProtein) }} g Protein</span>
+        <span>{{ format(plan.breakfast.totalCarbs) }} g Carbs</span>
+        <span>{{ format(plan.breakfast.totalFats) }} g Fats</span>
+      </div>
+    </div>
+
+    <!-- LUNCH -->
+    <div class="meal-card empty" *ngIf="!plan.lunch">
+      Aucun déjeuner compatible avec votre allergies alimentaire.
+    </div>
+
+    <div class="meal-card" *ngIf="plan.lunch">
+      <h4>Lunch</h4>
+      <img [src]="'http://localhost:8090/peakwell/uploads/' + plan.lunch.image">
+      
+      <p class="meal-name">{{ plan.lunch.name }}</p>
+
+      <div class="macros">
+        <span>{{ format(plan.lunch.totalCalories) }} kcal</span>
+        <span>{{ format(plan.lunch.totalProtein) }} g Protein</span>
+        <span>{{ format(plan.lunch.totalCarbs) }} g Carbs</span>
+        <span>{{ format(plan.lunch.totalFats) }} g Fats</span>
+      </div>
+    </div>
+
+    <!-- DINNER -->
+    <div class="meal-card empty" *ngIf="!plan.dinner">
+      Aucun dîner compatible avec votre allergies alimentaire.
+    </div>
+
+    <div class="meal-card" *ngIf="plan.dinner">
+      <h4>Dinner</h4>
+      <img [src]="'http://localhost:8090/peakwell/uploads/' + plan.dinner.image">
+      
+      <p class="meal-name">{{ plan.dinner.name }}</p>
+
+      <div class="macros">
+        <span>{{ format(plan.dinner.totalCalories) }} kcal</span>
+        <span>{{ format(plan.dinner.totalProtein) }} g Protein</span>
+        <span>{{ format(plan.dinner.totalCarbs) }} g Carbs</span>
+        <span>{{ format(plan.dinner.totalFats) }} g Fats</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- TOTAL -->
+  <div class="total-section">
+
+    <h3>Total Nutrition du Plan</h3>
+
+    <div class="total-grid">
+      <div>
+        {{ plan.totalCalories }} kcal
+        <small>Consommé</small>
+      </div>
+
+      <div>
+        {{ plan.targetCalories }} kcal
+        <small>Objectif</small>
+      </div>
+
+      <div>
+        {{ format(getTotalProtein()) }} g
+        <small>Protein</small>
+      </div>
+
+      <div>
+        {{ format(getTotalCarbs()) }} g
+        <small>Carbs</small>
+      </div>
+
+      <div>
+        {{ format(getTotalFats()) }} g
+        <small>Fats</small>
+      </div>
+    </div>
+
+    <!-- PROGRESS -->
+    <div class="progress-container">
+      <div 
+        class="progress-bar"
+        [style.width.%]="getCaloriePercentage()">
+      </div>
+    </div>
+
+    <p class="progress-text">
+      {{ format(getCaloriePercentage()) }}% de votre objectif atteint
+    </p>
+
+  </div>
+
+    <div class="plan-action">
+      <button 
+        (click)="reservePlan()" 
+        class="reserve-btn"
+        [class.cancel]="isPlanReserved">
+
+        {{ isPlanReserved ? 'Annuler la réservation' : 'Réserver ce plan' }}
+
+      </button>
+  </div>
+
+</div>
+
+<div class="popup" *ngIf="showPopupFlag">
+  {{ popupMessage }}
+</div>

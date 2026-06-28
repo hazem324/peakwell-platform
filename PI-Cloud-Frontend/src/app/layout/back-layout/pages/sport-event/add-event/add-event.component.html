@@ -1,0 +1,204 @@
+<section class="add-event-page">
+  <div class="add-event-container">
+    <div class="event-form-card">
+      <div class="card-header">
+        <div>
+          <h2>Ajouter un événement</h2>
+          <p class="card-subtitle">Créez un nouvel événement avec un style plus propre et moderne.</p>
+        </div>
+      </div>
+
+      <div class="alert error" *ngIf="serverErrorMessage">
+        {{ serverErrorMessage }}
+      </div>
+
+      <form #eventFormRef="ngForm" (ngSubmit)="onSubmit(eventFormRef)">
+
+        <div class="form-grid">
+          <div class="form-group full">
+  <label>Titre</label>
+  <input
+    type="text"
+    name="title"
+    [(ngModel)]="eventForm.title"
+    (blur)="onTitleBlur()"
+    required
+    #title="ngModel">
+  <small class="error-text" *ngIf="title.invalid && title.touched">
+    Le titre est obligatoire.
+  </small>
+  <small class="error-text" *ngIf="fieldErrors['title']">
+    {{ fieldErrors['title'] }}
+  </small>
+</div>
+
+          <div class="form-group">
+            <label>Date</label>
+            <input
+              class="modern-input"
+              type="datetime-local"
+              name="eventDate"
+              [(ngModel)]="eventForm.eventDate"
+              required
+              #date="ngModel">
+
+            <small class="error-text" *ngIf="date.invalid && date.touched">
+              La date est obligatoire.
+            </small>
+
+            <small class="error-text" *ngIf="fieldErrors['eventDate']">
+              {{ fieldErrors['eventDate'] }}
+            </small>
+          </div>
+
+          <div class="form-group">
+            <label>Catégorie</label>
+            <div class="select-modern">
+              <select
+                class="modern-select"
+                name="category"
+                [(ngModel)]="eventForm.category"
+                required
+                #cat="ngModel">
+                <option *ngFor="let category of categories" [value]="category">
+                  {{ category }}
+                </option>
+              </select>
+              <span class="select-arrow">⌄</span>
+            </div>
+
+            <small class="error-text" *ngIf="cat.invalid && cat.touched">
+              La catégorie est obligatoire.
+            </small>
+
+            <small class="error-text" *ngIf="fieldErrors['category']">
+              {{ fieldErrors['category'] }}
+            </small>
+          </div>
+
+<div class="form-group full">
+  <div class="label-row">
+    <label>Description</label>
+
+    <button
+      type="button"
+      class="generate-btn"
+      (click)="generateDescription()"
+      [disabled]="generatingDescription || !eventForm.title.trim()">
+      {{ generatingDescription ? 'Generating...' : '✨ Generate' }}
+    </button>
+  </div>
+
+  <textarea
+    name="description"
+    [(ngModel)]="eventForm.description"
+    required
+    #desc="ngModel"></textarea>
+
+  <small class="error-text" *ngIf="desc.invalid && desc.touched">
+    La description est obligatoire.
+  </small>
+  <small class="error-text" *ngIf="fieldErrors['description']">
+    {{ fieldErrors['description'] }}
+  </small>
+</div>
+
+          <div class="form-group full">
+            <label>Lieu</label>
+            <input
+              type="text"
+              name="location"
+              [(ngModel)]="eventForm.location"
+              required
+              #loc="ngModel">
+
+            <small class="error-text" *ngIf="loc.invalid && loc.touched">
+              Le lieu est obligatoire.
+            </small>
+
+            <small class="error-text" *ngIf="fieldErrors['location']">
+              {{ fieldErrors['location'] }}
+            </small>
+
+            <button type="button" class="btn secondary map-btn" (click)="openMapModal()">
+              Choisir sur la carte
+            </button>
+          </div>
+
+          <div class="form-group">
+            <label>Nombre max de participants</label>
+            <input
+              type="number"
+              name="maxParticipants"
+              [(ngModel)]="eventForm.maxParticipants"
+              min="1"
+              required
+              #maxP="ngModel">
+
+            <small class="error-text" *ngIf="maxP.invalid && maxP.touched">
+              Le nombre max est obligatoire.
+            </small>
+
+            <small class="error-text" *ngIf="fieldErrors['maxParticipants']">
+              {{ fieldErrors['maxParticipants'] }}
+            </small>
+          </div>
+
+          <div class="form-group">
+            <label>Image</label>
+            <input class="file-input" type="file" accept="image/*" (change)="onFileSelected($event)">
+          </div>
+        </div>
+
+        <app-map-picker-modal
+          *ngIf="showMapModal"
+          [latitude]="eventForm.latitude"
+          [longitude]="eventForm.longitude"
+          (locationSelected)="handleLocationSelected($event)"
+          (close)="closeMapModal()">
+        </app-map-picker-modal>
+
+        <div class="image-preview" *ngIf="imagePreview">
+          <img [src]="imagePreview" alt="Preview image">
+        </div>
+
+        <div class="prediction-box" *ngIf="predictionResult">
+          <p>
+            <strong>Succès prédit :</strong>
+            <span class="prediction-badge" [ngClass]="getPredictionBadgeClass()">
+              {{ predictionResult.prediction }}
+            </span>
+          </p>
+
+          <p>
+            <strong>Gouvernorat détecté :</strong>
+            {{ predictionResult.resolved_governorate }}
+          </p>
+
+
+          <div *ngIf="predictionResult.features_used">
+            <p><strong>Heure :</strong> {{ predictionResult.features_used.hour }}h</p>
+
+            <p class="ai-message">
+              {{ getAIMessage() }}
+            </p>
+          </div>
+        </div>
+
+        <div class="alert error" *ngIf="predictionError">
+          {{ predictionError }}
+        </div>
+
+        <div class="action-buttons">
+          <button type="button" class="btn secondary" (click)="predictDemand()" [disabled]="predicting">
+            {{ predicting ? 'Prediction...' : 'Predict Success' }}
+          </button>
+
+          <button type="submit" class="btn primary" [disabled]="eventFormRef.invalid">
+            Ajouter
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>

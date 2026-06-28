@@ -1,0 +1,124 @@
+<section class="payment-section">
+  <div class="container">
+
+    <!-- Hero -->
+    <div class="pay-hero">
+      <div class="pay-hero-text">
+        <span class="section-label">BILLING & PAYMENTS</span>
+        <h1>Payment <em>Center</em></h1>
+        <p>Manage transactions, view invoices, and process payments securely via Stripe.</p>
+      </div>
+    </div>
+
+    <!-- Sub Nav -->
+    <div class="sub-nav">
+      <button [class.sub-nav--active]="view === 'history'" (click)="view = 'history'">📋 History</button>
+      <button [class.sub-nav--active]="view === 'checkout'" (click)="view = 'checkout'">💳 Checkout</button>
+    </div>
+
+    <!-- ═══════ HISTORY VIEW ═══════ -->
+    <div *ngIf="view === 'history'" class="history-view">
+
+      <!-- KPI Cards -->
+      <div class="kpi-row">
+        <div class="kpi-card kpi-card--blue">
+          <div class="kpi-icon-wrap kpi-icon--blue">💳</div>
+          <div class="kpi-body">
+            <span class="kpi-value">{{ payments.length }}</span>
+            <span class="kpi-label">Transactions</span>
+          </div>
+        </div>
+        <div class="kpi-card kpi-card--green">
+          <div class="kpi-icon-wrap kpi-icon--green">✅</div>
+          <div class="kpi-body">
+            <span class="kpi-value">{{ format(totalPaid(), 'usd') }}</span>
+            <span class="kpi-label">Total Paid</span>
+          </div>
+        </div>
+        <div class="kpi-card kpi-card--orange">
+          <div class="kpi-icon-wrap kpi-icon--orange">↩️</div>
+          <div class="kpi-body">
+            <span class="kpi-value">{{ format(totalRefunded(), 'usd') }}</span>
+            <span class="kpi-label">Total Refunded</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="filter-card">
+        <div class="filter-row">
+          <span class="filter-label">Type</span>
+          <div class="filter-pills">
+            <button *ngFor="let t of types"
+                    class="pill"
+                    [class.pill--active]="filterType === t"
+                    (click)="filterType = t; applyFilters()">
+              {{ t === 'ALL' ? 'All' : typeIcon(t) + ' ' + typeLabel(t) }}
+            </button>
+          </div>
+        </div>
+        <div class="filter-row">
+          <span class="filter-label">Status</span>
+          <div class="filter-pills">
+            <button *ngFor="let s of statuses"
+                    class="pill"
+                    [class.pill--active]="filterStatus === s"
+                    (click)="filterStatus = s; applyFilters()">
+              {{ s === 'ALL' ? 'All' : s }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div class="loading-state" *ngIf="loading">
+        <div class="spinner"></div>
+        <span>Loading transactions…</span>
+      </div>
+
+      <!-- Empty -->
+      <div class="empty-state" *ngIf="!loading && filtered.length === 0">
+        <div class="empty-icon">💳</div>
+        <h3>No payments found</h3>
+        <p>Payments will appear here once a booking is made.</p>
+        <button class="btn-cta" (click)="view = 'checkout'">Make a Payment →</button>
+      </div>
+
+      <!-- Payment List -->
+      <div class="pay-list" *ngIf="!loading && filtered.length > 0">
+        <div class="pay-item" *ngFor="let p of filtered">
+          <div class="pi-icon">{{ typeIcon(p.payableType) }}</div>
+          <div class="pi-body">
+            <strong>{{ p.payableLabel || typeLabel(p.payableType) }}</strong>
+            <div class="pi-meta">
+              <span>{{ typeLabel(p.payableType) }}</span>
+              <span>·</span>
+              <span>{{ formatDate(p.createdAt) }}</span>
+              <span class="pi-invoice" *ngIf="p.invoiceNumber">{{ p.invoiceNumber }}</span>
+            </div>
+            <div class="pi-refund-note" *ngIf="p.status === 'REFUNDED'">↩ Refunded {{ formatDate(p.refundedAt) }}</div>
+          </div>
+          <div class="pi-right">
+            <span class="pi-amount">{{ format(p.amount, p.currency) }}</span>
+            <span class="pi-status"
+                  [style.background]="statusColor(p.status) + '15'"
+                  [style.color]="statusColor(p.status)">
+              {{ p.status }}
+            </span>
+          </div>
+          <div class="pi-actions">
+            <button class="btn-sm" *ngIf="p.receiptUrl" (click)="openReceipt(p.receiptUrl)" title="Receipt">🧾</button>
+            <button class="btn-sm btn-sm--terra" *ngIf="p.status === 'PAID'" (click)="refund(p)" title="Refund">↩</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ═══════ CHECKOUT VIEW ═══════ -->
+    <div *ngIf="view === 'checkout'">
+      <app-checkout (paymentDone)="view = 'history'; loadPayments()"></app-checkout>
+    </div>
+
+  </div>
+</section>

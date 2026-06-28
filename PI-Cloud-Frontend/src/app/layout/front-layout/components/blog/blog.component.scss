@@ -1,0 +1,22 @@
+.blog-section { background: var(--warm-white); }
+.blog-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 48px; gap: 20px; flex-wrap: wrap; }
+.blog-grid {
+  display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 24px;
+  @media (max-width: 900px) { grid-template-columns: 1fr 1fr; }
+  @media (max-width: 600px) { grid-template-columns: 1fr; }
+}
+.blog-card {
+  border-radius: var(--radius-lg); overflow: hidden; background: var(--cream);
+  border: 1px solid var(--border); cursor: pointer;
+  transition: transform var(--transition), box-shadow var(--transition);
+  &:hover { transform: translateY(-5px); box-shadow: var(--shadow-lg); .blog-title { color: var(--terracotta); } .blog-emoji { transform: scale(1.1); } }
+  &--main { .blog-img { height: 260px; } .blog-emoji { font-size: 72px; } .blog-title { font-size: 23px; } }
+}
+.blog-img { height: 180px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+.blog-emoji { font-size: 56px; transition: transform 0.3s; position: relative; z-index: 1; }
+.blog-category { position: absolute; top: 14px; left: 14px; background: var(--terracotta); color: #fff; border-radius: var(--radius-pill); padding: 4px 14px; font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
+.blog-body   { padding: 24px; }
+.blog-date   { font-size: 11px; color: var(--light-gray); letter-spacing: 0.5px; margin-bottom: 8px; }
+.blog-title  { font-family: var(--font-serif); font-size: 19px; font-weight: 600; line-height: 1.3; margin-bottom: 10px; transition: color var(--transition); color: var(--charcoal); }
+.blog-excerpt { font-size: 13px; line-height: 1.75; color: var(--warm-gray); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.blog-read   { display: inline-flex; align-items: center; gap: 6px; margin-top: 14px; font-size: 12px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--terracotta); }

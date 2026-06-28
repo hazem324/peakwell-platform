@@ -1,0 +1,83 @@
+// activity-top-ips.component.scss
+
+.chart-card {
+  background: #fff;
+  border: 1px solid #ede8e3;
+  border-radius: 16px;
+  padding: 20px;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.chart-header {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #f5f0eb;
+  padding-bottom: 14px;
+}
+
+.chart-title {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: #2d2d2d;
+  font-family: 'Jost', sans-serif;
+}
+
+.chart-subtitle {
+  font-size: 11px;
+  color: #c5bdb7;
+  font-family: 'Jost', sans-serif;
+  margin-left: auto;
+}
+
+.ip-list { display: flex; flex-direction: column; gap: 10px; }
+
+.ip-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ip-rank {
+  font-size: 10px;
+  font-weight: 700;
+  color: #c5bdb7;
+  font-family: 'Jost', sans-serif;
+  min-width: 22px;
+}
+
+.ip-addr {
+  font-size: 12px;
+  font-family: 'Courier New', monospace;
+  color: #2d2d2d;
+  min-width: 100px;
+}
+
+.ip-track {
+  flex: 1;
+  height: 5px;
+  background: #f5f0eb;
+  border-radius: 100px;
+  overflow: hidden;
+}
+
+.ip-fill {
+  height: 100%;
+  background: #c96a3f;
+  border-radius: 100px;
+  transition: width 0.7s ease;
+  min-width: 3px;
+}
+
+.ip-count {
+  font-size: 12px;
+  font-weight: 700;
+  color: #c96a3f;
+  font-family: 'Jost', sans-serif;
+  min-width: 28px;
+  text-align: right;
+}

@@ -1,0 +1,8 @@
+__pycache__
+*.pyc
+.git
+dataset.csv
+generate_dataset.py
+train_model.py
+evaluate.py
+evaluate\ (1).py

@@ -1,0 +1,53 @@
+{{- $ns := include "peakwell.namespace" . -}}
+{{- $labels := include "peakwell.labels" . -}}
+{{- range list
+  (dict "name" "ai-ml"        "image" .Values.ai.ml.image        "port" 8001)
+  (dict "name" "ai-symptom"   "image" .Values.ai.symptom.image   "port" 8002)
+  (dict "name" "ai-nutrition" "image" .Values.ai.nutrition.image  "port" 8003)
+  (dict "name" "ai-sport"     "image" .Values.ai.sport.image      "port" 8004) }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .name }}
+  namespace: {{ $ns }}
+  labels:
+    {{- $labels | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .name }}
+    spec:
+      containers:
+        - name: {{ .name }}
+          image: {{ .image }}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: {{ .port }}
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "200m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .name }}
+  namespace: {{ $ns }}
+  labels:
+    {{- $labels | nindent 4 }}
+spec:
+  selector:
+    app: {{ .name }}
+  ports:
+    - port: {{ .port }}
+      targetPort: {{ .port }}
+{{- end }}

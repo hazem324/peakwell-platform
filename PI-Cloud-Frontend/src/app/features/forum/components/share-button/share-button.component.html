@@ -1,0 +1,33 @@
+<div class="share-button-container" appClickOutside (clickOutside)="closeDropdown()">
+  <button
+    class="share-trigger-btn"
+    (click)="toggleDropdown()"
+    title="Share Article">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+    </svg>
+  </button>
+
+  <div class="share-dropdown" *ngIf="isDropdownOpen">
+    <div class="share-dropdown-content">
+      <button class="share-option" (click)="copyLink()">
+        <span class="share-icon">📋</span>
+        <span class="share-label">Copy Link</span>
+        <span class="copy-feedback" *ngIf="copyFeedback">{{ copyFeedback }}</span>
+      </button>
+      <button class="share-option" (click)="shareOnLinkedIn()">
+        <span class="share-icon">💼</span>
+        <span class="share-label">LinkedIn</span>
+      </button>
+      <button class="share-option" (click)="shareOnTwitter()">
+        <span class="share-icon">𝕏</span>
+        <span class="share-label">Twitter/X</span>
+      </button>
+      <button class="share-option" (click)="shareOnFacebook()">
+        <span class="share-icon">f</span>
+        <span class="share-label">Facebook</span>
+      </button>
+    </div>
+  </div>
+</div>

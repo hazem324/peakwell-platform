@@ -1,0 +1,46 @@
+<div class="reports-page">
+
+  <div class="kpi-grid">
+    <div class="kpi-card" *ngFor="let k of kpis" [style.border-top-color]="k.color">
+      <div class="kpi-icon">{{ k.icon }}</div>
+      <div class="kpi-value">{{ k.value }}</div>
+      <div class="kpi-label">{{ k.label }}</div>
+    </div>
+  </div>
+
+  <div class="reports-grid">
+
+    <div class="dash-card">
+      <div class="dash-card-header"><h3>Adherence by Goal Type</h3></div>
+      <div class="adherence-chart">
+        <div class="chart-row" *ngFor="let row of adherenceData">
+          <span class="chart-label">{{ row.label }}</span>
+          <div class="chart-bar-track">
+            <div class="chart-bar-fill"
+                 [style.width]="row.value + '%'"
+                 [style.background]="row.value >= 80 ? '#7a9e7e' : row.value >= 70 ? '#e88f68' : '#c96a3f'">
+            </div>
+          </div>
+          <span class="chart-val">{{ row.value }}%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="dash-card">
+      <div class="dash-card-header"><h3>30-Day Outcomes</h3></div>
+      <table class="outcome-table">
+        <thead>
+          <tr><th>Client</th><th>Metric</th><th>Result</th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let o of outcomes">
+            <td>{{ o.name }}</td>
+            <td><span class="detail-badge">{{ o.detail }}</span></td>
+            <td><span class="result-val" [class.result-val--good]="o.good">{{ o.metric }}</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>

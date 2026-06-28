@@ -1,0 +1,44 @@
+<div class="invoice-card" *ngIf="payment && payment.status === 'PAID'">
+  <div class="invoice-header">
+    <div class="invoice-brand">
+      <span class="brand-icon">🌿</span>
+      <span class="brand-name">PeakWell</span>
+    </div>
+    <div class="invoice-meta">
+      <span class="invoice-number">{{ payment.invoiceNumber }}</span>
+      <span class="invoice-date">{{ formatDate(payment.createdAt) }}</span>
+    </div>
+  </div>
+
+  <div class="invoice-divider"></div>
+
+  <div class="invoice-body">
+    <div class="invoice-row">
+      <span>Description</span>
+      <span>{{ payment.payableLabel }}</span>
+    </div>
+    <div class="invoice-row">
+      <span>Payment method</span>
+      <span>Card (Stripe)</span>
+    </div>
+    <div class="invoice-row">
+      <span>Paid on</span>
+      <span>{{ formatDate(payment.paidAt) }}</span>
+    </div>
+    <div class="invoice-row invoice-row--total">
+      <span>Amount paid</span>
+      <strong>{{ format(payment.amount, payment.currency) }}</strong>
+    </div>
+  </div>
+
+  <div class="invoice-actions">
+    <button class="btn-receipt" (click)="openReceipt()" *ngIf="payment.receiptUrl">
+      🧾 View Stripe Receipt
+    </button>
+    <button class="btn-print" (click)="print()">🖨 Print Invoice</button>
+  </div>
+</div>
+
+<div class="invoice-empty" *ngIf="!payment || payment.status !== 'PAID'">
+  <span>No invoice available — payment not completed.</span>
+</div>

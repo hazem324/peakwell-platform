@@ -1,0 +1,385 @@
+<div class="ca-page">
+
+  <!-- ═══ NUTRITIONIST SELECTION VIEW ═══ -->
+  <ng-container *ngIf="!selectedNutritionist">
+
+    <!-- Header -->
+    <div class="nutri-page-header">
+      <div>
+        <h1 class="ca-title">Consultations</h1>
+        <p class="ca-subtitle">{{ nutritionists.length }} nutritionist{{ nutritionists.length !== 1 ? 's' : '' }} · {{ all.length }} total sessions</p>
+      </div>
+      <div class="ca-stat-chips">
+        <div class="stat-chip stat-chip--pending" *ngIf="pendingCount > 0">
+          <span class="stat-chip-dot"></span>{{ pendingCount }} awaiting review
+        </div>
+        <div class="stat-chip stat-chip--total"><span>📋</span> {{ all.length }} total</div>
+      </div>
+    </div>
+
+    <!-- Search -->
+    <div class="nutri-search-row">
+      <div class="nutri-search-wrap">
+        <svg class="nutri-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input class="nutri-search-input" type="text" placeholder="Search nutritionist or specialty…"
+               [(ngModel)]="nutriSearch" (ngModelChange)="nutriPage = 1" />
+        <button class="nutri-search-clear" *ngIf="nutriSearch" (click)="nutriSearch = ''; nutriPage = 1">✕</button>
+      </div>
+      <span class="nutri-result-count">{{ filteredNutritionists.length }} result{{ filteredNutritionists.length !== 1 ? 's' : '' }}</span>
+    </div>
+
+    <div class="ca-loading" *ngIf="loading">
+      <div class="ca-spinner"></div><span>Loading…</span>
+    </div>
+
+    <!-- Empty search state -->
+    <div class="nutri-empty" *ngIf="!loading && filteredNutritionists.length === 0">
+      <span class="nutri-empty-icon">🔍</span>
+      <p>No nutritionists match "<strong>{{ nutriSearch }}</strong>"</p>
+      <button class="nutri-clear-btn" (click)="nutriSearch = ''; nutriPage = 1">Clear search</button>
+    </div>
+
+    <!-- Grid -->
+    <div class="nutri-grid" *ngIf="!loading && pagedNutritionists.length > 0">
+      <div class="nutri-card" *ngFor="let n of pagedNutritionists" (click)="selectNutritionist(n)">
+
+        <div class="nutri-card-top">
+          <div class="nutri-avatar">{{ initials(n.name) }}</div>
+          <div class="nutri-badge-pending" *ngIf="n.pending > 0">
+            {{ n.pending }} pending
+          </div>
+        </div>
+
+        <div class="nutri-info">
+          <h3 class="nutri-name">{{ n.name }}</h3>
+          <p class="nutri-spec">🩺 {{ n.specialty }}</p>
+        </div>
+
+        <div class="nutri-divider"></div>
+
+        <div class="nutri-stats">
+          <div class="nutri-stat">
+            <strong>{{ n.total }}</strong>
+            <span>Total</span>
+          </div>
+          <div class="nutri-stat-sep"></div>
+          <div class="nutri-stat nutri-stat--upcoming">
+            <strong>{{ n.upcoming }}</strong>
+            <span>Upcoming</span>
+          </div>
+          <div class="nutri-stat-sep"></div>
+          <div class="nutri-stat nutri-stat--done">
+            <strong>{{ n.completed }}</strong>
+            <span>Completed</span>
+          </div>
+        </div>
+
+        <button class="nutri-view-btn">View consultations →</button>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="nutri-pagination" *ngIf="nutriTotalPages > 1">
+      <button class="nutri-page-btn nutri-page-btn--nav"
+              [disabled]="nutriPage === 1"
+              (click)="nutriPage = nutriPage - 1">‹</button>
+      <button class="nutri-page-btn"
+              *ngFor="let p of nutriPageRange()"
+              [class.nutri-page-btn--active]="p === nutriPage"
+              (click)="nutriPage = p">{{ p }}</button>
+      <button class="nutri-page-btn nutri-page-btn--nav"
+              [disabled]="nutriPage === nutriTotalPages"
+              (click)="nutriPage = nutriPage + 1">›</button>
+    </div>
+
+  </ng-container>
+
+  <!-- ═══ CONSULTATIONS VIEW (after nutritionist selected) ═══ -->
+  <ng-container *ngIf="selectedNutritionist">
+
+  <!-- Header -->
+  <div class="ca-header">
+    <div class="ca-header-left">
+      <button class="btn-back-nutri" (click)="backToNutritionists()">← Nutritionists</button>
+      <div>
+        <h1 class="ca-title">{{ selectedNutritionist.name }}</h1>
+        <p class="ca-subtitle">{{ filtered.length }} consultation{{ filtered.length !== 1 ? 's' : '' }}{{ consultTotalPages > 1 ? ' · page ' + consultPage + ' of ' + consultTotalPages : '' }}</p>
+      </div>
+    </div>
+    <div class="ca-stat-chips">
+      <div class="stat-chip stat-chip--pending" *ngIf="selectedNutritionist.pending > 0">
+        <span class="stat-chip-dot"></span>
+        {{ selectedNutritionist.pending }} awaiting review
+      </div>
+      <div class="stat-chip stat-chip--total">
+        <span>📋</span> {{ selectedNutritionist.total }} total
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="ca-filters">
+    <div class="ca-search-wrap">
+      <span class="ca-search-icon">🔍</span>
+      <input class="ca-search" type="text" placeholder="Search patient, doctor, reason..."
+             [(ngModel)]="filterText" (ngModelChange)="consultPage = 1" />
+    </div>
+    <div class="ca-filter-pills">
+      <button class="filter-pill"                       [class.filter-pill--active]="filterStatus === ''"        (click)="filterStatus = ''; consultPage = 1">All</button>
+      <button class="filter-pill filter-pill--accepted" [class.filter-pill--active]="filterStatus === 'UPCOMING'"(click)="filterStatus = 'UPCOMING'; consultPage = 1">✅ Accepted</button>
+      <button class="filter-pill filter-pill--rejected" [class.filter-pill--active]="filterStatus === 'REJECTED'"(click)="filterStatus = 'REJECTED'; consultPage = 1">❌ Refused</button>
+      <button class="filter-pill filter-pill--past"     [class.filter-pill--active]="filterStatus === 'PAST'"    (click)="filterStatus = 'PAST'; consultPage = 1">📅 Past</button>
+    </div>
+    <div class="ca-filter-right">
+      <select class="ca-select" [(ngModel)]="filterType">
+        <option value="">All Types</option>
+        <option *ngFor="let t of uniqueTypes" [value]="t">{{ t === 'IN_PERSON' ? 'In Person' : t === 'VIDEO_CALL' ? 'Video Call' : t }}</option>
+      </select>
+      <button class="ca-clear" *ngIf="hasFilters" (click)="clearFilters()">✕ Clear</button>
+    </div>
+  </div>
+
+  <!-- Loading / Error -->
+  <div class="ca-loading" *ngIf="loading">
+    <div class="ca-spinner"></div>
+    <span>Loading consultations…</span>
+  </div>
+  <div class="ca-error" *ngIf="error">⚠ {{ error }}</div>
+
+  <!-- Cards Grid -->
+  <div *ngIf="!loading && !error">
+
+    <div class="consult-grid" *ngIf="filtered.length; else empty">
+      <div class="cc" *ngFor="let c of pagedConsults"
+           [class.cc--pending]="c.status === 'PENDING_APPROVAL'"
+           (click)="openDetail(c)">
+
+        <!-- Top row: avatar + name + status badge -->
+        <div class="cc-top">
+          <div class="cc-avatar" [style.background]="avatarColor(c.patientName)">
+            {{ initials(c.patientName) }}
+          </div>
+          <div class="cc-identity">
+            <p class="cc-name">{{ c.patientName || 'Unknown Patient' }}</p>
+            <p class="cc-sub">
+              {{ c.consultationType === 'IN_PERSON' ? '🏥 In Person' : c.consultationType === 'VIDEO_CALL' ? '📹 Video Call' : (c.consultationType || 'Consultation') }}
+            </p>
+          </div>
+          <div class="s-pill" [ngClass]="'s-pill--' + c.status">
+            <span class="s-pill__icon">{{ statusIcon(c.status) }}</span>
+            <span class="s-pill__text">{{ statusLabel(c.status) }}</span>
+          </div>
+        </div>
+
+        <!-- Date + dietitian -->
+        <div class="cc-meta">
+          <span class="cc-meta-item">
+            📅 {{ formatDate(c.scheduledAt) }}
+          </span>
+          <span class="cc-meta-item cc-doctor">
+            👨‍⚕️ {{ c.doctorName || '—' }}
+          </span>
+        </div>
+
+        <!-- Stats row -->
+        <div class="cc-stats">
+          <div class="cc-stat">
+            <strong>{{ c.durationMinutes ? c.durationMinutes + ' min' : '—' }}</strong>
+            <span>DURATION</span>
+          </div>
+          <div class="cc-stat">
+            <strong>{{ c.priority || '—' }}</strong>
+            <span>PRIORITY</span>
+          </div>
+          <div class="cc-stat">
+            <strong>{{ c.doctorSpecialty || '—' }}</strong>
+            <span>SPECIALTY</span>
+          </div>
+          <div class="cc-stat">
+            <strong [class.cc-rating]="avgRating(c) !== '—'">
+              {{ avgRating(c) !== '—' ? '★ ' + avgRating(c) : '—' }}
+            </strong>
+            <span>RATING</span>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="cc-actions" (click)="$event.stopPropagation()">
+          <button class="cc-btn-view" (click)="openDetail(c)">
+            ✏ View Details
+          </button>
+          <button class="cc-btn-confirm"
+                  *ngIf="c.status === 'PENDING_APPROVAL'"
+                  (click)="confirm(c.id)" [disabled]="actionLoading">
+            ✓ Confirm
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Consultation pagination -->
+    <div class="nutri-pagination" *ngIf="consultTotalPages > 1">
+      <button class="nutri-page-btn nutri-page-btn--nav"
+              [disabled]="consultPage === 1"
+              (click)="consultPage = consultPage - 1">‹</button>
+      <button class="nutri-page-btn"
+              *ngFor="let p of consultPageRange()"
+              [class.nutri-page-btn--active]="p === consultPage"
+              (click)="consultPage = p">{{ p }}</button>
+      <button class="nutri-page-btn nutri-page-btn--nav"
+              [disabled]="consultPage === consultTotalPages"
+              (click)="consultPage = consultPage + 1">›</button>
+    </div>
+
+    <ng-template #empty>
+      <div class="ca-empty">
+        <span class="ca-empty-icon">📭</span>
+        <p>No consultations match your filters.</p>
+        <button class="ca-clear" (click)="clearFilters()" *ngIf="hasFilters">Clear filters</button>
+      </div>
+    </ng-template>
+
+  </div>
+  </ng-container><!-- end selectedNutritionist -->
+</div>
+
+<!-- Detail Drawer -->
+<div class="ca-overlay" *ngIf="selectedConsult" (click)="closeDetail()">
+  <div class="ca-drawer" (click)="$event.stopPropagation()">
+    <div class="drawer-header">
+      <div class="drawer-header-left">
+        <div class="drawer-avatar" *ngIf="selectedConsult.patientName">{{ selectedConsult.patientName[0] }}</div>
+        <div>
+          <h2>{{ selectedConsult.patientName || 'Consultation #' + selectedConsult.id }}</h2>
+          <p class="drawer-sub">{{ formatDate(selectedConsult.scheduledAt) }}</p>
+        </div>
+      </div>
+      <button class="drawer-close" (click)="closeDetail()">✕</button>
+    </div>
+
+    <div class="drawer-body">
+      <div class="detail-section">
+        <h3>Appointment</h3>
+        <div class="detail-grid">
+          <div class="detail-item"><span>Date</span><strong>{{ formatDate(selectedConsult.scheduledAt) }}</strong></div>
+          <div class="detail-item"><span>Duration</span><strong>{{ selectedConsult.durationMinutes }} min</strong></div>
+          <div class="detail-item"><span>Type</span><strong>{{ selectedConsult.consultationType }}</strong></div>
+          <div class="detail-item"><span>Status</span>
+            <div class="s-pill" [ngClass]="'s-pill--' + selectedConsult.status">
+              <span class="s-pill__icon">{{ statusIcon(selectedConsult.status) }}</span>
+              <span class="s-pill__text">{{ statusLabel(selectedConsult.status) }}</span>
+            </div>
+          </div>
+          <div class="detail-item"><span>Priority</span>
+            <span class="pri-badge" [ngClass]="priorityClass(selectedConsult.priority)">{{ selectedConsult.priority }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Confirmation Actions -->
+      <div class="detail-section pending-actions" *ngIf="selectedConsult.status === 'PENDING_APPROVAL'">
+        <h3>⏳ Action Required</h3>
+        <p class="pending-note">This patient is waiting for your confirmation before this appointment is finalised.</p>
+        <div class="action-btns">
+          <button class="btn-confirm" (click)="confirm(selectedConsult.id)" [disabled]="actionLoading">✓ Confirm</button>
+          <button class="btn-reject"  (click)="openRejectModal(selectedConsult.id)" [disabled]="actionLoading">✕ Reject</button>
+        </div>
+      </div>
+
+      <!-- Rejection Reason -->
+      <div class="detail-section rejection-info" *ngIf="selectedConsult.status === 'REJECTED'">
+        <h3>❌ Refused</h3>
+        <p class="detail-text" *ngIf="selectedConsult.rejectionReason">{{ selectedConsult.rejectionReason }}</p>
+        <p class="detail-text muted" *ngIf="!selectedConsult.rejectionReason">No reason provided.</p>
+      </div>
+
+      <div class="detail-section">
+        <h3>People</h3>
+        <div class="detail-grid">
+          <div class="detail-item"><span>Patient</span><strong>{{ selectedConsult.patientName || '—' }}</strong></div>
+          <div class="detail-item"><span>Doctor</span><strong>{{ selectedConsult.doctorName || '—' }}</strong></div>
+          <div class="detail-item"><span>Specialty</span><strong>{{ selectedConsult.doctorSpecialty || '—' }}</strong></div>
+        </div>
+      </div>
+
+      <div class="detail-section" *ngIf="selectedConsult.reason">
+        <h3>Reason</h3>
+        <p class="detail-text">{{ selectedConsult.reason }}</p>
+      </div>
+
+      <div class="detail-section" *ngIf="selectedConsult.diagnosis">
+        <h3>Diagnosis</h3>
+        <p class="detail-text">{{ selectedConsult.diagnosis }}</p>
+      </div>
+
+      <div class="detail-section" *ngIf="selectedConsult.prescription">
+        <h3>Prescription</h3>
+        <p class="detail-text">{{ selectedConsult.prescription }}</p>
+      </div>
+
+      <div class="detail-section" *ngIf="selectedConsult.doctorNotes">
+        <h3>Doctor Notes</h3>
+        <p class="detail-text">{{ selectedConsult.doctorNotes }}</p>
+      </div>
+
+      <div class="detail-section" *ngIf="selectedConsult.rating">
+        <h3>Rating</h3>
+        <div class="detail-grid">
+          <div class="detail-item" *ngFor="let key of ['overall','knowledge','communication','usefulness','punctuality']">
+            <span>{{ key | titlecase }}</span>
+            <strong>{{ selectedConsult.rating![key] ? '★ ' + selectedConsult.rating![key] : '—' }}</strong>
+          </div>
+          <div class="detail-item" *ngIf="selectedConsult.rating!['feedback']">
+            <span>Feedback</span>
+            <strong>{{ selectedConsult.rating!['feedback'] }}</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Reject Modal -->
+<div class="modal-overlay" *ngIf="showRejectModal" (click)="showRejectModal = false">
+  <div class="modal-box modal-box--wide" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>❌ Refuser ce rendez-vous</h3>
+      <button class="modal-close-btn" (click)="showRejectModal = false">✕</button>
+    </div>
+    <div class="modal-section">
+      <label class="modal-label">Motif du refus <span class="optional">(optionnel)</span></label>
+      <textarea class="reject-reason-input" [(ngModel)]="rejectReason" rows="3"
+                placeholder="Ex : Conflit d'agenda, veuillez choisir un autre créneau…"></textarea>
+    </div>
+    <div class="modal-section">
+      <label class="modal-label">
+        Proposer des créneaux alternatifs
+        <span class="slot-counter" *ngIf="selectedSlots.length > 0">
+          {{ selectedSlots.length }}/3 sélectionné{{ selectedSlots.length > 1 ? 's' : '' }}
+        </span>
+      </label>
+      <p class="modal-hint">Sélectionnez jusqu'à 3 créneaux — le patient recevra un email avec des liens de confirmation.</p>
+      <div class="slots-loading" *ngIf="slotsLoading">Chargement des créneaux disponibles…</div>
+      <div class="slots-grid" *ngIf="!slotsLoading">
+        <button *ngFor="let slot of availableSlots" class="slot-btn"
+                [class.slot-btn--selected]="isSlotSelected(slot)"
+                [disabled]="!isSlotSelected(slot) && selectedSlots.length >= 3"
+                (click)="toggleSlot(slot)">
+          <span class="slot-check" *ngIf="isSlotSelected(slot)">✓</span>
+          {{ formatSlotLabel(slot) }}
+        </button>
+        <div class="no-slots" *ngIf="availableSlots.length === 0">
+          Aucun créneau disponible dans les 14 prochains jours.
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-modal-cancel" (click)="showRejectModal = false">Annuler</button>
+      <button class="btn-modal-reject" (click)="confirmReject()" [disabled]="actionLoading">
+        {{ actionLoading ? 'En cours…' : '✕ Confirmer le refus' }}
+        <span *ngIf="selectedSlots.length > 0"> + {{ selectedSlots.length }} créneau{{ selectedSlots.length > 1 ? 'x' : '' }}</span>
+      </button>
+    </div>
+  </div>
+</div>

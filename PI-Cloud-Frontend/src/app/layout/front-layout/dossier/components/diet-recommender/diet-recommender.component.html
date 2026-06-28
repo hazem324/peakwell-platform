@@ -1,0 +1,159 @@
+<div class="diet-rec">
+
+  <div class="empty-dash" *ngIf="!modelLoaded">
+    <div class="empty-dash-icon">🥗</div>
+    <h3>Diet Model not loaded</h3>
+    <p>Place <strong>diet_model.json</strong> in <code>src/main/resources/ml/</code> and restart.</p>
+  </div>
+
+  <div class="diet-content" *ngIf="modelLoaded">
+
+    <!-- ═══ INPUT ═══ -->
+    <div class="input-card" *ngIf="!predicted">
+      <div class="input-header">
+        <div class="input-icon-wrap"><span>🥗</span></div>
+        <div>
+          <h3>AI Diet Recommender</h3>
+          <p>Our ML model analyzes your biometrics, conditions, symptoms, and goals to recommend the optimal dietary intervention. Auto-filled from your latest data.</p>
+        </div>
+      </div>
+
+      <div class="ml-badge-row">
+        <span class="ml-badge">🤖 Random Forest</span>
+        <span class="ml-badge">🎯 82% Accuracy</span>
+        <span class="ml-badge">📈 15K Samples</span>
+        <span class="ml-badge">🍽️ 6 Diet Types</span>
+      </div>
+
+      <!-- Biometrics -->
+      <div class="form-section">
+        <div class="form-section-label">📊 Biometrics (auto-filled from your latest data)</div>
+        <div class="slider-grid">
+          <div class="slider-item"><label>Age: <strong>{{ age }}</strong></label><input type="range" min="18" max="75" [(ngModel)]="age"/></div>
+          <div class="slider-item"><label>Weight: <strong>{{ weight }} kg</strong></label><input type="range" min="40" max="160" step="0.5" [(ngModel)]="weight"/></div>
+          <div class="slider-item"><label>BMI: <strong>{{ bmi }}</strong></label><input type="range" min="15" max="45" step="0.1" [(ngModel)]="bmi"/></div>
+          <div class="slider-item"><label>Body Fat: <strong>{{ bodyFat }}%</strong></label><input type="range" min="8" max="50" step="0.5" [(ngModel)]="bodyFat"/></div>
+          <div class="slider-item"><label>Systolic BP: <strong>{{ systolic }} mmHg</strong></label><input type="range" min="90" max="200" [(ngModel)]="systolic"/></div>
+          <div class="slider-item"><label>Glucose: <strong>{{ glucose }} mg/dL</strong></label><input type="range" min="60" max="250" [(ngModel)]="glucose"/></div>
+          <div class="slider-item"><label>Muscle Mass: <strong>{{ muscleMass }} kg</strong></label><input type="range" min="15" max="60" step="0.5" [(ngModel)]="muscleMass"/></div>
+          <div class="slider-item"><label>Exercise: <strong>{{ exerciseHrs }} h/week</strong></label><input type="range" min="0" max="20" step="0.5" [(ngModel)]="exerciseHrs"/></div>
+        </div>
+      </div>
+
+      <!-- Conditions -->
+      <div class="form-section">
+        <div class="form-section-label">🏥 Medical conditions</div>
+        <div class="checkbox-grid">
+          <label class="checkbox-item"><input type="checkbox" [(ngModel)]="hasHypertension"/><span>Hypertension</span></label>
+          <label class="checkbox-item"><input type="checkbox" [(ngModel)]="hasDiabetes"/><span>Diabetes</span></label>
+          <label class="checkbox-item"><input type="checkbox" [(ngModel)]="hasPrediabetes"/><span>Pre-diabetes</span></label>
+          <label class="checkbox-item"><input type="checkbox" [(ngModel)]="hasHeartDisease"/><span>Heart Disease</span></label>
+          <label class="checkbox-item"><input type="checkbox" [(ngModel)]="hasKidneyIssue"/><span>Kidney Issue</span></label>
+          <label class="checkbox-item"><input type="checkbox" [(ngModel)]="hasCholesterol"/><span>High Cholesterol</span></label>
+        </div>
+      </div>
+
+      <!-- Symptoms -->
+      <div class="form-section">
+        <div class="form-section-label">🩺 Current symptoms (0 = none, 5 = severe)</div>
+        <div class="slider-grid">
+          <div class="slider-item" *ngFor="let s of symptomFields">
+            <label>{{ s.label }}: <strong>{{ getSymVal(s.key) }}/5</strong></label>
+            <input type="range" min="0" max="5" [ngModel]="getSymVal(s.key)" (ngModelChange)="setSymVal(s.key, $event)"/>
+          </div>
+        </div>
+      </div>
+
+      <!-- Goals -->
+      <div class="form-section">
+        <div class="form-section-label">🎯 Health goals</div>
+        <div class="checkbox-grid">
+          <label class="checkbox-item"><input type="checkbox" [(ngModel)]="goalLoseWeight"/><span>Lose Weight</span></label>
+          <label class="checkbox-item"><input type="checkbox" [(ngModel)]="goalBuildMuscle"/><span>Build Muscle</span></label>
+          <label class="checkbox-item"><input type="checkbox" [(ngModel)]="goalLowerBp"/><span>Lower Blood Pressure</span></label>
+          <label class="checkbox-item"><input type="checkbox" [(ngModel)]="goalControlGlucose"/><span>Control Glucose</span></label>
+        </div>
+      </div>
+
+      <button class="btn-predict" (click)="predict()" [disabled]="loading">
+        {{ loading ? '🔄 Analyzing…' : '🥗 Get Diet Recommendation' }}
+      </button>
+    </div>
+
+    <!-- ═══ RESULTS ═══ -->
+    <div class="results" *ngIf="predicted && result">
+
+      <!-- Main recommendation -->
+      <div class="rec-card" [style.border-left-color]="dietColor(result.recommendedDiet)">
+        <div class="rec-header">
+          <div class="rec-icon" [style.background]="dietColor(result.recommendedDiet) + '15'">
+            <span>{{ dietIcon(result.recommendedDiet) }}</span>
+          </div>
+          <div class="rec-info">
+            <h3 [style.color]="dietColor(result.recommendedDiet)">{{ result.recommendedDiet }}</h3>
+            <p class="rec-desc">{{ result.description }}</p>
+          </div>
+          <div class="rec-conf">
+            <span class="conf-num" [style.color]="dietColor(result.recommendedDiet)">{{ result.confidence }}%</span>
+            <span class="conf-label">Match</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Why this diet -->
+      <div class="section-card" *ngIf="result.reasoning?.length">
+        <div class="section-title"><span>🧠</span><h4>Why this diet?</h4></div>
+        <div class="reason-list">
+          <div class="reason-item" *ngFor="let r of result.reasoning">
+            <span class="reason-arrow">→</span><span>{{ r }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Foods grid -->
+      <div class="foods-row">
+        <div class="section-card foods-card foods-card--good">
+          <div class="section-title"><span>✅</span><h4>Recommended foods</h4></div>
+          <div class="food-list">
+            <span class="food-tag food-tag--good" *ngFor="let f of result.recommendedFoods">{{ f }}</span>
+          </div>
+        </div>
+        <div class="section-card foods-card foods-card--avoid">
+          <div class="section-title"><span>🚫</span><h4>Foods to avoid</h4></div>
+          <div class="food-list">
+            <span class="food-tag food-tag--avoid" *ngFor="let f of result.foodsToAvoid">{{ f }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- All rankings -->
+      <div class="section-card">
+        <div class="section-title"><span>📊</span><h4>All diet rankings</h4></div>
+        <div class="ranking-list">
+          <div class="rank-row" *ngFor="let r of result.allRankings; let i = index">
+            <span class="rank-pos">{{ i + 1 }}</span>
+            <span class="rank-icon">{{ dietIcon(r.diet) }}</span>
+            <span class="rank-name">{{ r.diet }}</span>
+            <div class="rank-bar-track">
+              <div class="rank-bar-fill" [style.width.%]="r.confidence" [style.background]="dietColor(r.diet)"></div>
+            </div>
+            <span class="rank-pct" [style.color]="dietColor(r.diet)">{{ r.confidence }}%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="model-info">
+        <span class="ml-badge">🤖 {{ result.modelType }}</span>
+      </div>
+
+      <div class="result-actions">
+        <button class="btn-retry" (click)="reset()">← Adjust inputs</button>
+      </div>
+
+      <div class="disclaimer">
+        <span>ℹ️</span>
+        <p>This recommendation is generated by a machine learning model trained on 15,000 synthetic health profiles (82% accuracy). It is for educational purposes and should be reviewed by a qualified dietitian before implementation.</p>
+      </div>
+    </div>
+  </div>
+</div>

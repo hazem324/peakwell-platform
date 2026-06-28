@@ -1,0 +1,32 @@
+.users-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.users-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 60px 20px;
+  background: #fff;
+  border: 1px solid #ede8e3;
+  border-radius: 16px;
+  font-size: 14px;
+  color: #8a7e78;
+  font-family: 'Jost', sans-serif;
+}
+
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ede8e3;
+  border-top-color: #c96a3f;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

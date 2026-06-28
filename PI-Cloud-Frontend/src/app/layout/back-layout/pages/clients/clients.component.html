@@ -1,0 +1,256 @@
+<div class="clients-page">
+  <!-- Search & Filter Bar -->
+  <div class="clients-toolbar">
+    <div class="clients-search">
+      <span class="search-icon">🔍</span>
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        (ngModelChange)="onSearch()"
+        placeholder="Search by name or goal…"
+      />
+      <button
+        class="search-clear"
+        *ngIf="searchQuery"
+        (click)="searchQuery = ''; applyFilters()"
+      >
+        ✕
+      </button>
+    </div>
+
+    <div class="status-filters">
+      <button
+        class="status-btn"
+        *ngFor="let s of statusFilters"
+        [class.status-btn--active]="activeStatus === s"
+        (click)="setStatus(s)"
+      >
+        {{ s | titlecase }}
+      </button>
+    </div>
+
+    <div class="clients-count">
+      {{ filteredClients.length }} student{{
+        filteredClients.length !== 1 ? "s" : ""
+      }}
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="no-results" *ngIf="loading">
+    <span>⏳</span>
+    <p>Loading students…</p>
+  </div>
+
+  <!-- No Results -->
+  <div class="no-results" *ngIf="!loading && filteredClients.length === 0">
+    <span>🔍</span>
+    <p>
+      No students match "<strong>{{ searchQuery }}</strong
+      >"
+    </p>
+    <button
+      class="btn-view"
+      (click)="searchQuery = ''; activeStatus = 'all'; applyFilters()"
+    >
+      Clear Search
+    </button>
+  </div>
+
+  <!-- Students Grid -->
+  <div class="clients-grid" *ngIf="!loading && filteredClients.length > 0">
+    <div class="client-card" *ngFor="let client of filteredClients">
+    <div class="client-card" *ngFor="let client of pagedClients">
+      <div class="client-card-top">
+        <div class="client-avatar-lg" [style.background]="client.avatarColor">
+          {{ client.initials }}
+        </div>
+        <span
+          class="status-badge"
+          [style.background]="statusColor(client.status) + '22'"
+          [style.color]="statusColor(client.status)"
+        >
+          {{ client.status }}
+        </span>
+      </div>
+
+      <h3 class="client-name">{{ client.name }}</h3>
+      <p class="client-goal">{{ client.goal }}</p>
+
+      <div class="client-stats">
+        <div class="client-stat">
+          <strong>{{ client.calories ? client.calories + " kg" : "—" }}</strong>
+          <span>weight</span>
+        </div>
+        <div class="client-stat">
+          <strong [style.color]="bmiColor(client.adherence)">{{
+            client.adherence || "—"
+          }}</strong>
+          <span>BMI</span>
+        </div>
+        <div class="client-stat">
+          <strong style="font-size: 11px">{{ client.duration }}</strong>
+          <span>activity</span>
+        </div>
+      </div>
+
+      <div class="client-next">
+        📋 <strong>{{ client.nextAppointment }}</strong>
+      </div>
+
+      <div class="client-actions">
+        <button class="btn-view" (click)="viewProfile(client)">
+          👤 View Profile
+        </button>
+        <button class="btn-dossier" (click)="openDossier(client)">
+          🗂 Dossier
+        </button>
+        <button class="btn-plan" (click)="openMealPlan(client)">
+          Meal Plan
+        </button>
+      </div>
+    </div>
+
+    <!-- Add New Student Card -->
+    <div
+      class="client-card client-card--add"
+      (click)="toastService.show('➕ Opening new student form…')"
+    >
+      <div class="add-icon">+</div>
+      <p>Add New Student</p>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination" *ngIf="!loading && totalPages > 1">
+    <button
+      class="page-btn page-btn--nav"
+      [disabled]="currentPage === 1"
+      (click)="goToPage(currentPage - 1)"
+    >
+      ‹
+    </button>
+    <button
+      class="page-btn"
+      *ngFor="let p of pageNumbers"
+      [class.page-btn--active]="p === currentPage"
+      (click)="goToPage(p)"
+    >
+      {{ p }}
+    </button>
+    <button
+      class="page-btn page-btn--nav"
+      [disabled]="currentPage === totalPages"
+      (click)="goToPage(currentPage + 1)"
+    >
+      ›
+    </button>
+  </div>
+</div>
+
+<!-- ── View Profile Modal ───────────────────────────────────────── -->
+<div class="profile-overlay" *ngIf="selectedStudent" (click)="closeProfile()">
+  <div class="profile-panel" (click)="$event.stopPropagation()">
+    <button class="profile-close" (click)="closeProfile()">✕</button>
+
+    <!-- Avatar + Name -->
+    <div class="profile-header">
+      <div
+        class="profile-avatar"
+        [style.background]="selectedStudent?.avatarHint ?? '#fde8d8'"
+      >
+        {{ (selectedStudent.firstName?.[0] ?? '') + (selectedStudent.lastName?.[0] ?? '') | uppercase }}
+      </div>
+      <div>
+        <h2 class="profile-name">
+          {{ selectedStudent.firstName }} {{ selectedStudent.lastName }}
+        </h2>
+        <p class="profile-email">{{ selectedStudent.email }}</p>
+        <span
+          class="profile-status-badge"
+          [style.background]="
+            selectedStudent.enabled ? '#7a9e7e22' : '#b5aaa522'
+          "
+          [style.color]="selectedStudent.enabled ? '#7a9e7e' : '#b5aaa5'"
+        >
+          {{ selectedStudent.enabled ? "Active" : "Inactive" }}
+        </span>
+      </div>
+    </div>
+
+    <div class="profile-divider"></div>
+
+    <!-- Basic Info -->
+    <div class="profile-section-title">Personal</div>
+    <div class="profile-grid">
+      <div class="profile-field">
+        <span class="pf-label">Age</span>
+        <span class="pf-value">{{ selectedStudent.age ?? "—" }} yrs</span>
+      </div>
+      <div class="profile-field">
+        <span class="pf-label">Goal</span>
+        <span class="pf-value">{{ selectedStudent.goal ?? "—" }}</span>
+      </div>
+      <div class="profile-field">
+        <span class="pf-label">Activity Level</span>
+        <span class="pf-value">{{ selectedStudent.activityLevel ?? "—" }}</span>
+      </div>
+      <div class="profile-field">
+        <span class="pf-label">Profile</span>
+        <span class="pf-value">{{
+          selectedStudent.profileCompleted ? "✅ Complete" : "⏳ Pending"
+        }}</span>
+      </div>
+    </div>
+
+    <div class="profile-divider"></div>
+
+    <!-- Biometrics -->
+    <div class="profile-section-title">Biometrics</div>
+    <div class="profile-metrics">
+      <div class="metric-box">
+        <strong>{{
+          selectedStudent.weight ? selectedStudent.weight + " kg" : "—"
+        }}</strong>
+        <span>Weight</span>
+      </div>
+      <div class="metric-box">
+        <strong>{{
+          selectedStudent.height ? selectedStudent.height + " cm" : "—"
+        }}</strong>
+        <span>Height</span>
+      </div>
+      <div
+        class="metric-box"
+        [style.borderColor]="bmiColor(selectedStudent.bmi)"
+      >
+        <strong [style.color]="bmiColor(selectedStudent.bmi)">
+          {{
+            selectedStudent.bmi ? (selectedStudent.bmi | number : "1.1-1") : "—"
+          }}
+        </strong>
+        <span>BMI · {{ bmiLabel(selectedStudent.bmi) }}</span>
+      </div>
+    </div>
+
+    <div class="profile-divider"></div>
+
+    <!-- Actions -->
+    <div class="profile-actions">
+      <button
+        class="btn-dossier"
+        style="flex: 1"
+        (click)="openDossierFromModal()"
+      >
+        🗂 Open Dossier
+      </button>
+      <button
+        class="btn-plan"
+        style="flex: 1"
+        (click)="openMealPlanFromModal()"
+      >
+        Meal Plan
+      </button>
+    </div>
+  </div>
+</div>

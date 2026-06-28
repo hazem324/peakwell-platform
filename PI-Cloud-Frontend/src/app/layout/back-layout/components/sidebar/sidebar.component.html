@@ -1,0 +1,36 @@
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    Peak <span></span> Well
+    <small>Pro Dashboard</small>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a *ngFor="let item of navItems"
+       class="nav-item"
+       [routerLink]="item.route"
+       [class.nav-item--active]="isActive(item.route!)">
+      <span class="nav-icon">{{ item.icon }}</span>
+      <span class="nav-label">{{ item.label }}</span>
+      <span class="nav-badge" *ngIf="item.badge">{{ item.badge }}</span>
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <!-- Avatar: real image if available, else initials -->
+      <div class="user-avatar" [class.user-avatar--img]="currentUser?.imageUrl">
+        <img *ngIf="currentUser?.imageUrl"
+             [src]="currentUser!.imageUrl"
+             [alt]="displayName"
+             class="user-avatar-img" />
+        <span *ngIf="!currentUser?.imageUrl">{{ initials }}</span>
+      </div>
+
+      <div class="user-info">
+        <strong>{{ displayName }}</strong>
+        <span>{{ displayRole }}</span>
+      </div>
+    </div>
+    <a routerLink="/" class="back-link">← Back to Site</a>
+  </div>
+</aside>

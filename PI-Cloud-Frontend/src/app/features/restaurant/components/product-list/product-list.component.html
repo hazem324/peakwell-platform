@@ -1,0 +1,157 @@
+<div class="products-page">
+
+  <!-- HEADER -->
+  <div class="section-header">
+    <div class="header-left">
+      <h2 class="section-title">Mes Produits</h2>
+      <p class="section-subtitle">
+        Gérez vos produits et leurs valeurs nutritionnelles
+      </p>
+    </div>
+
+    <button class="btn btn-primary" (click)="onAddClick()">
+      <span>+</span>
+      Ajouter un produit
+    </button>
+  </div>
+
+  <div class="search-bar">
+    <input 
+      type="text" 
+      placeholder="Rechercher un produit..."
+      [(ngModel)]="searchTerm"
+      (input)="onSearch()"
+    />
+  </div>
+
+  <div class="filter-tags">
+    <button 
+      *ngFor="let tag of tags"
+      [class.active]="selectedTags.includes(tag)"
+      (click)="toggleTag(tag)">
+      {{ tag }}
+    </button>
+  </div>
+
+  <!-- GRID -->
+  <div class="products-grid">
+
+    <div class="product-card" *ngFor="let product of paginatedProducts"
+      [ngClass]="{
+      'card-low': product.stockStatus === 'LOW_STOCK',
+      'card-out': product.stockStatus === 'OUT_OF_STOCK'
+      }"
+    >
+
+      <!-- TOP -->
+      <div class="card-header">
+
+        <div class="product-avatar">
+          <img [src]="'http://localhost:8090/peakwell/uploads/' + product.image" [alt]="product.name" />
+        </div>
+
+        <div class="product-info">
+          <h3>{{ product.name }}</h3>
+          <p 
+            #desc
+            [class.expanded]="isExpanded(product)">
+            {{ product.description }}
+          </p>
+
+          <span 
+            class="see-more"
+            *ngIf="isOverflowMap[product.id]"
+            (click)="toggleDescription(product)">
+            {{ isExpanded(product) ? 'Voir moins' : 'Voir plus' }}
+          </span>
+        </div>
+
+        <span class="badge category">
+          {{ categoryMap[product.category_Product] }}
+        </span>
+
+      </div>
+
+      <!-- NUTRITION -->
+      <div class="nutrition-grid">
+
+        <div class="nutri-item">
+          <span class="label">Calories</span>
+          <strong>{{ product.calories }} kcal</strong>
+        </div>
+
+        <div class="nutri-item">
+          <span class="label">Protéines</span>
+          <strong>{{ product.protein }} g</strong>
+        </div>
+
+        <div class="nutri-item">
+          <span class="label">Glucides</span>
+          <strong>{{ product.carbs }} g</strong>
+        </div>
+
+        <div class="nutri-item">
+          <span class="label">Lipides</span>
+          <strong>{{ product.fats }} g</strong>
+        </div>
+
+      </div>
+
+      <!-- FOOTER -->
+      <div class="card-footer">
+
+        <div class="stock-container">
+
+          <span class="stock">
+            {{ product.stock }} {{ product.unit }}
+          </span>
+
+          <span 
+            class="stock-badge"
+            [ngClass]="{
+              'in-stock': product.stockStatus === 'IN_STOCK',
+              'low-stock': product.stockStatus === 'LOW_STOCK',
+              'out-stock': product.stockStatus === 'OUT_OF_STOCK'
+            }"
+          >
+            {{
+              product.stockStatus === 'IN_STOCK' ? 'Disponible' :
+              product.stockStatus === 'LOW_STOCK' ? 'Stock faible' :
+              'Rupture'
+            }}
+          </span>
+
+        </div>
+
+        <div class="actions">
+          <button class="icon-btn edit" (click)="onEdit(product)">✏️</button>
+          <button class="icon-btn delete" (click)="onDelete(product.id)">🗑️</button>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<div class="pagination">
+
+  <button 
+    (click)="prevPage()" 
+    [disabled]="currentPage === 1">
+    ← Précédent
+  </button>
+
+  <span>
+    Page {{ currentPage }} / {{ totalPages }}
+  </span>
+
+  <button 
+    (click)="nextPage()" 
+    [disabled]="currentPage === totalPages">
+    Suivant →
+  </button>
+
+</div>

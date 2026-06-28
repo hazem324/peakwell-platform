@@ -1,0 +1,118 @@
+<div class="notes-page">
+
+  <!-- Toolbar -->
+  <div class="notes-toolbar">
+    <span class="notes-count" *ngIf="notes.length > 0">{{ notes.length }} note{{ notes.length !== 1 ? 's' : '' }}</span>
+    <button class="btn-add-note" (click)="openAddForm()" *ngIf="!showForm">
+      + Add Note
+    </button>
+  </div>
+
+  <!-- Add / Edit Form -->
+  <div class="note-form-card" *ngIf="showForm">
+    <div class="note-form-header">
+      <h4>{{ editingId !== null ? '✏️ Edit Note' : '📝 New Consultation Note' }}</h4>
+    </div>
+
+    <div class="note-form-body">
+      <div class="form-row">
+        <div class="form-field">
+          <label>Type</label>
+          <select [(ngModel)]="formType">
+            <option *ngFor="let t of noteTypes" [value]="t">{{ t }}</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Date</label>
+          <input type="text" [(ngModel)]="formDate" placeholder="Mar 21, 2026"/>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-field">
+          <label>Nutritionist</label>
+          <input type="text" [(ngModel)]="formNutritionist" placeholder="Dr. Sarah Mills"/>
+        </div>
+        <div class="form-field">
+          <label>Next Appointment</label>
+          <input type="text" [(ngModel)]="formNextAppointment" placeholder="Apr 15, 2026"/>
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label>Summary</label>
+        <textarea [(ngModel)]="formSummary" rows="3" placeholder="Consultation summary…"></textarea>
+      </div>
+
+      <div class="form-field">
+        <label>Recommendations <span class="form-hint">(one per line)</span></label>
+        <textarea [(ngModel)]="formRecommendations" rows="4" placeholder="1,600 kcal/day target&#10;Increase fiber to 30g/day&#10;Walk 30 min daily"></textarea>
+      </div>
+    </div>
+
+    <div class="note-form-actions">
+      <button class="btn-cancel-form" (click)="cancelForm()">Cancel</button>
+      <button class="btn-save-form" (click)="saveForm()" [disabled]="saving || !formSummary.trim()">
+        {{ saving ? 'Saving…' : (editingId !== null ? '✅ Update Note' : '✅ Save Note') }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="notes-empty" *ngIf="loading">
+    <span>⏳</span>
+    <p>Loading consultation notes…</p>
+  </div>
+
+  <!-- Empty state -->
+  <div class="notes-empty" *ngIf="!loading && notes.length === 0 && !showForm">
+    <span>📝</span>
+    <p>No consultation notes recorded yet.</p>
+  </div>
+
+  <!-- Note Items -->
+  <div class="note-item" *ngFor="let note of notes"
+       [class.note-item--open]="expanded === note.id">
+
+    <div class="note-header" (click)="toggle(note.id)">
+      <div class="note-header-left">
+        <span class="note-type-dot" [style.background]="typeColor(note.type)"></span>
+        <div class="note-meta">
+          <strong>{{ note.type }}</strong>
+          <span>{{ note.date }} · {{ note.nutritionist }}</span>
+        </div>
+      </div>
+      <div class="note-header-right">
+        <span class="note-type-badge"
+              [style.background]="typeColor(note.type) + '18'"
+              [style.color]="typeColor(note.type)">
+          {{ note.type }}
+        </span>
+        <button class="btn-note-action btn-note-edit" (click)="openEditForm(note); $event.stopPropagation()" title="Edit">✏️</button>
+        <button class="btn-note-action btn-note-delete" (click)="deleteNote(note.id); $event.stopPropagation()" title="Delete">🗑</button>
+        <span class="note-toggle">{{ expanded === note.id ? '▲' : '▼' }}</span>
+      </div>
+    </div>
+
+    <div class="note-body" *ngIf="expanded === note.id">
+      <div class="note-summary">
+        <h4>Summary</h4>
+        <p>{{ note.summary }}</p>
+      </div>
+
+      <div class="note-recommendations" *ngIf="note.recommendations?.length">
+        <h4>Recommendations</h4>
+        <ul>
+          <li *ngFor="let rec of note.recommendations">
+            <span class="rec-check">✓</span> {{ rec }}
+          </li>
+        </ul>
+      </div>
+
+      <div class="note-footer" *ngIf="note.nextAppointment">
+        <span>📅 Next appointment: <strong>{{ note.nextAppointment }}</strong></span>
+      </div>
+    </div>
+  </div>
+
+</div>

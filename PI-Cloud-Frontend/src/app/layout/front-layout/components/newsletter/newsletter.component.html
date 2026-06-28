@@ -1,0 +1,19 @@
+<section class="newsletter-section" id="newsletter">
+  <div class="container">
+    <div class="newsletter-inner">
+      <div class="newsletter-eyebrow">Join 240,000+ Readers</div>
+      <h2 class="newsletter-title">Get Your Free <em>Weight Loss</em> Starter Kit</h2>
+      <p class="newsletter-sub">Subscribe and instantly receive our 7-day clean eating meal plan, recipe ebook, and weekly nutrition tips — completely free.</p>
+      <div class="newsletter-form">
+        <input type="text"  [(ngModel)]="name"  placeholder="Your first name"/>
+        <input type="email" [(ngModel)]="email" placeholder="Your email address" class="email-input"/>
+        <button class="btn-primary" (click)="subscribe()">Get Free Kit 🎁</button>
+      </div>
+      <ul class="newsletter-perks">
+        <li class="perk"><span>✓</span> Free 7-Day Meal Plan</li>
+        <li class="perk"><span>✓</span> Recipe Ebook (20 pages)</li>
+        <li class="perk"><span>✓</span> Weekly tips, no spam</li>
+      </ul>
+    </div>
+  </div>
+</section>

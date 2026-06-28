@@ -1,0 +1,84 @@
+.chart-card {
+  background: #fff;
+  border: 1px solid #ede8e3;
+  border-radius: 16px;
+  padding: 20px;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.chart-header {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #f5f0eb;
+  padding-bottom: 14px;
+}
+
+.chart-title {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: #2d2d2d;
+  font-family: 'Jost', sans-serif;
+}
+
+.chart-subtitle {
+  font-size: 11px;
+  color: #c5bdb7;
+  font-family: 'Jost', sans-serif;
+  margin-left: auto;
+}
+
+.type-list { display: flex; flex-direction: column; gap: 12px; }
+
+.type-row { display: flex; align-items: center; gap: 12px; }
+
+.type-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  i { font-size: 13px; }
+}
+
+.type-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+
+.type-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.type-label {
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Jost', sans-serif;
+  color: #2d2d2d;
+}
+
+.type-count {
+  font-size: 12px;
+  font-weight: 700;
+  font-family: 'Jost', sans-serif;
+}
+
+.type-track {
+  height: 5px;
+  background: #f5f0eb;
+  border-radius: 100px;
+  overflow: hidden;
+}
+
+.type-fill {
+  height: 100%;
+  border-radius: 100px;
+  transition: width 0.7s ease;
+  min-width: 3px;
+}

@@ -1,0 +1,203 @@
+<!-- Empty state -->
+<div class="empty-dash" *ngIf="!hasData">
+  <div class="empty-dash-icon">📄</div>
+  <h3>Generate a health report</h3>
+  <p>Complete your profile and add measurements to generate a comprehensive downloadable health report.</p>
+</div>
+
+<!-- Report Builder -->
+<div class="report-builder" *ngIf="hasData">
+
+  <div class="report-card">
+    <div class="report-header">
+      <div class="report-icon-wrap">
+        <span class="report-icon">📋</span>
+      </div>
+      <div>
+        <h3>Health Report Generator</h3>
+        <p>Create a comprehensive PDF report of your health data to share with your doctor or nutritionist.</p>
+      </div>
+    </div>
+
+    <!-- Report Preview Strip -->
+    <div class="preview-strip">
+      <div class="preview-item">
+        <span class="preview-num">{{ profile?.firstName }} {{ profile?.lastName }}</span>
+        <span class="preview-label">Patient</span>
+      </div>
+      <div class="preview-divider"></div>
+      <div class="preview-item">
+        <span class="preview-num">{{ filteredEntries.length }}</span>
+        <span class="preview-label">Measurements</span>
+      </div>
+      <div class="preview-divider"></div>
+      <div class="preview-item">
+        <span class="preview-num">{{ goals.length }}</span>
+        <span class="preview-label">Goals</span>
+      </div>
+      <div class="preview-divider"></div>
+      <div class="preview-item">
+        <span class="preview-num">{{ selectedSectionCount }}</span>
+        <span class="preview-label">Sections</span>
+      </div>
+    </div>
+
+    <!-- Time Period -->
+    <div class="config-section">
+      <div class="config-label">📅 Time Period</div>
+      <div class="period-options">
+        <button *ngFor="let p of periods"
+                class="period-btn"
+                [class.period-btn--active]="reportPeriod === p.value"
+                (click)="reportPeriod = p.value">
+          {{ p.label }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Sections Toggle -->
+    <div class="config-section">
+      <div class="config-label">📑 Include Sections</div>
+      <div class="section-toggles">
+
+        <label class="toggle-row">
+          <div class="toggle-info">
+            <span class="toggle-icon">👤</span>
+            <div>
+              <strong>Patient Profile</strong>
+              <span>Personal info, allergies, conditions, medications</span>
+            </div>
+          </div>
+          <div class="toggle-switch">
+            <input type="checkbox" [(ngModel)]="includeSections.profile">
+            <span class="toggle-track"></span>
+          </div>
+        </label>
+
+        <label class="toggle-row">
+          <div class="toggle-info">
+            <span class="toggle-icon">📊</span>
+            <div>
+              <strong>Current Biometrics</strong>
+              <span>Latest weight, BMI, body fat, blood pressure, glucose</span>
+            </div>
+          </div>
+          <div class="toggle-switch">
+            <input type="checkbox" [(ngModel)]="includeSections.biometrics">
+            <span class="toggle-track"></span>
+          </div>
+        </label>
+
+        <label class="toggle-row">
+          <div class="toggle-info">
+            <span class="toggle-icon">📈</span>
+            <div>
+              <strong>Measurement History &amp; Trends</strong>
+              <span>Full table with trend indicators for each recorded entry</span>
+            </div>
+          </div>
+          <div class="toggle-switch">
+            <input type="checkbox" [(ngModel)]="includeSections.trends">
+            <span class="toggle-track"></span>
+          </div>
+        </label>
+
+        <label class="toggle-row">
+          <div class="toggle-info">
+            <span class="toggle-icon">⚠️</span>
+            <div>
+              <strong>Health Alerts</strong>
+              <span>Flagged metrics that need attention</span>
+            </div>
+          </div>
+          <div class="toggle-switch">
+            <input type="checkbox" [(ngModel)]="includeSections.alerts">
+            <span class="toggle-track"></span>
+          </div>
+        </label>
+
+        <label class="toggle-row">
+          <div class="toggle-info">
+            <span class="toggle-icon">🎯</span>
+            <div>
+              <strong>Health Goals</strong>
+              <span>Goal progress, milestones and status</span>
+            </div>
+          </div>
+          <div class="toggle-switch">
+            <input type="checkbox" [(ngModel)]="includeSections.goals">
+            <span class="toggle-track"></span>
+          </div>
+        </label>
+
+        <label class="toggle-row">
+          <div class="toggle-info">
+            <span class="toggle-icon">💡</span>
+            <div>
+              <strong>AI Recommendations</strong>
+              <span>Personalized nutrition, fitness, and lifestyle advice</span>
+            </div>
+          </div>
+          <div class="toggle-switch">
+            <input type="checkbox" [(ngModel)]="includeSections.recommendations">
+            <span class="toggle-track"></span>
+          </div>
+        </label>
+
+      </div>
+    </div>
+
+    <!-- Doctor Notes -->
+    <div class="config-section">
+      <div class="config-label">📝 Notes for Doctor <span class="optional-badge">Optional</span></div>
+      <textarea
+        class="doctor-notes"
+        [(ngModel)]="doctorNotes"
+        placeholder="Add any notes, symptoms, or questions you'd like to discuss with your doctor or nutritionist…"
+        rows="4">
+      </textarea>
+    </div>
+
+    <!-- Generate Button -->
+    <div class="generate-area">
+      <button class="btn-generate" (click)="generateReport()" [disabled]="generating || selectedSectionCount === 0">
+        <span *ngIf="!generating">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Generate &amp; Download PDF
+        </span>
+        <span *ngIf="generating">⏳ Generating report…</span>
+      </button>
+      <p class="generate-hint" *ngIf="selectedSectionCount === 0">Select at least one section to generate.</p>
+      <p class="generate-hint generate-hint--success" *ngIf="reportGenerated && !generating">
+        ✅ Report opened! Use your browser's print dialog to save as PDF (Ctrl/Cmd + P).
+      </p>
+    </div>
+  </div>
+
+  <!-- Tips Card -->
+  <div class="tips-card">
+    <div class="tips-header">
+      <span>💡</span>
+      <strong>Tips for sharing your report</strong>
+    </div>
+    <div class="tips-list">
+      <div class="tip-item">
+        <span class="tip-bullet">1</span>
+        <span>In the print dialog, select <strong>"Save as PDF"</strong> as the destination.</span>
+      </div>
+      <div class="tip-item">
+        <span class="tip-bullet">2</span>
+        <span>Share the PDF with your nutritionist before your next appointment.</span>
+      </div>
+      <div class="tip-item">
+        <span class="tip-bullet">3</span>
+        <span>Use the <strong>Notes for Doctor</strong> field to add questions or recent symptoms.</span>
+      </div>
+      <div class="tip-item">
+        <span class="tip-bullet">4</span>
+        <span>Generate a new report each month to track your long-term progress.</span>
+      </div>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,121 @@
+<div class="modal-overlay" (click)="onClose()">
+
+  <div class="modal" (click)="$event.stopPropagation()">
+
+    <!-- HEADER -->
+    <div class="modal-header">
+      <div>
+        <h2>{{ isEditMode ? 'Modifier le repas' : 'Ajouter un repas' }}</h2>
+        <p>Compose ton repas intelligemment</p>
+      </div>
+      <button class="close-btn" (click)="onClose()">✖</button>
+    </div>
+
+    <!-- BODY -->
+    <div class="modal-body">
+
+      <!-- FORM -->
+      <div class="form-grid">
+
+        <div class="form-field">
+          <label>Nom du repas</label>
+          <input
+            type="text"
+            [(ngModel)]="formMeal.name"
+            placeholder="Ex: Chicken Bowl"
+          >
+        </div>
+
+        <div class="form-field">
+          <label>Catégorie</label>
+          <select [(ngModel)]="formMeal.category">
+            <option value="BREAKFAST">Breakfast</option>
+            <option value="LUNCH">Lunch</option>
+            <option value="DINNER">Dinner</option>
+          </select>
+        </div>
+
+      </div>
+
+      <!-- PRODUCTS -->
+      <div class="products-section">
+
+        <div class="section-title">
+          <h4>Produits</h4>
+          <span>{{ formMeal.ingredients.length }} sélectionné(s)</span>
+        </div>
+
+<div class="products-grid">
+
+  <div
+    class="product-card"
+    *ngFor="let product of products"
+    [class.active]="isSelected(product)"
+    (click)="toggleProduct(product)"
+  >
+
+    <!-- CHECKBOX (coin top-right) -->
+    <input
+      type="checkbox"
+      class="checkbox"
+      [checked]="isSelected(product)"
+      (click)="$event.stopPropagation()"
+      (change)="toggleProduct(product)"
+    />
+
+    <!-- CONTENT -->
+    <div class="card-content">
+
+      <div class="top">
+        <span class="name">{{ product.name }}</span>
+      </div>
+
+      <div class="product-avatar">
+        <img [src]="'http://localhost:8090/peakwell/uploads/' + product.image" [alt]="product.name" />
+      </div>
+
+      <div class="middle">
+        <span class="stock">
+          {{ getRemainingStock(product) }} / {{ product.stock }} g
+        </span>
+      </div>
+
+      <div class="bottom">
+        <input
+          type="number"
+          class="qty"
+          [disabled]="!isSelected(product)"
+          [value]="getQuantity(product)"
+          (click)="$event.stopPropagation()"
+          (input)="updateQuantity(product, $event)"
+          placeholder="Quantité"
+        />
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+      <!-- IMAGE -->
+      <div class="form-field full">
+        <label>Image du repas</label>
+        <input type="file" (change)="onFileSelected($event)">
+      </div>
+      <div class="image-preview" *ngIf="getImagePreview()">
+        <img [src]="getImagePreview()" alt="preview">
+      </div>
+
+    </div>
+
+    <!-- FOOTER -->
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="onClose()">Annuler</button>
+      <button class="btn-primary" (click)="onSubmit()">
+        {{ isEditMode ? 'Modifier' : 'Ajouter' }}
+      </button>
+    </div>
+
+  </div>
+
+</div>

@@ -1,0 +1,97 @@
+<div class="checkout">
+  <div class="checkout-card">
+
+    <div class="checkout-header">
+      <h3>New Payment</h3>
+      <p>Secured by Stripe — your card details are never stored.</p>
+    </div>
+
+    <!-- ═══ STEP 1: Select ═══ -->
+    <div [hidden]="step !== 'select'">
+      <div class="section-label">💳 What are you paying for?</div>
+      <div class="type-grid">
+        <button *ngFor="let item of items"
+                class="type-tile"
+                [class.type-tile--active]="selectedType === item.payableType"
+                (click)="selectType(item.payableType)">
+          <span class="tile-icon">{{ typeIcon(item.payableType) }}</span>
+          <span class="tile-label">{{ item.label }}</span>
+          <span class="tile-amount">{{ format(item.amount, item.currency) }}</span>
+        </button>
+      </div>
+
+      <div class="field-group" *ngIf="selectedType === 'CONSULTATION'">
+        <label>Select consultation</label>
+        <select [(ngModel)]="selectedId">
+          <option [value]="0" disabled>-- Choose --</option>
+          <option *ngFor="let c of unpaidConsultations" [value]="c.id">
+            Dr. {{ c.doctorName }} — {{ c.scheduledAt | date:'MMM d, y' }}
+          </option>
+        </select>
+      </div>
+
+      <div class="order-summary">
+        <div class="order-row">
+          <span>{{ typeIcon(selectedType) }} {{ selectedItem.label }}</span>
+          <span>{{ format(selectedItem.amount, selectedItem.currency) }}</span>
+        </div>
+        <div class="order-row order-row--total">
+          <span>Total</span>
+          <strong>{{ format(selectedItem.amount, selectedItem.currency) }}</strong>
+        </div>
+      </div>
+
+      <button class="btn-pay" (click)="proceedToCard()" [disabled]="loading">
+        {{ loading ? '⏳ Loading…' : '💳 Continue to Payment' }}
+      </button>
+    </div>
+
+    <!-- ═══ STEP 2: Stripe Card UI — always in DOM ═══ -->
+    <div [hidden]="step !== 'card'">
+      <div class="card-step-header">
+        <button class="btn-back" (click)="step = 'select'">← Back</button>
+        <span class="card-step-amount">
+          {{ format(selectedItem.amount, selectedItem.currency) }}
+        </span>
+      </div>
+
+      <div class="stripe-element-wrapper">
+        <div class="mounting-overlay" *ngIf="mountingCard">
+          <div class="spinner"></div>
+          <span>Loading payment form…</span>
+        </div>
+        <!-- This div is ALWAYS in the DOM — Stripe needs it -->
+        <div id="stripe-element"></div>
+      </div>
+
+      <div class="error-msg" *ngIf="errorMessage">
+        ⚠️ {{ errorMessage }}
+      </div>
+
+      <div class="stripe-badge">
+        🔒 Your payment is encrypted and secured by Stripe
+      </div>
+
+      <button class="btn-pay"
+              (click)="confirmPayment()"
+              [disabled]="mountingCard || !cardReady">
+        💳 Pay {{ format(selectedItem.amount, selectedItem.currency) }}
+      </button>
+    </div>
+
+    <!-- ═══ STEP 3: Processing ═══ -->
+    <div class="processing" *ngIf="step === 'processing'">
+      <div class="spinner"></div>
+      <p>Processing your payment securely…</p>
+    </div>
+
+    <!-- ═══ STEP 4: Success ═══ -->
+    <div class="success" *ngIf="step === 'success'">
+      <div class="success-icon">✅</div>
+      <h3>Payment Successful!</h3>
+      <p>Your payment has been processed. A receipt has been sent via Stripe.</p>
+      <button class="btn-pay" (click)="done()">Back to Payments</button>
+    </div>
+
+  </div>
+</div>

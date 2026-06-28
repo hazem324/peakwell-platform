@@ -1,0 +1,16 @@
+<div class="reaction-bar-container">
+  <div *ngIf="!loading" class="reaction-bar">
+    <button
+      *ngFor="let config of reactionConfig"
+      class="reaction-button"
+      [class.active]="isUserReaction(config.type)"
+      (click)="toggleReaction(config.type)"
+      [title]="config.label">
+      <span class="reaction-emoji">{{ config.emoji }}</span>
+      <span class="reaction-count" *ngIf="getReactionCount(config.type) > 0">
+        {{ getReactionCount(config.type) }}
+      </span>
+    </button>
+  </div>
+  <div *ngIf="loading" class="loading-reactions">Loading reactions...</div>
+</div>

@@ -1,0 +1,29 @@
+<div class="alerts-wrap">
+  <div class="alerts-summary">
+    <div class="sum-card sum-card--danger">
+      <strong>{{ dangerCount }}</strong><span>Critical</span>
+    </div>
+    <div class="sum-card sum-card--warning">
+      <strong>{{ warningCount }}</strong><span>Warnings</span>
+    </div>
+    <div class="sum-card sum-card--info">
+      <strong>{{ infoCount }}</strong><span>Normal</span>
+    </div>
+  </div>
+
+  <div class="alerts-list">
+    <div class="alert-card"
+         *ngFor="let a of alerts"
+         [style.background]="bg(a.type)"
+         [style.border-left]="'4px solid ' + color(a.type)">
+      <span class="alert-icon">{{ icon(a.type) }}</span>
+      <div class="alert-body">
+        <div class="alert-top">
+          <strong>{{ a.metric }}</strong>
+          <span [style.color]="color(a.type)">{{ a.value }}</span>
+        </div>
+        <p>{{ a.message }}</p>
+      </div>
+    </div>
+  </div>
+</div>

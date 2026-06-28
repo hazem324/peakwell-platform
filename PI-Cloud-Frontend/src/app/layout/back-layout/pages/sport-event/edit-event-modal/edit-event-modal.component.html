@@ -1,0 +1,98 @@
+<div class="modal-backdrop">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div>
+        <h3>Modifier l’événement</h3>
+        <p class="modal-subtitle">Mettez à jour les informations de l’événement</p>
+      </div>
+
+      <button type="button" class="close-btn" (click)="onClose()">✕</button>
+    </div>
+
+    <form (ngSubmit)="onSubmit()">
+
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Titre</label>
+          <input type="text" [(ngModel)]="formData.title" name="title" required>
+        </div>
+
+        <div class="form-group full">
+          <label>Description</label>
+          <textarea [(ngModel)]="formData.description" name="description" rows="4"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Date</label>
+          <input class="modern-input" type="datetime-local" [(ngModel)]="formData.eventDate" name="eventDate" required>
+        </div>
+
+        <div class="form-group">
+          <label>Catégorie</label>
+          <div class="select-modern">
+            <select [(ngModel)]="formData.category" name="category" class="modern-select" required>
+              <option *ngFor="let category of categories" [value]="category">{{ category }}</option>
+            </select>
+            <span class="select-arrow">⌄</span>
+          </div>
+        </div>
+
+        <div class="form-group full">
+          <label>Lieu</label>
+          <div class="location-row">
+            <input type="text" [(ngModel)]="formData.location" name="location" required>
+            <button type="button" class="map-btn" (click)="openMapModal()">
+              📍 Choisir sur la carte
+            </button>
+          </div>
+        </div>
+
+
+        <div class="form-group">
+          <label>Nombre max de participants</label>
+          <input type="number" [(ngModel)]="formData.maxParticipants" name="maxParticipants" min="1" required>
+        </div>
+
+        <div class="form-group">
+          <label>Statut</label>
+          <div class="select-modern">
+            <select [(ngModel)]="formData.status" name="status" class="modern-select">
+              <option value="OPEN">OPEN</option>
+              <option value="FULL">FULL</option>
+              <option value="CANCELLED">CANCELLED</option>
+              <option value="FINISHED">FINISHED</option>
+            </select>
+            <span class="select-arrow">⌄</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Changer l’image</label>
+          <input class="file-input" type="file" accept="image/*" (change)="onFileSelected($event)">
+        </div>
+      </div>
+
+      <div class="image-preview" *ngIf="imagePreview">
+        <img [src]="imagePreview" alt="Preview image">
+      </div>
+
+      <div class="actions">
+        <button type="submit" class="save-btn" [disabled]="loading">
+          {{ loading ? 'Upload...' : 'Enregistrer' }}
+        </button>
+
+        <button type="button" class="cancel-btn" (click)="onClose()">
+          Annuler
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<app-map-picker-modal
+  *ngIf="showMapModal"
+  [latitude]="formData.latitude"
+  [longitude]="formData.longitude"
+  (locationSelected)="handleLocationSelected($event)"
+  (close)="closeMapModal()">
+</app-map-picker-modal>

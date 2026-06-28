@@ -1,0 +1,90 @@
+<!-- Hero -->
+<section class="ab-hero">
+  <div class="container ab-hero-inner">
+    <p class="ab-eyebrow">About PeakWell</p>
+    <h1>Your health journey,<br><em>all in one place.</em></h1>
+    <p class="ab-sub">PeakWell is an integrated wellness platform connecting members, registered dietitians, and health-conscious restaurants — giving everyone the tools they need to reach their goals.</p>
+  </div>
+</section>
+
+<!-- Stats strip -->
+<section class="ab-stats">
+  <div class="container ab-stats-inner">
+    <div class="ab-stat" *ngFor="let s of stats">
+      <span class="ab-stat-value">{{ s.value }}</span>
+      <span class="ab-stat-label">{{ s.label }}</span>
+    </div>
+  </div>
+</section>
+
+<!-- Features grid -->
+<section class="ab-features">
+  <div class="container">
+    <div class="ab-section-head">
+      <p class="ab-label">What We Offer</p>
+      <h2>Everything you need to <em>thrive</em></h2>
+    </div>
+    <div class="ab-features-grid">
+      <div class="ab-feature-card" *ngFor="let f of features">
+        <span class="ab-feature-icon">{{ f.icon }}</span>
+        <h3>{{ f.title }}</h3>
+        <p>{{ f.desc }}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Who it's for -->
+<section class="ab-audiences">
+  <div class="container">
+    <div class="ab-section-head">
+      <p class="ab-label">Who It's For</p>
+      <h2>Built for every <em>role</em></h2>
+    </div>
+    <div class="ab-audiences-grid">
+      <div
+        class="ab-audience-card"
+        *ngFor="let a of audiences"
+        [style.border-color]="a.border"
+        [style.background]="a.bg"
+      >
+        <div class="ab-aud-icon" [style.color]="a.color">{{ a.icon }}</div>
+        <h3 [style.color]="a.color">{{ a.role }}</h3>
+        <ul class="ab-aud-list">
+          <li *ngFor="let pt of a.points">
+            <span class="ab-aud-check" [style.color]="a.color">✓</span>
+            {{ pt }}
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Mission -->
+<section class="ab-mission">
+  <div class="container ab-mission-inner">
+    <div class="ab-mission-text">
+      <p class="ab-label">Our Mission</p>
+      <h2>Science-backed wellness,<br><em>human-centred care.</em></h2>
+      <p>We believe that lasting health comes from the right combination of data, professional guidance, and community. PeakWell gives every user — whether patient, practitioner, or partner — a single, beautifully designed space to do their best work.</p>
+    </div>
+    <div class="ab-mission-pillars">
+      <div class="ab-pillar">
+        <span>🔬</span>
+        <strong>Evidence-based</strong>
+        <p>Every feature and piece of content is grounded in nutritional science.</p>
+      </div>
+      <div class="ab-pillar">
+        <span>🔒</span>
+        <strong>Privacy-first</strong>
+        <p>Your health data belongs to you — secured and never sold.</p>
+      </div>
+      <div class="ab-pillar">
+        <span>🤝</span>
+        <strong>Collaborative</strong>
+        <p>Patients and dietitians work together in real time, not in silos.</p>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,342 @@
+<div class="measure-page">
+
+  <!-- ── Page Header ────────────────────────────────────── -->
+  <div class="page-header">
+    <div class="page-header-left">
+      <h2>Add New Measurement</h2>
+      <p class="page-subtitle">Review your current health status before recording a new entry.</p>
+    </div>
+    <div class="page-header-right" *ngIf="latest">
+      <div class="last-update-badge">
+        <span class="badge-dot"></span>
+        Last recorded:
+        <strong>{{ latest.recordedAt | date:'MMM d, y' }}</strong>
+      </div>
+      <span class="bmi-pill"
+            [style.background]="bmiCategory.color + '18'"
+            [style.color]="bmiCategory.color">
+        BMI {{ latest.bmi }} &middot; {{ bmiCategory.label }}
+      </span>
+    </div>
+  </div>
+
+  <!-- ── Health Snapshot ─────────────────────────────────── -->
+  <div class="section-block" *ngIf="latest">
+    <div class="section-divider">
+      <span class="section-line"></span>
+      <span class="section-label-text">Current Health Snapshot</span>
+      <span class="section-line"></span>
+    </div>
+
+    <div class="snapshot-grid">
+      <div class="snapshot-card" *ngFor="let m of metrics">
+        <div class="sc-accent" [style.background]="m.color + '30'"></div>
+        <div class="sc-header">
+          <span class="sc-icon">{{ m.icon }}</span>
+          <span class="sc-status"
+                *ngIf="m.status"
+                [style.background]="m.statusColor + '18'"
+                [style.color]="m.statusColor">
+            {{ m.status }}
+          </span>
+          <span class="sc-change"
+                *ngIf="m.change !== null && m.change !== 0"
+                [class.sc-change--good]="m.good"
+                [class.sc-change--bad]="!m.good">
+            {{ m.good ? '↓' : '↑' }} {{ changeLabel(m.change, m.good) }} {{ m.unit }}
+          </span>
+        </div>
+        <div class="sc-value" [style.color]="m.color">{{ m.value }}</div>
+        <div class="sc-unit" *ngIf="m.unit">{{ m.unit }}</div>
+        <div class="sc-label">{{ m.label }}</div>
+        <span class="sc-badge"
+              *ngIf="m.badge"
+              [style.background]="m.color + '18'"
+              [style.color]="m.color">
+          {{ m.badge }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Progress Trends ─────────────────────────────────── -->
+  <div class="section-block" *ngIf="entries.length > 1">
+    <div class="section-divider">
+      <span class="section-line"></span>
+      <span class="section-label-text">Progress Trends</span>
+      <span class="section-line"></span>
+    </div>
+
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <div class="chart-title-wrap">
+            <span class="chart-dot" style="background:#c96a3f"></span>
+            <span class="chart-title">Weight</span>
+          </div>
+          <span class="chart-unit">kg</span>
+        </div>
+        <div class="chart-wrap"><canvas #weightChart></canvas></div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <div class="chart-title-wrap">
+            <span class="chart-dot" style="background:#e88f68"></span>
+            <span class="chart-title">BMI</span>
+          </div>
+          <span class="chart-badge"
+                [style.background]="bmiCategory.color + '18'"
+                [style.color]="bmiCategory.color">
+            {{ bmiCategory.label }}
+          </span>
+        </div>
+        <div class="chart-wrap"><canvas #bmiChart></canvas></div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <div class="chart-title-wrap">
+            <span class="chart-dot" style="background:#a47cf0"></span>
+            <span class="chart-title">Blood Pressure</span>
+          </div>
+          <span class="chart-unit">mmHg</span>
+        </div>
+        <div class="chart-wrap"><canvas #bpChart></canvas></div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <div class="chart-title-wrap">
+            <span class="chart-dot" style="background:#4ab8f0"></span>
+            <span class="chart-title">Glucose</span>
+          </div>
+          <span class="chart-unit">mg/dL</span>
+        </div>
+        <div class="chart-wrap"><canvas #glucoseChart></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Health Alerts ─────────────────────────────────────── -->
+  <div class="section-block" *ngIf="!alertsLoading && alerts.length > 0">
+    <div class="section-divider">
+      <span class="section-line"></span>
+      <span class="section-label-text">Health Alerts</span>
+      <span class="section-line"></span>
+    </div>
+
+    <div class="alerts-panel">
+      <div class="ap-summary">
+        <div class="aps-card aps-card--danger">
+          <strong>{{ alertDangerCount }}</strong>
+          <span>Critical</span>
+        </div>
+        <div class="aps-card aps-card--warning">
+          <strong>{{ alertWarningCount }}</strong>
+          <span>Warnings</span>
+        </div>
+        <div class="aps-card aps-card--info">
+          <strong>{{ alertInfoCount }}</strong>
+          <span>Normal</span>
+        </div>
+      </div>
+
+      <div class="ap-list">
+        <div class="ap-card"
+             *ngFor="let a of alerts"
+             [style.background]="alertBg(a.type)"
+             [style.border-left]="'4px solid ' + alertColor(a.type)">
+          <span class="ap-icon">{{ alertIcon(a.type) }}</span>
+          <div class="ap-body">
+            <div class="ap-top">
+              <strong>{{ a.metric }}</strong>
+              <span [style.color]="alertColor(a.type)">{{ a.value }}</span>
+            </div>
+            <p>{{ a.message }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── New Entry Form ──────────────────────────────────── -->
+  <div class="section-block">
+    <div class="section-divider">
+      <span class="section-line"></span>
+      <span class="section-label-text">New Entry</span>
+      <span class="section-line"></span>
+    </div>
+
+    <div class="form-card">
+
+      <!-- BMI Live Preview -->
+      <div class="bmi-live" *ngIf="bmi > 0">
+        <div class="bmi-live-inner">
+          <div class="bmi-number" [style.color]="bmiColor">{{ bmi }}</div>
+          <div class="bmi-info">
+            <div class="bmi-title">BMI — Auto-calculated</div>
+            <span class="bmi-cat"
+                  [style.background]="bmiColor + '18'"
+                  [style.color]="bmiColor">
+              {{ bmiLabel }}
+            </span>
+          </div>
+        </div>
+        <div class="bmi-scale">
+          <div class="bmi-scale-bar">
+            <div class="bmi-scale-fill"
+                 [style.width]="scaleWidth(bmi)"
+                 [style.background]="bmiColor">
+            </div>
+          </div>
+          <div class="bmi-scale-labels">
+            <span>18.5</span><span>25</span><span>30</span><span>40</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Height from profile (read-only) -->
+      <div class="height-banner" *ngIf="profileHeight">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M4 9l8-7 8 7M4 15l8 7 8-7"/></svg>
+        Height from your profile: <strong>{{ profileHeight }} cm</strong> — used to auto-calculate BMI
+      </div>
+      <div class="height-banner height-banner--warn" *ngIf="!profileHeight">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Height not set in your profile — BMI cannot be calculated
+      </div>
+
+      <!-- Body Measurements -->
+      <div class="form-section">
+        <div class="form-section-label">📏 Body Measurements</div>
+        <div class="form-grid">
+
+          <div class="field-group field-group--required" [class.field-group--invalid]="weightInvalid" [class.field-group--warning]="!weightInvalid && weightWarning">
+            <label>Weight (kg)</label>
+            <input type="number" [(ngModel)]="weight"
+                   (ngModelChange)="onMeasureChange()" placeholder="e.g. 72" min="30" max="250"/>
+            <span class="field-hint">Required · 30–250 kg</span>
+            <span class="field-error" *ngIf="weightInvalid">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              Must be between 30–250 kg
+            </span>
+            <span class="field-warning" *ngIf="!weightInvalid && weightWarning">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              {{ weightWarning }}
+            </span>
+          </div>
+
+          <div class="field-group" [class.field-group--invalid]="bodyFatInvalid" [class.field-group--warning]="!bodyFatInvalid && bodyFatWarning">
+            <label>Body Fat (%)</label>
+            <input type="number" [(ngModel)]="bodyFat" placeholder="e.g. 28"
+                   [min]="bodyFatMin" [max]="bodyFatMax"/>
+            <span class="field-hint">{{ bodyFatMin }}–{{ bodyFatMax }}% for {{ gender === 'male' ? 'male' : 'female' }}</span>
+            <span class="field-error" *ngIf="bodyFatInvalid">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              Must be {{ bodyFatRangeLabel }}
+            </span>
+            <span class="field-warning" *ngIf="!bodyFatInvalid && bodyFatWarning">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              {{ bodyFatWarning }}
+            </span>
+          </div>
+
+          <div class="field-group" [class.field-group--invalid]="muscleMassInvalid" [class.field-group--warning]="!muscleMassInvalid && muscleMassWarning">
+            <label>Muscle Mass (kg)</label>
+            <input type="number" [(ngModel)]="muscleMass" placeholder="e.g. 46" min="1" max="200"/>
+            <span class="field-error" *ngIf="muscleMassInvalid">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              Must be between 1–200 kg
+            </span>
+            <span class="field-warning" *ngIf="!muscleMassInvalid && muscleMassWarning">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              {{ muscleMassWarning }}
+            </span>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Blood Pressure -->
+      <div class="form-section">
+        <div class="form-section-label">❤️ Blood Pressure</div>
+        <div class="form-grid">
+          <div class="field-group" [class.field-group--invalid]="systolicInvalid || bpPartialInvalid" [class.field-group--warning]="!systolicInvalid && !bpPartialInvalid && systolicWarning">
+            <label>Systolic (mmHg)</label>
+            <input type="number" [(ngModel)]="systolic" placeholder="e.g. 120" min="70" max="200"/>
+            <span class="field-hint">Normal range: 70–200 mmHg</span>
+            <span class="field-error" *ngIf="systolicInvalid">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              Must be between 70–200 mmHg
+            </span>
+            <span class="field-warning" *ngIf="!systolicInvalid && !bpPartialInvalid && systolicWarning">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              {{ systolicWarning }}
+            </span>
+          </div>
+          <div class="field-group" [class.field-group--invalid]="diastolicInvalid || bpPartialInvalid" [class.field-group--warning]="!diastolicInvalid && !bpPartialInvalid && diastolicWarning">
+            <label>Diastolic (mmHg)</label>
+            <input type="number" [(ngModel)]="diastolic" placeholder="e.g. 80" min="40" max="120"/>
+            <span class="field-hint">Normal range: 40–120 mmHg</span>
+            <span class="field-error" *ngIf="diastolicInvalid">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              Must be between 40–120 mmHg
+            </span>
+            <span class="field-warning" *ngIf="!diastolicInvalid && !bpPartialInvalid && diastolicWarning">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              {{ diastolicWarning }}
+            </span>
+          </div>
+        </div>
+        <span class="field-error field-error--block" *ngIf="bpPartialInvalid">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Both systolic and diastolic are required together
+        </span>
+      </div>
+
+      <!-- Glucose -->
+      <div class="form-section">
+        <div class="form-section-label">🩸 Blood Glucose</div>
+        <div class="form-grid">
+          <div class="field-group" [class.field-group--invalid]="glucoseInvalid" [class.field-group--warning]="!glucoseInvalid && glucoseWarning">
+            <label>Fasting Glucose (mg/dL)</label>
+            <input type="number" [(ngModel)]="glucose" placeholder="e.g. 90" min="50" max="300"/>
+            <span class="field-hint">Normal range: 50–300 mg/dL</span>
+            <span class="field-error" *ngIf="glucoseInvalid">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              Must be between 50–300 mg/dL
+            </span>
+            <span class="field-warning" *ngIf="!glucoseInvalid && glucoseWarning">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              {{ glucoseWarning }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div class="form-section">
+        <div class="form-section-label">📋 Personal Notes</div>
+        <div class="field-group field-group--full">
+          <textarea [(ngModel)]="notes" rows="3"
+                    placeholder="How are you feeling? Any notable changes?…">
+          </textarea>
+        </div>
+      </div>
+
+      <!-- Validation summary -->
+      <div class="validation-summary" *ngIf="submitted && !isFormValid">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Please fix the errors above before saving.
+      </div>
+
+      <div class="form-actions">
+        <button class="btn-save" (click)="submit()" [disabled]="saving">
+          {{ saving ? 'Saving…' : 'Save Measurement' }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+</div>

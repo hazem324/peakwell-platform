@@ -1,0 +1,194 @@
+<section class="auth-section">
+  <div class="auth-container">
+
+    <div class="auth-brand">
+      <div class="brand-content">
+        <span class="brand-icon">🌿</span>
+        <h1>Nourish <em>&</em> Bloom</h1>
+
+        <p>Your journey to optimal health starts here. Track, analyze, and
+           transform your wellness with AI-powered insights.</p>
+        <div class="brand-features">
+          <div class="brand-feature"><span>📊</span><span>Biometric Tracking</span></div>
+          <div class="brand-feature"><span>🤖</span><span>AI Health Insights</span></div>
+          <div class="brand-feature"><span>🎯</span><span>Goal Tracking</span></div>
+          <div class="brand-feature"><span>📓</span><span>Symptom Journal</span></div>
+        </div>
+      </div>
+      <div class="brand-footer"><span>PeakWell — Optimize your health</span></div>
+    </div>
+
+    <!-- Right: Login Form -->
+    <div class="auth-form-panel">
+      <div class="auth-form-wrap">
+
+        <div class="auth-header">
+          <h2>Welcome back</h2>
+          <p>Sign in to your PeakWell account</p>
+        </div>
+
+        <!-- Google Button -->
+
+        <button class="btn-google" type="button"
+          [disabled]="!captchaPassed"
+          [class.btn-google--disabled]="!captchaPassed"
+          (click)="loginWithGoogle()">
+
+          <svg width="18" height="18" viewBox="0 0 24 24">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+          </svg>
+          Continue with Google
+        </button>
+
+        <p class="captcha-hint-msg" *ngIf="!captchaPassed">
+          Complete the verification below to enable sign in
+        </p>
+
+        <!-- ─── Face Login Button ─────────────────────── -->
+        <button class="btn-face" type="button" (click)="openFaceLogin()" [disabled]="!captchaPassed"
+          [class.btn-face--disabled]="!captchaPassed">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.8"
+               stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="8" r="4"/>
+            <path d="M9 11.5c0 1.5.5 2.5 1.5 3s2 .5 3 0 1.5-1.5 1.5-3"/>
+            <rect x="3" y="3" width="18" height="18" rx="4"/>
+          </svg>
+          Sign in with Face ID
+        </button>
+        <!-- ─────────────────────────────────────────────── -->
+
+        <div class="auth-divider"><span>or sign in with email</span></div>
+
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+          <div class="field-group">
+            <label>Email address</label>
+            <div class="input-wrap">
+              <span class="input-icon">✉️</span>
+              <input type="email" formControlName="email" placeholder="you@example.com"/>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label>
+              Password
+              <a class="forgot-link" [routerLink]="['/auth/forget-password']">Forgot?</a>
+            </label>
+            <div class="input-wrap">
+              <span class="input-icon">🔒</span>
+              <input [type]="showPassword ? 'text' : 'password'"
+                     formControlName="password" placeholder="Enter your password"/>
+              <button class="toggle-pw" type="button" (click)="togglePassword()">
+                {{ showPassword ? '🙈' : '👁️' }}
+              </button>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label>Human verification</label>
+            <app-captcha (captchaTokenChange)="onCaptchaTokenChange($event)"></app-captcha>
+          </div>
+
+          <button class="btn-submit" type="submit"
+            [disabled]="loading || loginForm.invalid || !captchaPassed">
+            {{ loading ? 'Signing in…' : 'Sign In' }}
+          </button>
+        </form>
+
+        <p class="auth-footer-text">
+          Don't have an account? <a (click)="goToSignup()">Create one</a>
+        </p>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     FACE LOGIN MODAL
+════════════════════════════════════════════════ -->
+<div class="face-modal-overlay" *ngIf="showFaceModal" (click)="closeFaceModal()">
+  <div class="face-modal" (click)="$event.stopPropagation()">
+
+    <!-- Header -->
+    <div class="face-modal-header">
+      <div class="face-modal-title">
+        <span class="face-modal-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.8"
+               stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="8" r="4"/>
+            <path d="M9 11.5c0 1.5.5 2.5 1.5 3s2 .5 3 0 1.5-1.5 1.5-3"/>
+            <rect x="3" y="3" width="18" height="18" rx="4"/>
+          </svg>
+        </span>
+        <span>{{ faceStep === 'camera' ? 'Take your photo' : 'Confirm your email' }}</span>
+      </div>
+      <button class="face-modal-close" type="button" (click)="closeFaceModal()">✕</button>
+    </div>
+
+    <!-- Step 1: Camera -->
+    <div class="face-modal-body" *ngIf="faceStep === 'camera'">
+      <p class="face-hint">Look straight at the camera, then press <strong>Capture</strong>.</p>
+
+      <div class="camera-frame">
+        <video #videoEl autoplay playsinline class="camera-video"></video>
+        <div class="camera-overlay">
+          <div class="camera-corners">
+            <span class="corner tl"></span>
+            <span class="corner tr"></span>
+            <span class="corner bl"></span>
+            <span class="corner br"></span>
+          </div>
+        </div>
+      </div>
+      <canvas #canvasEl style="display:none"></canvas>
+
+      <div class="face-error" *ngIf="faceError">{{ faceError }}</div>
+
+      <button class="btn-capture" type="button" (click)="capturePhoto()"
+              [disabled]="!!faceError">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="9"/>
+        </svg>
+        Capture
+      </button>
+    </div>
+
+    <!-- Step 2: Email -->
+    <div class="face-modal-body" *ngIf="faceStep === 'email'">
+      <p class="face-hint">Photo captured! Enter your email to complete sign in.</p>
+
+      <div class="photo-preview-wrap">
+        <img [src]="'data:image/jpeg;base64,' + capturedImage" class="photo-preview" alt="captured"/>
+        <button class="btn-retake" type="button" (click)="retakePhoto()">Retake</button>
+      </div>
+
+      <form [formGroup]="faceEmailForm" (ngSubmit)="submitFaceLogin()">
+        <div class="field-group" style="margin-top:20px">
+          <label>Email address</label>
+          <div class="input-wrap">
+            <span class="input-icon">✉️</span>
+            <input type="email" formControlName="email" placeholder="you@example.com"/>
+          </div>
+        </div>
+
+        <div class="face-error" *ngIf="faceError">{{ faceError }}</div>
+
+        <button class="btn-submit" type="submit"
+          [disabled]="faceLoading || faceEmailForm.invalid">
+          <span *ngIf="!faceLoading">Verify & Sign In</span>
+          <span *ngIf="faceLoading" class="spinner-wrap">
+            <span class="spinner"></span> Verifying…
+          </span>
+        </button>
+      </form>
+    </div>
+
+  </div>
+</div>

@@ -1,0 +1,81 @@
+<div class="participants-modal-backdrop" (click)="onClose()">
+  <div class="participants-modal" (click)="$event.stopPropagation()">
+
+    <button class="close-btn" type="button" (click)="onClose()">✕</button>
+
+    <div class="modal-header">
+      <div class="header-badge">👥 Participants</div>
+      <h2>{{ eventTitle || 'Participants de l’événement' }}</h2>
+      <p>Consultez les inscrits et modifiez leur statut rapidement.</p>
+    </div>
+
+    <div class="alert error" *ngIf="errorMessage">
+      {{ errorMessage }}
+    </div>
+
+    <div class="alert success" *ngIf="successMessage">
+      {{ successMessage }}
+    </div>
+
+    <div class="summary-box" *ngIf="!loading">
+      <strong>Total participants :</strong> {{ registrations.length }}
+    </div>
+
+    <div class="loading-state" *ngIf="loading">
+      Chargement des participants...
+    </div>
+
+    <div class="participants-list" *ngIf="!loading && registrations.length > 0">
+      <article class="participant-card" *ngFor="let reg of registrations">
+
+        <div class="participant-left">
+          <div class="avatar" *ngIf="!reg.imageUrl">
+            {{ getInitials(reg.firstName, reg.lastName, reg.fullName) }}
+          </div>
+
+          <img
+            *ngIf="reg.imageUrl"
+            class="avatar-img"
+            [src]="reg.imageUrl"
+            [alt]="reg.fullName || 'Student'"
+          >
+
+          <div class="participant-meta">
+            <h4>{{ reg.fullName || 'Student' }}</h4>
+            <span class="email" *ngIf="reg.email">{{ reg.email }}</span>
+            <span class="date">{{ reg.registrationDate | date:'medium' }}</span>
+          </div>
+        </div>
+
+        <div class="participant-right">
+          <span class="status-badge" [ngClass]="getStatusClass(reg.status)">
+            {{ reg.status }}
+          </span>
+
+          <div class="status-actions">
+            <select #statusSelect [value]="reg.status">
+              <option *ngFor="let s of statuses" [value]="s">
+                {{ s }}
+              </option>
+            </select>
+
+            <button
+              class="update-btn"
+              type="button"
+              (click)="updateStatus(reg.id!, statusSelect.value)">
+              Update
+            </button>
+          </div>
+        </div>
+
+      </article>
+    </div>
+
+    <div class="empty-state" *ngIf="!loading && registrations.length === 0">
+      <div class="empty-icon">📭</div>
+      <h3>Aucun participant</h3>
+      <p>Aucun étudiant ne s’est encore inscrit à cet événement.</p>
+    </div>
+
+  </div>
+</div>

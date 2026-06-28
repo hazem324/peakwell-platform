@@ -1,0 +1,265 @@
+:root {
+  --cream:            #faf7f2;
+  --warm-white:       #fffdf9;
+  --blush:            #f5e8de;
+  --terracotta:       #c96a3f;
+  --terracotta-dark:  #a8532c;
+  --terracotta-light: #e88f68;
+  --sage:             #7a9e7e;
+  --sage-dark:        #5c7d60;
+  --sage-light:       #a8c5ac;
+  --charcoal:         #2d2d2d;
+  --warm-gray:        #6b6460;
+  --light-gray:       #b5aaa5;
+  --border:           #e8ddd6;
+  --font-serif:       'Cormorant Garamond', Georgia, serif;
+  --font-sans:        'Jost', sans-serif;
+  --font-script:      'Dancing Script', cursive;
+  --radius-sm:        8px;
+  --radius-md:        16px;
+  --radius-lg:        24px;
+  --radius-pill:      100px;
+  --shadow-sm:        0 2px 12px rgba(0,0,0,0.06);
+  --shadow-md:        0 8px 32px rgba(0,0,0,0.10);
+  --shadow-lg:        0 16px 56px rgba(0,0,0,0.12);
+  --transition:       0.22s ease;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+body { font-family: var(--font-sans); background: var(--warm-white); color: var(--charcoal); overflow-x: hidden; }
+img  { max-width: 100%; display: block; }
+a    { text-decoration: none; color: inherit; }
+ul   { list-style: none; }
+
+.container { max-width: 1200px; margin: 0 auto; padding: 0 40px; }
+
+section { padding: 100px 0; }
+
+.section-label {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--terracotta); font-weight: 600; margin-bottom: 14px;
+  &::before { content: ''; width: 24px; height: 1px; background: var(--terracotta); }
+}
+
+.section-title {
+  font-family: var(--font-serif);
+  font-size: clamp(34px, 4vw, 52px);
+  font-weight: 300; line-height: 1.15; color: var(--charcoal); margin-bottom: 16px;
+  em { font-style: italic; color: var(--terracotta); }
+}
+
+.section-sub { font-size: 15px; line-height: 1.8; color: var(--warm-gray); max-width: 480px; }
+
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--terracotta); color: #fff;
+  padding: 14px 32px; border-radius: var(--radius-pill);
+  font-size: 13px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase;
+  border: none; cursor: pointer; font-family: var(--font-sans);
+  transition: all var(--transition);
+  &:hover { background: var(--terracotta-dark); transform: translateY(-2px); box-shadow: 0 10px 28px rgba(201,106,63,0.35); }
+}
+
+.btn-outline {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: transparent; color: var(--charcoal);
+  padding: 14px 32px; border-radius: var(--radius-pill);
+  border: 1.5px solid var(--border);
+  font-size: 13px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase;
+  cursor: pointer; font-family: var(--font-sans);
+  transition: all var(--transition);
+  &:hover { border-color: var(--terracotta); color: var(--terracotta); }
+}
+
+.macro-pill {
+  background: var(--cream); border: 1px solid var(--border);
+  border-radius: var(--radius-pill); padding: 4px 12px;
+  font-size: 11px; font-weight: 500; color: var(--warm-gray);
+  strong { color: var(--terracotta); }
+}
+
+.toast {
+  position: fixed; bottom: 32px; right: 32px; z-index: 9000;
+  background: var(--charcoal); color: #fff;
+  border-radius: var(--radius-pill); padding: 14px 24px;
+  font-size: 13px; font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  opacity: 0; transform: translateY(20px);
+  transition: all 0.3s ease; pointer-events: none;
+  &.toast--show { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-10px); }
+}
+.fade-up   { animation: fadeUp 0.7s ease both; }
+.fade-up-2 { animation: fadeUp 0.7s 0.15s ease both; }
+.fade-up-3 { animation: fadeUp 0.7s 0.30s ease both; }
+.fade-up-4 { animation: fadeUp 0.7s 0.45s ease both; }
+
+@media (max-width: 768px) {
+  .container { padding: 0 20px; }
+  section { padding: 64px 0; }
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #f6f1ec;
+  font-family: 'Jost', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+
+
+}
+
+// ── Shared Auth Form Styles ──────────────────────
+// Used by: complete-profile, student-profile-form,
+//          dietitian-profile-form, login, signup
+
+.field-row {
+  display: flex;
+  gap: 12px;
+
+  @media (max-width: 400px) {
+    flex-direction: column;
+  }
+}
+
+.field-group {
+  margin-bottom: 16px;
+  flex: 1;
+
+  label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: #6b6460;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+}
+
+.input-wrap {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid #ede8e3;
+  border-radius: 12px;
+  background: #faf7f4;
+  padding: 0 14px;
+  transition: all 0.2s;
+
+  &:focus-within {
+    border-color: var(--terracotta);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(201, 106, 63, 0.08);
+  }
+
+  &--error {
+    border-color: var(--terracotta);
+
+    &:focus-within {
+      box-shadow: 0 0 0 3px rgba(201, 106, 63, 0.12);
+    }
+  }
+}
+
+.input-icon {
+  font-size: 13px;
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+
+.price-prefix {
+  font-size: 13px;
+  color: #8a7e78;
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+
+.input-wrap input,
+.input-wrap select {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 12px 0;
+  font-size: 14px;
+  font-family: var(--font-sans);
+  color: #1e1a16;
+  outline: none;
+
+  &::placeholder {
+    color: #c5bdb7;
+  }
+}
+
+.auth-select {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  font-family: var(--font-sans);
+  color: #1e1a16;
+  cursor: pointer;
+  padding-right: 1.5rem;
+}
+
+.select-arrow {
+  pointer-events: none;
+  font-size: 12px;
+  color: #888;
+}
+
+.toggle-pw {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 0 0 8px;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+.field-error {
+  display: block;
+  font-size: 12px;
+  color: #c96a3f;
+  margin-top: 6px;
+  font-weight: 500;
+}
+
+.field-success {
+  display: block;
+  font-size: 12px;
+  color: #7a9e7e;
+  margin-top: 6px;
+  font-weight: 500;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

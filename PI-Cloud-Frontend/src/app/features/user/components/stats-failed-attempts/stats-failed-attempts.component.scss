@@ -1,0 +1,81 @@
+.chart-card {
+  background: #fff;
+  border: 1px solid #ede8e3;
+  border-radius: 16px;
+  padding: 20px;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.chart-header {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #f5f0eb;
+  padding-bottom: 14px;
+}
+
+.chart-title {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: #2d2d2d;
+  font-family: 'Jost', sans-serif;
+}
+
+.chart-subtitle {
+  font-size: 11px;
+  color: #c5bdb7;
+  font-family: 'Jost', sans-serif;
+  margin-left: auto;
+}
+
+.bands { display: flex; flex-direction: column; gap: 18px; }
+
+.band { display: flex; align-items: center; gap: 12px; }
+
+.band-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 110px;
+}
+
+.band-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #2d2d2d;
+  font-family: 'Jost', sans-serif;
+  white-space: nowrap;
+}
+
+.band-count {
+  font-size: 11px;
+  font-weight: 700;
+  font-family: 'Jost', sans-serif;
+}
+
+.band-track {
+  flex: 1;
+  height: 8px;
+  background: #f5f0eb;
+  border-radius: 100px;
+  overflow: hidden;
+}
+
+.band-fill {
+  height: 100%;
+  border-radius: 100px;
+  transition: width 0.6s ease;
+  min-width: 4px;
+}
+
+.band-pct {
+  font-size: 12px;
+  font-weight: 700;
+  font-family: 'Jost', sans-serif;
+  min-width: 34px;
+  text-align: right;
+}

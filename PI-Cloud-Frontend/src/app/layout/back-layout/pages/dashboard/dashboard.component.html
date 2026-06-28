@@ -1,0 +1,248 @@
+<div class="dashboard">
+
+  <!-- ── Dark Stats Banner ──────────────────────────── -->
+  <div class="stats-banner">
+    <div class="sb-glow sb-glow--1"></div>
+    <div class="sb-glow sb-glow--2"></div>
+    <div class="stats-banner__grid">
+      <div class="stat-item" *ngFor="let card of kpiCards; let i = index" [attr.data-i]="i">
+        <div class="stat-item__icon">{{ card.icon }}</div>
+        <div class="stat-item__value">{{ card.value }}</div>
+        <div class="stat-item__label">{{ card.label }}</div>
+        <div class="stat-item__sub">{{ card.change }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Bento Grid ─────────────────────────────────── -->
+  <div class="bento">
+
+    <!-- Appointments – wide -->
+    <div class="bento-card bento-card--appointments">
+      <div class="bc-header">
+        <div class="bc-title-group">
+          <span class="bc-eyebrow">Today</span>
+          <h3>Appointments</h3>
+        </div>
+        <span class="pill">{{ todayConsultations.length }} sessions</span>
+      </div>
+
+      <div class="appt-empty" *ngIf="consultLoading">Loading…</div>
+      <div class="appt-empty" *ngIf="!consultLoading && todayConsultations.length === 0">
+        No appointments scheduled for today
+      </div>
+
+      <div class="appt-list" *ngIf="!consultLoading && todayConsultations.length > 0">
+        <div class="appt-row" *ngFor="let c of todayConsultations">
+          <div class="appt-time">{{ formatTime(c.scheduledAt) }}</div>
+          <div class="appt-stripe" [style.background]="appointmentDotColor(c)"></div>
+          <div class="appt-body">
+            <strong>{{ c.patientName || c.doctorName || '—' }}</strong>
+            <span>{{ typeIcon(c.consultationType) }} {{ c.consultationType.replace('_',' ') }}</span>
+          </div>
+          <span class="appt-badge" [style.color]="appointmentDotColor(c)" [style.background]="appointmentDotColor(c)+'15'">{{ c.priority }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Platform Alerts -->
+    <div class="bento-card bento-card--alerts">
+      <div class="bc-header">
+        <div class="bc-title-group">
+          <span class="bc-eyebrow">Admin</span>
+          <h3>Platform Alerts</h3>
+        </div>
+        <span class="pill" [class.pill--warn]="platformAlerts.length > 0">
+          {{ platformAlerts.length }} active
+        </span>
+      </div>
+
+      <div class="all-clear" *ngIf="platformAlerts.length === 0 && !consultLoading && !studentsLoading">
+        <div class="all-clear__check">✓</div>
+        <p>No platform issues detected</p>
+      </div>
+
+      <div class="alert-stack" *ngIf="platformAlerts.length > 0">
+        <div class="alert-row"
+             *ngFor="let a of platformAlerts"
+             [class.alert-row--danger]="a.type==='warn'"
+             [class.alert-row--info]="a.type==='info'">
+          <span class="alert-row__icon">{{ a.icon }}</span>
+          <div class="alert-row__body">
+            <strong>{{ a.title }}</strong>
+            <span>{{ a.message }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Stats -->
+    <div class="bento-card bento-card--bio">
+      <div class="bc-header">
+        <div class="bc-title-group">
+          <span class="bc-eyebrow">Platform</span>
+          <h3>User Stats</h3>
+        </div>
+        <span class="pill pill--sage">{{ students.length }} total</span>
+      </div>
+
+      <div class="appt-empty" *ngIf="studentsLoading">Loading…</div>
+
+      <div class="bio-bars" *ngIf="!studentsLoading">
+        <div class="bio-bar" *ngFor="let row of userDistribution">
+          <div class="bio-bar__meta">
+            <span>{{ row.label }}</span>
+            <strong [style.color]="row.color">{{ row.count }}</strong>
+          </div>
+          <div class="bio-bar__track">
+            <div class="bio-bar__fill" [style.width]="row.pct+'%'" [style.--c]="row.color"></div>
+          </div>
+        </div>
+        <div class="bio-bar">
+          <div class="bio-bar__meta">
+            <span>Consultations This Month</span>
+            <strong style="color:#4ab8f0">{{ sessionsThisMonth }}</strong>
+          </div>
+          <div class="bio-bar__track">
+            <div class="bio-bar__fill"
+                 [style.width]="consultations.length ? (sessionsThisMonth/consultations.length*100)+'%' : '0%'"
+                 style="--c:#4ab8f0"></div>
+          </div>
+        </div>
+        <div class="bio-bar">
+          <div class="bio-bar__meta">
+            <span>Completion Rate</span>
+            <strong style="color:#7a9e7e">
+              {{ consultations.length ? (completedCount / consultations.length * 100 | number:'1.0-0') + '%' : '—' }}
+            </strong>
+          </div>
+          <div class="bio-bar__track">
+            <div class="bio-bar__fill"
+                 [style.width]="consultations.length ? (completedCount/consultations.length*100)+'%' : '0%'"
+                 style="--c:#7a9e7e"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Consultation mini-KPIs -->
+    <div class="bento-card bento-card--consult-kpis" *ngIf="!consultLoading && !consultError">
+      <div class="bc-header">
+        <div class="bc-title-group">
+          <span class="bc-eyebrow">Overview</span>
+          <h3>Consultations</h3>
+        </div>
+      </div>
+      <div class="ck-grid">
+        <div class="ck-tile" *ngFor="let card of consultKpiCards" [ngClass]="card.colorClass">
+          <span class="ck-tile__icon">{{ card.icon }}</span>
+          <span class="ck-tile__value">{{ card.value }}</span>
+          <span class="ck-tile__label">{{ card.label }}</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Upcoming Consultations table ───────────────── -->
+  <div class="data-card" *ngIf="!consultLoading && !consultError">
+    <div class="data-card__header">
+      <div class="bc-title-group">
+        <span class="bc-eyebrow">Scheduled</span>
+        <h3>Upcoming Consultations</h3>
+      </div>
+      <a routerLink="/admin/consultations" class="link-btn">View all →</a>
+    </div>
+    <div class="empty-row" *ngIf="upcomingConsultations.length === 0">No upcoming consultations.</div>
+    <div class="tbl-wrap" *ngIf="upcomingConsultations.length > 0">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Patient</th><th>Doctor</th><th>Specialty</th>
+            <th>Date & Time</th><th>Type</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let c of upcomingConsultations | slice:0:6">
+            <td><strong>{{ c.patientName || '—' }}</strong></td>
+            <td>{{ c.doctorName || '—' }}</td>
+            <td><span class="tag">{{ c.doctorSpecialty || '—' }}</span></td>
+            <td class="td-muted">{{ formatDate(c.scheduledAt) }}</td>
+            <td>{{ typeIcon(c.consultationType) }} {{ c.consultationType.replace('_',' ') }}</td>
+            <td><span class="status-badge" [ngClass]="consultStatusClass(c.status)">{{ c.status }}</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── Recent Clients table ────────────────────────── -->
+  <div class="data-card">
+    <div class="data-card__header">
+      <div class="bc-title-group">
+        <span class="bc-eyebrow">Activity</span>
+        <h3>Recent Clients</h3>
+      </div>
+      <span class="pill">{{ students.length }} total</span>
+    </div>
+    <div class="empty-row" *ngIf="studentsLoading">Loading…</div>
+    <div class="empty-row" *ngIf="!studentsLoading && students.length === 0">No students yet.</div>
+    <div class="tbl-wrap" *ngIf="!studentsLoading && recentStudents.length > 0">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Client</th><th>Goal</th><th>Weight</th>
+            <th>BMI</th><th>Activity</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let s of recentStudents; let i = index">
+            <td>
+              <div class="avatar-cell">
+                <div class="avatar" [style.background]="studentAvatarColor(i)">{{ studentInitials(s) }}</div>
+                <strong>{{ s.firstName }} {{ s.lastName }}</strong>
+              </div>
+            </td>
+            <td class="td-muted">{{ s.goal || '—' }}</td>
+            <td>{{ s.weight ? s.weight + ' kg' : '—' }}</td>
+            <td>
+              <div class="bmi-cell" *ngIf="s.bmi">
+                <div class="bmi-bar" [style.width]="bmiBarWidth(s.bmi)" [style.background]="bmiBarColor(s.bmi)"></div>
+                <span>{{ s.bmi }}</span>
+              </div>
+              <span *ngIf="!s.bmi" class="td-muted">—</span>
+            </td>
+            <td><span class="tag">{{ s.activityLevel || '—' }}</span></td>
+            <td>
+              <span class="status-badge"
+                    [style.background]="statusColor(studentStatus(s))+'18'"
+                    [style.color]="statusColor(studentStatus(s))">{{ studentStatus(s) }}</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Consultation Stats -->
+  <div class="section-label">Consultation Overview</div>
+  <div class="consult-kpi-grid">
+    <ng-container *ngIf="!consultLoading && !consultError">
+      <div
+        class="consult-kpi-card"
+        *ngFor="let card of consultKpiCards"
+        [ngClass]="card.colorClass"
+      >
+        <div class="ck-icon">{{ card.icon }}</div>
+        <div class="ck-value">{{ card.value }}</div>
+        <div class="ck-label">{{ card.label }}</div>
+        <div class="ck-sub">{{ card.sub }}</div>
+      </div>
+    </ng-container>
+    <div class="ck-loading" *ngIf="consultLoading">Loading…</div>
+    <div class="ck-error" *ngIf="consultError">
+      Could not reach consultation API
+    </div>
+  </div>
+
+</div>

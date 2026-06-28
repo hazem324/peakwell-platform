@@ -1,0 +1,54 @@
+<div class="stats-page">
+
+  <!-- Loading -->
+  <div class="stats-loading" *ngIf="loading">
+    <div class="loading-spinner"></div>
+    <span>Loading statistics…</span>
+  </div>
+
+  <!-- Error -->
+  <div class="stats-error" *ngIf="!loading && error">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <p>Failed to load statistics.</p>
+    <button class="btn-retry" (click)="loadStats()">
+      <i class="fa-solid fa-rotate-right"></i> Retry
+    </button>
+  </div>
+
+  <!-- Content -->
+  <ng-container *ngIf="!loading && !error">
+
+    <!-- ── Existing user stats ── -->
+    <app-stats-kpi-cards      [data]="global" />
+
+    <div class="stats-row">
+      <app-stats-roles-chart     [data]="roles"          class="stats-col" />
+      <app-stats-failed-attempts [data]="failedAttempts" class="stats-col" />
+    </div>
+
+    <app-stats-growth-chart [data]="growth" />
+    <app-stats-risk-table   [data]="riskUsers" />
+
+    <!-- ── Activity section divider ── -->
+    <div class="section-divider">
+      <span class="section-label">Activity Analytics</span>
+    </div>
+
+    <!-- ── Activity KPI cards ── -->
+    <app-activity-summary-cards [data]="activityDashboard.summary" />
+
+    <!-- ── Events by type + Most active users ── -->
+    <div class="stats-row">
+      <app-activity-by-type    [data]="activityDashboard.byType"        class="stats-col" />
+      <app-activity-most-active [data]="activityDashboard.mostActiveUsers" class="stats-col" />
+    </div>
+
+    <!-- ── Recent activity feed + Top IPs ── -->
+    <div class="stats-row">
+      <app-activity-feed    [data]="activityDashboard.recentActivity" class="stats-col stats-col--wide" />
+      <app-activity-top-ips [data]="activityDashboard.topIps"         class="stats-col" />
+    </div>
+
+  </ng-container>
+
+</div>

@@ -1,0 +1,114 @@
+:host {
+  display: block;
+}
+
+.field-group {
+  animation: fadeIn 0.3s ease;
+}
+
+// ── Photo Upload ────────────────────────────────
+.photo-upload-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.photo-preview {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #ede8e3;
+  flex-shrink: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #ede8e3;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.photo-placeholder {
+  font-size: 28px;
+}
+
+.upload-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 20px 16px;
+  border: 1.5px dashed #ede8e3;
+  border-radius: 12px;
+  background: #faf7f4;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+
+  &:hover {
+    border-color: var(--terracotta);
+    background: #fff3ee;
+  }
+
+  &--has-file {
+    border-style: solid;
+    border-color: #7a9e7e;
+    background: #f0f7f1;
+
+    &:hover {
+      border-color: #7a9e7e;
+      background: #f0f7f1;
+    }
+  }
+
+  &--compact {
+    flex: 1;
+    padding: 16px;
+  }
+}
+
+.upload-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.upload-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b6460;
+
+  &--success { color: #4a7c59; }
+}
+
+.upload-hint {
+  font-size: 11px;
+  color: #b5aaa5;
+}
+
+.upload-remove {
+  margin-top: 4px;
+  padding: 4px 12px;
+  border: 1.5px solid #c96a3f;
+  border-radius: 8px;
+  background: transparent;
+  color: #c96a3f;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #c96a3f;
+    color: #fff;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

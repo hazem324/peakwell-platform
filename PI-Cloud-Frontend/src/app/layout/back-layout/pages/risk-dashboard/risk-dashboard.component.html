@@ -1,0 +1,153 @@
+<div class="risk-dash">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1>Patient Risk Profiler</h1>
+      <p>{{ patients.length }} patient{{ patients.length !== 1 ? 's' : '' }} analyzed · Sorted by risk urgency</p>
+    </div>
+    <div class="header-actions">
+      <div class="filter-pills">
+        <button class="pill" [class.pill--active]="!filterTier" (click)="filterTier = ''">All</button>
+        <button *ngFor="let t of tierCounts" class="pill"
+                [class.pill--active]="filterTier === t.tier"
+                [style.border-color]="filterTier === t.tier ? t.color : ''"
+                (click)="toggleFilter(t.tier)">
+          {{ t.icon }} {{ t.tier }} <strong>{{ t.count }}</strong>
+        </button>
+      </div>
+      <button class="btn-refresh" (click)="loadAll()" [disabled]="loading">🔄 Refresh</button>
+    </div>
+  </div>
+
+  <!-- Model not loaded -->
+  <div class="empty-card" *ngIf="!modelLoaded">
+    <span class="empty-icon">🛡️</span>
+    <h3>Risk model not loaded</h3>
+    <p>Place <strong>risk_profiler_model.json</strong> in <code>src/main/resources/ml/</code> and restart.</p>
+  </div>
+
+  <!-- Loading -->
+  <div class="empty-card" *ngIf="modelLoaded && loading">
+    <div class="spinner"></div>
+    <p>Analyzing all patients…</p>
+  </div>
+
+  <!-- Patient Cards Grid -->
+  <div class="patient-grid" *ngIf="modelLoaded && !loading && filteredPatients.length > 0">
+    <div class="p-card" *ngFor="let p of filteredPatients"
+         [style.border-top-color]="tierColor(p.riskTier)">
+
+      <!-- Card Header: Avatar + Name + Risk Badge -->
+      <div class="p-card-header">
+        <div class="p-avatar" [style.background]="tierBg(p.riskTier)" [style.color]="tierColor(p.riskTier)">
+          {{ p.patientInitials }}
+        </div>
+        <div class="p-name">
+          <strong>{{ p.patientName }}</strong>
+          <span>{{ p.gender }}</span>
+        </div>
+        <span class="p-status" [style.background]="tierBg(p.riskTier)" [style.color]="tierColor(p.riskTier)">
+          {{ p.riskTier }}
+        </span>
+      </div>
+
+      <!-- Metrics Row -->
+      <div class="p-metrics">
+        <div class="p-metric">
+          <strong [style.color]="scoreColor(p.breakdown?.healthScore || 0)">{{ p.breakdown?.healthScore || 0 }}</strong>
+          <span>Health</span>
+        </div>
+        <div class="p-metric">
+          <strong [style.color]="scoreColor(p.breakdown?.engagementScore || 0)">{{ p.breakdown?.engagementScore || 0 }}</strong>
+          <span>Engage</span>
+        </div>
+        <div class="p-metric">
+          <strong [style.color]="tierColor(p.riskTier)">{{ p.schedulingAdvice?.nextIn }}</strong>
+          <span>Next Visit</span>
+        </div>
+      </div>
+
+      <!-- Risk Factors Summary -->
+      <div class="p-factors" *ngIf="p.riskFactors?.length > 0">
+        <span class="p-factor-tag" *ngFor="let f of p.riskFactors.slice(0, 2)"
+              [style.color]="f.impact === 'High' ? '#c96a3f' : '#e88f68'"
+              [style.background]="f.impact === 'High' ? 'rgba(201,106,63,0.08)' : 'rgba(232,143,104,0.08)'">
+          {{ f.factor }}
+        </span>
+        <span class="p-factor-more" *ngIf="p.riskFactors.length > 2">+{{ p.riskFactors.length - 2 }} more</span>
+      </div>
+      <div class="p-factors p-factors--ok" *ngIf="!p.riskFactors?.length">
+        <span class="p-factor-tag" style="color: #4a7a4e; background: rgba(122,158,126,0.12)">✓ No risk factors</span>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="p-actions">
+        <button class="p-btn p-btn--outline" (click)="selectPatient(p)">View Details</button>
+        <button class="p-btn p-btn--fill" (click)="openDossier(p.profileId)">Dossier</button>
+      </div>
+    </div>
+
+    <!-- Add placeholder (like NutriCore) -->
+    <div class="p-card p-card--add" *ngIf="filteredPatients.length < 5">
+      <span class="add-icon">+</span>
+      <strong>New Patient</strong>
+      <span>Create a medical profile to analyze</span>
+    </div>
+  </div>
+
+  <!-- Empty filtered -->
+  <div class="empty-card" *ngIf="modelLoaded && !loading && filteredPatients.length === 0 && patients.length > 0">
+    <span class="empty-icon">🔍</span>
+    <h3>No {{ filterTier }} patients</h3>
+    <button class="btn-refresh" (click)="filterTier = ''">Show all</button>
+  </div>
+
+  <!-- No patients -->
+  <div class="empty-card" *ngIf="modelLoaded && !loading && patients.length === 0">
+    <span class="empty-icon">👥</span>
+    <h3>No patients found</h3>
+    <p>Create medical profiles first, then the AI will analyze their risk.</p>
+  </div>
+
+  <!-- ═══ DETAIL OVERLAY ═══ -->
+  <div class="detail-overlay" *ngIf="selectedPatient" (click)="closeDetail()">
+    <div class="detail-panel" (click)="$event.stopPropagation()">
+      <div class="dp-header" [style.border-left-color]="tierColor(selectedPatient.riskTier)">
+        <div class="dp-avatar" [style.background]="tierColor(selectedPatient.riskTier)">{{ selectedPatient.patientInitials }}</div>
+        <div class="dp-info">
+          <h3>{{ selectedPatient.patientName }}</h3>
+          <span>{{ selectedPatient.gender }}</span>
+        </div>
+        <span class="risk-badge" [style.background]="tierColor(selectedPatient.riskTier)">{{ tierIcon(selectedPatient.riskTier) }} {{ selectedPatient.riskTier }} Risk</span>
+        <button class="dp-close" (click)="closeDetail()">×</button>
+      </div>
+      <div class="dp-body">
+        <p class="dp-rec">{{ selectedPatient.recommendation }}</p>
+        <div class="dp-section">
+          <h4>📅 Scheduling</h4>
+          <div class="dp-row"><span class="dp-label">Frequency</span><strong>{{ selectedPatient.schedulingAdvice?.frequency }}</strong></div>
+          <div class="dp-row"><span class="dp-label">Next in</span><strong [style.color]="tierColor(selectedPatient.riskTier)">{{ selectedPatient.schedulingAdvice?.nextIn }}</strong></div>
+          <div class="dp-row"><span class="dp-label">Priority</span><span class="risk-badge" [style.background]="tierColor(selectedPatient.riskTier)">{{ selectedPatient.schedulingAdvice?.priority }}</span></div>
+        </div>
+        <div class="dp-section">
+          <h4>🧮 Scores</h4>
+          <div class="dp-bar-row"><span>Health</span><div class="dp-bar"><div class="dp-bar-fill" [style.width.%]="selectedPatient.breakdown?.healthScore" [style.background]="scoreColor(selectedPatient.breakdown?.healthScore)"></div></div><span [style.color]="scoreColor(selectedPatient.breakdown?.healthScore)">{{ selectedPatient.breakdown?.healthScore }}/100</span></div>
+          <div class="dp-bar-row"><span>Engagement</span><div class="dp-bar"><div class="dp-bar-fill" [style.width.%]="selectedPatient.breakdown?.engagementScore" [style.background]="scoreColor(selectedPatient.breakdown?.engagementScore)"></div></div><span [style.color]="scoreColor(selectedPatient.breakdown?.engagementScore)">{{ selectedPatient.breakdown?.engagementScore }}/100</span></div>
+          <div class="dp-bar-row"><span>Deterioration</span><div class="dp-bar"><div class="dp-bar-fill" [style.width.%]="selectedPatient.breakdown?.deteriorationSignal * 2" style="background:#c96a3f"></div></div><span style="color:#c96a3f">{{ selectedPatient.breakdown?.deteriorationSignal }}/50</span></div>
+        </div>
+        <div class="dp-section" *ngIf="selectedPatient.riskFactors?.length">
+          <h4>⚠️ Risk Factors</h4>
+          <div class="dp-factor" *ngFor="let f of selectedPatient.riskFactors">
+            <span>{{ impactIcon(f.impact) }}</span><div><strong>{{ f.factor }}</strong><span class="dp-sub">{{ f.category }}</span></div>
+          </div>
+        </div>
+        <div class="dp-section" *ngIf="selectedPatient.protectiveFactors?.length">
+          <h4>✅ Protective Factors</h4>
+          <div class="dp-protect" *ngFor="let pf of selectedPatient.protectiveFactors">✅ {{ pf }}</div>
+        </div>
+        <button class="btn-dossier-lg" (click)="openDossier(selectedPatient.profileId)">📋 Open Full Dossier</button>
+      </div>
+    </div>
+  </div>
+</div>

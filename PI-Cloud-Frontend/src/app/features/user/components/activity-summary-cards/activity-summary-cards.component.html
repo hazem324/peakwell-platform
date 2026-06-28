@@ -1,0 +1,14 @@
+<div class="activity-summary">
+  <div class="summary-card" *ngFor="let card of cards">
+    <div class="summary-icon" [style.background]="card.iconBg">
+      <i [class]="card.icon" [style.color]="card.accent"></i>
+    </div>
+    <div class="summary-body">
+      <span class="summary-value" [style.color]="card.accent">{{ card.value }}</span>
+      <span class="summary-label">{{ card.label }}</span>
+    </div>
+    <div class="summary-bar-wrap">
+      <div class="summary-bar" [style.width.%]="card.pct" [style.background]="card.accent"></div>
+    </div>
+  </div>
+</div>

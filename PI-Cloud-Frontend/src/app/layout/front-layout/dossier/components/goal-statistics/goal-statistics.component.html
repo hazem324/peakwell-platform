@@ -1,0 +1,204 @@
+<div class="goal-stats">
+
+  <!-- Loading -->
+  <div class="gs-loading" *ngIf="loading">
+    <div class="spinner"></div>
+    <span>Crunching your goal data…</span>
+  </div>
+
+  <!-- Error -->
+  <div class="gs-empty" *ngIf="error && !loading">
+    <span class="gs-empty-icon">📊</span>
+    <h3>{{ error }}</h3>
+  </div>
+
+  <!-- No goals -->
+  <div class="gs-empty" *ngIf="!loading && !error && stats?.totalGoals === 0">
+    <span class="gs-empty-icon">🎯</span>
+    <h3>No goals yet</h3>
+    <p>Create your first health goal to see statistics here.</p>
+  </div>
+
+  <!-- Stats Content -->
+  <ng-container *ngIf="!loading && !error && stats?.totalGoals > 0">
+
+    <!-- ═══ KPI CARDS ═══ -->
+    <div class="kpi-row">
+      <div class="kpi-card kpi-card--terra">
+        <span class="kpi-icon">🎯</span>
+        <span class="kpi-value">{{ stats.totalGoals }}</span>
+        <span class="kpi-label">Total Goals</span>
+      </div>
+      <div class="kpi-card kpi-card--green">
+        <span class="kpi-icon">✅</span>
+        <span class="kpi-value">{{ stats.achievedGoals }}</span>
+        <span class="kpi-label">Achieved</span>
+      </div>
+      <div class="kpi-card kpi-card--blue">
+        <span class="kpi-icon">🔥</span>
+        <span class="kpi-value">{{ stats.activeGoals }}</span>
+        <span class="kpi-label">Active</span>
+      </div>
+      <div class="kpi-card" [style.border-top-color]="rateColor(stats.completionRate)">
+        <span class="kpi-icon">📈</span>
+        <span class="kpi-value" [style.color]="rateColor(stats.completionRate)">{{ stats.completionRate }}%</span>
+        <span class="kpi-label">Completion Rate</span>
+      </div>
+    </div>
+
+    <!-- ═══ TIME STATS ROW ═══ -->
+    <div class="time-row">
+      <div class="time-card">
+        <span class="tc-label">⏱ Avg Time to Achieve</span>
+        <span class="tc-value">{{ formatDays(stats.avgDaysToAchieve) }}</span>
+      </div>
+      <div class="time-card">
+        <span class="tc-label">🏃 Fastest Goal</span>
+        <span class="tc-value">{{ formatDays(stats.fastestAchieve) }}</span>
+      </div>
+      <div class="time-card">
+        <span class="tc-label">🐢 Slowest Goal</span>
+        <span class="tc-value">{{ formatDays(stats.slowestAchieve) }}</span>
+      </div>
+      <div class="time-card" *ngIf="stats.failedGoals > 0">
+        <span class="tc-label">❌ Expired/Failed</span>
+        <span class="tc-value tc-value--warn">{{ stats.failedGoals }}</span>
+      </div>
+    </div>
+
+    <!-- ═══ BEST & WORST ═══ -->
+    <div class="bw-row" *ngIf="stats.bestMetric && stats.worstMetric && stats.metricBreakdown?.length > 1">
+      <div class="bw-card bw-card--best">
+        <span class="bw-badge">🏆 Best Metric</span>
+        <div class="bw-body">
+          <span class="bw-icon">{{ stats.bestMetric.icon }}</span>
+          <div>
+            <strong>{{ metricLabel(stats.bestMetric.metric) }}</strong>
+            <span>{{ stats.bestMetric.completionRate }}% completion · {{ stats.bestMetric.achieved }}/{{ stats.bestMetric.total }} achieved</span>
+          </div>
+        </div>
+      </div>
+      <div class="bw-card bw-card--worst">
+        <span class="bw-badge">⚠️ Needs Work</span>
+        <div class="bw-body">
+          <span class="bw-icon">{{ stats.worstMetric.icon }}</span>
+          <div>
+            <strong>{{ metricLabel(stats.worstMetric.metric) }}</strong>
+            <span>{{ stats.worstMetric.completionRate }}% completion · {{ stats.worstMetric.achieved }}/{{ stats.worstMetric.total }} achieved</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ METRIC BREAKDOWN ═══ -->
+    <div class="section-card">
+      <div class="sc-header">
+        <h3>📊 Per-Metric Breakdown</h3>
+      </div>
+      <div class="metric-list">
+        <div class="ml-item" *ngFor="let m of stats.metricBreakdown">
+          <div class="ml-icon">{{ m.icon }}</div>
+          <div class="ml-body">
+            <div class="ml-top">
+              <strong>{{ metricLabel(m.metric) }}</strong>
+              <span class="ml-rate" [style.color]="rateColor(m.completionRate)">{{ m.completionRate }}%</span>
+            </div>
+            <div class="ml-bar">
+              <div class="ml-bar-fill" [style.width.%]="m.completionRate" [style.background]="rateColor(m.completionRate)"></div>
+            </div>
+            <div class="ml-meta">
+              <span>{{ m.achieved }} achieved</span>
+              <span>{{ m.active }} active</span>
+              <span>{{ m.total }} total</span>
+              <span *ngIf="m.currentValue !== null">Current: {{ m.currentValue }} {{ m.unit }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ ACTIVE GOALS PROGRESS ═══ -->
+    <div class="section-card" *ngIf="stats.activeGoalDetails?.length > 0">
+      <div class="sc-header">
+        <h3>🔥 Active Goals Progress</h3>
+        <span class="sc-count">{{ stats.activeGoalDetails.length }} active</span>
+      </div>
+      <div class="active-list">
+        <div class="al-item" *ngFor="let g of stats.activeGoalDetails">
+          <div class="al-left">
+            <div class="al-icon">{{ g.icon }}</div>
+            <div class="al-info">
+              <strong>{{ g.direction | titlecase }} {{ metricLabel(g.metric) }}</strong>
+              <span>{{ g.startValue }} → {{ g.targetValue }} {{ g.unit }}</span>
+            </div>
+          </div>
+          <div class="al-progress">
+            <div class="al-ring">
+              <svg viewBox="0 0 36 36">
+                <path class="al-ring-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                <path class="al-ring-fill" [style.stroke]="progressColor(g.progress || 0)"
+                      [attr.stroke-dasharray]="(g.progress || 0) + ', 100'"
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+              </svg>
+              <span class="al-ring-text">{{ g.progress || 0 }}%</span>
+            </div>
+          </div>
+          <div class="al-right">
+            <span class="al-status" [style.background]="statusColor(g.status) + '18'" [style.color]="statusColor(g.status)">
+              {{ g.status }}
+            </span>
+            <span class="al-days" *ngIf="g.daysRemaining !== undefined" [class.al-days--overdue]="g.isOverdue">
+              {{ g.isOverdue ? 'Overdue' : g.daysRemaining + 'd left' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ ACHIEVEMENT HISTORY ═══ -->
+    <div class="section-card" *ngIf="stats.achievementHistory?.length > 0">
+      <div class="sc-header">
+        <h3>🏅 Achievement History</h3>
+      </div>
+      <div class="history-list">
+        <div class="hl-item" *ngFor="let a of stats.achievementHistory">
+          <div class="hl-dot"></div>
+          <div class="hl-icon">{{ a.icon }}</div>
+          <div class="hl-body">
+            <strong>{{ a.direction | titlecase }} {{ metricLabel(a.metric) }}</strong>
+            <span>{{ a.startValue }} → {{ a.targetValue }} {{ a.unit }}</span>
+          </div>
+          <div class="hl-right">
+            <span class="hl-date" *ngIf="a.achievedDate">{{ a.achievedDate }}</span>
+            <span class="hl-days" *ngIf="a.daysToAchieve">{{ formatDays(a.daysToAchieve) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ MONTHLY TREND ═══ -->
+    <div class="section-card" *ngIf="stats.monthlyTrend?.length > 0">
+      <div class="sc-header">
+        <h3>📅 Monthly Trend</h3>
+      </div>
+      <div class="trend-grid">
+        <div class="tg-item" *ngFor="let m of stats.monthlyTrend">
+          <span class="tg-month">{{ m.month }}</span>
+          <div class="tg-bars">
+            <div class="tg-bar tg-bar--created" [style.height.px]="m.created * 18 + 4" title="Created: {{ m.created }}">
+              <span>{{ m.created }}</span>
+            </div>
+            <div class="tg-bar tg-bar--achieved" [style.height.px]="m.achieved * 18 + 4" title="Achieved: {{ m.achieved }}">
+              <span>{{ m.achieved }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="tg-legend">
+        <span><span class="tg-dot tg-dot--created"></span> Created</span>
+        <span><span class="tg-dot tg-dot--achieved"></span> Achieved</span>
+      </div>
+    </div>
+
+  </ng-container>
+</div>

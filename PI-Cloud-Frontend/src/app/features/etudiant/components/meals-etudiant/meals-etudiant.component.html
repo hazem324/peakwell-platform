@@ -1,0 +1,247 @@
+<div class="meals-container">
+
+  <!-- HEADER -->
+  <div class="meals-header">
+    <div>
+      <h2>Aliments courants</h2>
+      <p class="subtitle">
+        Sélection de repas optimisés pour une alimentation saine et équilibrée.
+      </p>
+      <div class="header-actions">
+        <button class="fav-btn" (click)="showFavoritesPopup = true">
+          ❤️ Mes favoris ({{ favoriteIds.length }})
+        </button>
+      </div>
+    </div>
+
+    <span>{{ meals.length }} aliments</span>
+  </div>
+
+  <!-- SEARCH -->
+  <div class="search-bar">
+    <input 
+      type="text"
+      placeholder="Rechercher un aliment..."
+      [(ngModel)]="searchTerm"
+      (input)="applyFilters()"
+    />
+  </div>
+
+  <!-- TAGS -->
+  <div class="filter-tags">
+    <button 
+      *ngFor="let tag of tags"
+      [class.active]="selectedTags.includes(tag)"
+      (click)="toggleTag(tag)">
+      {{ tag }}
+    </button>
+  </div>
+
+  <!-- GRID -->
+  <div class="meals-grid">
+
+    <div 
+      class="meal-card"
+      *ngFor="let meal of paginatedMeals">
+
+      <!-- HEADER -->
+      <div class="meal-header">
+
+        <img 
+          [src]="meal.image ? 'http://localhost:8090/peakwell/uploads/' + meal.image : 'default-food.png'" 
+          alt="meal"
+        >
+
+        <div class="meal-header-text">
+          <div class="meal-title">{{ meal.name }}</div>
+          <div class="meal-category">{{ meal.category }}</div>
+
+          <div class="meal-tags" *ngIf="meal.tags">
+            #{{ meal.tags }}
+          </div>
+        </div>
+
+      </div>
+
+      <div 
+        class="allergen-warning"
+        *ngIf="meal.predictedAllergens?.length">
+
+        <span class="warning-label">Allergènes :</span>
+
+        <div class="allergen-list">
+          <span 
+            class="allergen-chip"
+            *ngFor="let allergen of meal.predictedAllergens">
+            {{ allergen }}
+          </span>
+        </div>
+
+      </div>
+
+
+      <div class="divider"></div>
+
+      <div class="meal-macros">
+
+        <div class="macro">
+          <span>Calories</span>
+          <strong>{{ meal.totalCalories | number:'1.1-2' }}</strong>
+        </div>
+
+        <div class="macro">
+          <span>Protein</span> 
+          <strong>{{ meal.totalProtein | number:'1.1-2' }}</strong> 
+        </div>
+
+        <div class="macro">
+          <span>Carbs</span> 
+          <strong>{{ meal.totalCarbs | number:'1.1-2'  }}</strong>
+        </div>
+
+        <div class="macro">
+          <span>Fats</span> 
+          <strong>{{ meal.totalFats | number:'1.1-2' }}</strong>
+        </div>
+
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- FOOTER -->
+      <div class="meal-footer">
+
+        <span class="ingredients-count">
+          {{ meal.ingredients.length || 0 }} ingrédients  
+        </span>
+
+        <div class="actions">
+          <span 
+            class="ingredients-toggle"
+            (click)="toggleIngredients(meal.id)"
+          >
+            {{ showIngredientsMap[meal.id] ? 'Masquer' : 'Voir' }}
+          </span>
+
+          <label class="heart-container">
+            <input 
+              type="checkbox"
+              [checked]="isFavorite(meal.id)"
+              (change)="toggleFavorite(meal)"
+            >
+            <span class="heart">♥</span>
+          </label>
+
+          <span class="favorite-count">
+            {{ meal.favoriteCount }}
+          </span>
+        </div>
+
+      </div>
+
+      <!-- INGREDIENTS -->
+      <div 
+        class="ingredients-expand"
+        [class.open]="showIngredientsMap[meal.id]"
+      >
+        <div class="ingredients-content">
+
+          <div 
+            *ngFor="let ing of meal.ingredients"
+            class="ingredient-item"
+          >
+            <span class="dot"></span>
+            {{ ing.productName }}
+            <span class="qty">— {{ ing.quantity }} g</span>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- PAGINATION -->
+<div class="pagination">
+
+  <button (click)="prevPage()" [disabled]="currentPage === 1">
+    ← Précédent
+  </button>
+
+  <span>
+    Page {{ currentPage }} / {{ totalPages }}
+  </span>
+
+  <button (click)="nextPage()" [disabled]="currentPage === totalPages">
+    Suivant →
+  </button>
+
+</div>
+
+
+<!-- POPUP FAVORITES -->
+<div class="popup-overlay" *ngIf="showFavoritesPopup" (click)="showFavoritesPopup = false">
+
+  <div class="popup" (click)="$event.stopPropagation()">
+
+    <!-- HEADER -->
+    <div class="popup-header">
+      <h3>❤️ Mes favoris</h3>
+      <button (click)="showFavoritesPopup = false">✖</button>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="popup-content">
+
+      <div *ngIf="favoriteMeals.length === 0" class="empty">
+        Aucun favori...
+      </div>
+
+      <div class="favorite-item" *ngFor="let meal of favoriteMeals">
+
+        <!-- IMAGE -->
+        <img 
+          class="fav-image"
+          [src]="'http://localhost:8090/peakwell/uploads/' + meal.image"
+        />
+
+        <!-- CONTENT -->
+        <div class="fav-content">
+
+          <!-- TITLE -->
+          <div class="fav-header">
+            <span class="fav-name">{{ meal.name }}</span>
+            <span class="fav-category">{{ meal.category }}</span>
+          </div>
+
+          <!-- MACROS INLINE -->
+          <div class="fav-macros">
+            <span><strong>{{ meal.totalCalories | number:'1.0-1'}}</strong> kcal</span>
+            <span><strong>{{ meal.totalProtein | number:'1.1-2' }}</strong>g protein</span>
+            <span><strong>{{ meal.totalCarbs | number:'1.1-2' }}</strong>g carbs</span>
+            <span><strong>{{ meal.totalFats | number:'1.1-2' }}</strong>g fats</span>
+          </div>
+
+        </div>
+
+        <!-- HEART -->
+        <label class="heart-container">
+          <input 
+            type="checkbox"
+            checked
+            (change)="toggleFavorite(meal)"
+          >
+          <span class="heart">♥</span>
+        </label>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

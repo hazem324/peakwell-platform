@@ -1,0 +1,50 @@
+<div class="users-table-wrap">
+
+  <div class="chart-header">
+    <span class="chart-title">At-Risk Users</span>
+    <span class="chart-subtitle">by failed login attempts</span>
+  </div>
+
+  <table class="users-table">
+    <thead>
+      <tr>
+        <th>Email</th>
+        <th>Failed Attempts</th>
+        <th>Risk Level</th>
+        <th>Attempt Bar</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let user of data">
+
+        <td class="td-muted">{{ user.email }}</td>
+
+        <td>
+          <span class="attempt-count"
+                [style.color]="riskLevel(user.totalFailedAttempts).accent">
+            {{ user.totalFailedAttempts }}
+          </span>
+        </td>
+
+        <td>
+          <span class="status-badge"
+                [style.background]="riskLevel(user.totalFailedAttempts).bg"
+                [style.color]="riskLevel(user.totalFailedAttempts).accent">
+            {{ riskLevel(user.totalFailedAttempts).label }}
+          </span>
+        </td>
+
+        <td>
+          <div class="attempt-track">
+            <div class="attempt-fill"
+                 [style.width.%]="(user.totalFailedAttempts / 10) * 100"
+                 [style.background]="riskLevel(user.totalFailedAttempts).accent">
+            </div>
+          </div>
+        </td>
+
+      </tr>
+    </tbody>
+  </table>
+
+</div>

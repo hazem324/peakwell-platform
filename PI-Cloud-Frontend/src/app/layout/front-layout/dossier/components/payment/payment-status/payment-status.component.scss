@@ -1,0 +1,6 @@
+.status-pill {
+  display: inline-flex; align-items: center;
+  padding: 3px 10px; border-radius: 100px;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
+  &--unpaid { background: rgba(181,170,165,0.15); color: #b5aaa5; }
+}

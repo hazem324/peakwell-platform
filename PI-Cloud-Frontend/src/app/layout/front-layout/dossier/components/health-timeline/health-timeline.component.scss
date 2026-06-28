@@ -1,0 +1,137 @@
+.health-timeline { display: flex; flex-direction: column; gap: 20px; }
+
+.empty-dash {
+  background: #fff; border: 1px dashed #ede8e3; border-radius: 20px;
+  padding: 60px 24px; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+  .empty-dash-icon { font-size: 48px; }
+  h3 { font-family: var(--font-serif); font-size: 24px; color: #1e1a16; }
+  p { font-size: 14px; color: #8a7e78; max-width: 340px; }
+}
+
+.timeline-content { display: flex; flex-direction: column; gap: 20px; }
+
+// ── Header ──────────────────────────────────────
+.tl-header {
+  display: flex; justify-content: space-between; align-items: center;
+  h3 { font-family: var(--font-serif); font-size: 24px; font-weight: 600; color: #1e1a16; }
+}
+.tl-range { font-size: 13px; color: #b5aaa5; display: block; margin-top: 4px; }
+
+// ── Stats Strip (filter bar) ────────────────────
+.stats-strip {
+  display: flex; gap: 6px; overflow-x: auto; padding: 6px;
+  background: #fff; border-radius: 14px; border: 1px solid #ede8e3;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
+
+.stat-chip {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 14px; border-radius: 10px; border: none;
+  background: none; font-family: var(--font-sans); font-size: 12px;
+  font-weight: 500; color: #8a7e78; cursor: pointer; transition: all 0.2s;
+  white-space: nowrap;
+  &:hover { background: #faf7f4; }
+  &--active { background: var(--terracotta); color: #fff;
+    .stat-chip-count { background: rgba(255,255,255,0.25); color: #fff; }
+  }
+}
+.stat-chip-icon { font-size: 14px; }
+.stat-chip-count {
+  padding: 2px 8px; border-radius: 100px; font-size: 10px; font-weight: 700;
+  background: #f5f1ed; color: #8a7e78;
+}
+
+// ── Timeline Track ──────────────────────────────
+.tl-track {
+  position: relative;
+  padding-left: 24px;
+  &::before {
+    content: '';
+    position: absolute; left: 8px; top: 0; bottom: 0;
+    width: 2px; background: #ede8e3;
+  }
+}
+
+// ── Date Separator ──────────────────────────────
+.tl-date-sep {
+  position: relative; padding: 20px 0 12px 0;
+  span {
+    display: inline-block; padding: 4px 14px; border-radius: 100px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
+    background: #fff; border: 1px solid #ede8e3; color: #8a7e78;
+    position: relative; left: -8px;
+  }
+}
+
+// ── Event Card ──────────────────────────────────
+.tl-event {
+  position: relative; border-radius: 14px; padding: 16px 18px;
+  margin-bottom: 8px; cursor: pointer; transition: all 0.2s;
+  border: 1px solid transparent;
+  &:hover { border-color: #ede8e3; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+}
+
+.tl-event-dot {
+  position: absolute; left: -20px; top: 22px;
+  width: 12px; height: 12px; border-radius: 50%;
+  border: 3px solid #fff; box-shadow: 0 0 0 2px #ede8e3;
+}
+
+.tl-event-body { display: flex; flex-direction: column; gap: 12px; }
+
+.tl-event-top {
+  display: flex; align-items: center; gap: 12px;
+}
+
+.tl-event-icon { font-size: 20px; flex-shrink: 0; }
+
+.tl-event-info {
+  flex: 1;
+  strong { font-size: 14px; color: #1e1a16; display: block; margin-bottom: 2px; }
+}
+.tl-event-sub { font-size: 12px; color: #8a7e78; }
+
+.tl-event-right {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
+}
+
+.tl-type-badge {
+  padding: 3px 10px; border-radius: 100px; font-size: 10px; font-weight: 700;
+}
+
+.tl-event-time { font-size: 11px; color: #b5aaa5; }
+
+// ── Expanded Detail ─────────────────────────────
+.tl-event-detail {
+  padding-top: 12px; border-top: 1px solid rgba(0,0,0,0.06);
+  animation: fadeIn 0.2s ease;
+}
+
+.detail-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px;
+}
+
+.detail-item {
+  display: flex; flex-direction: column; gap: 2px;
+}
+.detail-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #b5aaa5; font-weight: 600; }
+.detail-value { font-size: 15px; font-weight: 600; color: #1e1a16; }
+.detail-change { font-size: 12px; font-weight: 700; }
+
+.detail-note {
+  grid-column: 1 / -1;
+  em { font-size: 13px; color: #6b6460; line-height: 1.5; }
+}
+
+// ── End marker ──────────────────────────────────
+.tl-end {
+  text-align: center; font-size: 12px; color: #b5aaa5; padding: 20px 0;
+  font-weight: 600; letter-spacing: 0.5px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}

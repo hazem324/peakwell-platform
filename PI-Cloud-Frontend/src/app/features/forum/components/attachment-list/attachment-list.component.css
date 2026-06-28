@@ -1,0 +1,134 @@
+.attachments-section {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.loading-state {
+  padding: 20px 0;
+  text-align: center;
+  color: #999;
+  font-size: 14px;
+}
+
+.error-message {
+  padding: 12px;
+  background-color: #fee;
+  color: #c33;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.attachments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.attachments-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #666;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.attachment-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
+  transition: all 0.2s ease;
+}
+
+.attachment-item:last-child {
+  border-bottom: none;
+}
+
+.attachment-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.attachment-icon {
+  font-size: 20px;
+  min-width: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.attachment-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.attachment-name {
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 2px;
+  word-break: break-word;
+  font-size: 14px;
+}
+
+.attachment-meta {
+  font-size: 12px;
+  color: #999;
+}
+
+.attachment-actions {
+  display: flex;
+  gap: 12px;
+  white-space: nowrap;
+}
+
+.btn-download,
+.btn-delete {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 13px;
+  color: #C75B30;
+  padding: 0;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn-download:hover {
+  color: #a94620;
+  text-decoration: underline;
+}
+
+.btn-delete {
+  color: #e74c3c;
+}
+
+.btn-delete:hover {
+  color: #c0392b;
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .attachment-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .attachment-content {
+    width: 100%;
+  }
+
+  .attachment-actions {
+    width: 100%;
+    gap: 16px;
+  }
+}

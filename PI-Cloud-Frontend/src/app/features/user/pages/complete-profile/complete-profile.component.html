@@ -1,0 +1,180 @@
+<section class="auth-section">
+  <div class="auth-container">
+
+    <!-- Left: Branding Panel -->
+    <div class="auth-brand">
+      <div class="brand-content">
+        <span class="brand-icon">🌿</span>
+        <h1>Almost there, <em>welcome!</em></h1>
+        <p>Just a few more details to personalize your PeakWell experience.</p>
+
+        <div class="onboarding-steps">
+          <div class="onboarding-step">
+            <div class="step-dot step-done">✓</div>
+            <span class="step-label step-label--done">Create account</span>
+          </div>
+          <div class="onboarding-step">
+            <div class="step-dot step-done">✓</div>
+            <span class="step-label step-label--done">Verify email</span>
+          </div>
+          <div class="onboarding-step">
+            <div class="step-dot step-active">3</div>
+            <span class="step-label step-label--active">Complete profile</span>
+          </div>
+          <div class="onboarding-step">
+            <div class="step-dot step-pending">4</div>
+            <span class="step-label step-label--pending">Start your journey</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="brand-footer">
+        <span>PeakWell — Optimize your health</span>
+      </div>
+    </div>
+
+    <!-- Right: Form Panel -->
+    <div class="auth-form-panel">
+      <div class="auth-form-wrap">
+
+        <div class="auth-header">
+          <h2>Complete your profile</h2>
+          <p>Tell us a bit about yourself to get started</p>
+        </div>
+
+        <!-- Read-only role badge -->
+        <div class="role-badge" [class.role-badge--dietitian]="role === 'DIETITIAN'">
+          <span>
+            {{ role === 'STUDENT' ? '🎓' : role === 'DIETITIAN' ? '🩺' : role === 'RESTAURANT' ? '🍽️' : '⚙️' }}
+          </span>
+          <span>
+            {{
+            role === 'STUDENT' ? 'Student' :
+            role === 'DIETITIAN' ? 'Dietitian' :
+            role === 'RESTAURANT' ? 'Restaurant' :
+            'Admin'
+            }} account
+          </span>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="progress-bar">
+          <div class="progress-fill"></div>
+        </div>
+
+        <form [formGroup]="form" (ngSubmit)="onSubmit()">
+
+          <!-- Contact & Address (shared for all roles) -->
+          <div class="section-label">Contact & Address</div>
+
+          <div class="field-group">
+            <label>Phone number</label>
+            <div class="input-wrap">
+              <span class="input-icon">📞</span>
+              <input type="tel" formControlName="phoneNumber" placeholder="+216 92 819 124" />
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field-group">
+              <label>Street</label>
+              <div class="input-wrap">
+                <input type="text" formControlName="street" placeholder="Baghdedi" />
+              </div>
+            </div>
+            <div class="field-group">
+              <label>City</label>
+              <div class="input-wrap">
+                <input type="text" formControlName="city" placeholder="Bekalta" />
+              </div>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field-group">
+              <label>Postal code</label>
+              <div class="input-wrap">
+                <input type="text" formControlName="postalCode" placeholder="5090" />
+              </div>
+            </div>
+            <div class="field-group">
+              <label>State</label>
+              <div class="input-wrap">
+                <input type="text" formControlName="state" placeholder="Hammamet" />
+              </div>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label>Country</label>
+            <div class="input-wrap">
+              <span class="input-icon">🌍</span>
+              <input type="text" formControlName="country" placeholder="Tunisie" />
+            </div>
+          </div>
+
+          <!-- STUDENT specific form -->
+          <app-student-profile-form *ngIf="role === 'STUDENT'" [form]="form">
+          </app-student-profile-form>
+
+          <!-- DIETITIAN specific form -->
+          <app-dietitian-profile-form *ngIf="role === 'DIETITIAN'" [form]="form">
+          </app-dietitian-profile-form>
+
+          <!-- RESTAURANT / ADMIN: image upload -->
+          <ng-container *ngIf="role === 'RESTAURANT' || role === 'ADMIN'">
+
+            <div class="section-label">Profile Image</div>
+
+            <div class="field-group">
+              <label>Profile photo</label>
+
+              <div class="photo-upload-row">
+
+                <div class="photo-preview">
+                  <img *ngIf="imgPreviewUrl" [src]="imgPreviewUrl" alt="Profile photo" />
+                  <span *ngIf="!imgPreviewUrl" class="photo-placeholder">
+                    {{ role === 'RESTAURANT' ? '🍽️' : '⚙️' }}
+                  </span>
+                </div>
+
+                <div class="upload-zone upload-zone--compact" [class.upload-zone--has-file]="form.value.imgFile"
+                  (click)="imgInput.click()" (dragover)="$event.preventDefault()"
+                  (drop)="onAdminRestaurantDrop($event)">
+
+                  <input #imgInput type="file" accept=".jpg,.jpeg,.png,.webp" (change)="onImageSelected($event)"
+                    hidden />
+
+                  <ng-container *ngIf="!form.value.imgFile">
+                    <span class="upload-icon">🖼️</span>
+                    <span class="upload-label">Click or drag photo</span>
+                    <span class="upload-hint">JPG, PNG or WEBP — max 3MB</span>
+                  </ng-container>
+
+                  <ng-container *ngIf="form.value.imgFile">
+                    <span class="upload-icon">✅</span>
+                    <span class="upload-label upload-label--success">{{ form.value.imgFile.name }}</span>
+                    <span class="upload-hint">{{ formatSize(form.value.imgFile.size) }}</span>
+                    <button class="upload-remove" type="button" (click)="removeAdminRestaurantFile($event)">✕
+                      Remove</button>
+                  </ng-container>
+
+                </div>
+              </div>
+
+              <span class="field-error" *ngIf="imgError">{{ imgError }}</span>
+            </div>
+
+          </ng-container>
+
+          <button class="btn-submit" type="submit" [disabled]="loading || form.invalid">
+            {{ loading ? 'Saving…' : 'Complete Profile' }}
+          </button>
+
+        </form>
+
+      </div>
+    </div>
+
+  </div>
+</section>

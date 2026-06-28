@@ -1,0 +1,229 @@
+<div class="heatmap-page">
+
+  <!-- Header -->
+  <div class="hm-header">
+    <div>
+      <h1>Patient Health Heatmap</h1>
+      <p>Visual overview of all patients — health vs engagement. Spot who needs attention instantly.</p>
+    </div>
+    <button class="btn-refresh" (click)="load()" [disabled]="loading">🔄 Refresh</button>
+  </div>
+
+  <!-- Loading -->
+  <div class="hm-loading" *ngIf="loading">
+    <div class="spinner"></div>
+    <span>Mapping your patients…</span>
+  </div>
+
+  <ng-container *ngIf="!loading && data">
+
+    <!-- ═══ QUADRANT SUMMARY ═══ -->
+    <div class="quad-row">
+      <div class="quad-card quad-card--star">
+        <span class="qc-icon">⭐</span>
+        <span class="qc-value">{{ data.quadrantSummary.starPatients }}</span>
+        <span class="qc-label">Star Patients</span>
+        <span class="qc-sub">Healthy & Engaged</span>
+      </div>
+      <div class="quad-card quad-card--churn">
+        <span class="qc-icon">📉</span>
+        <span class="qc-value">{{ data.quadrantSummary.atRiskChurn }}</span>
+        <span class="qc-label">Churn Risk</span>
+        <span class="qc-sub">Healthy but Disengaged</span>
+      </div>
+      <div class="quad-card quad-card--plan">
+        <span class="qc-icon">🔄</span>
+        <span class="qc-value">{{ data.quadrantSummary.needsPlanChange }}</span>
+        <span class="qc-label">Needs Plan Change</span>
+        <span class="qc-sub">Engaged but Struggling</span>
+      </div>
+      <div class="quad-card quad-card--critical">
+        <span class="qc-icon">🚨</span>
+        <span class="qc-value">{{ data.quadrantSummary.critical }}</span>
+        <span class="qc-label">Critical</span>
+        <span class="qc-sub">Low Health & Engagement</span>
+      </div>
+    </div>
+
+    <!-- ═══ HEATMAP + ACTIONS SIDE BY SIDE ═══ -->
+    <div class="main-grid">
+
+      <!-- SVG Scatter Plot -->
+      <div class="heatmap-card">
+        <div class="hc-title">
+          <h3>🗺️ Patient Map</h3>
+          <div class="hc-legend">
+            <span><span class="leg-dot" style="background:#7a9e7e"></span> Low risk</span>
+            <span><span class="leg-dot" style="background:#e8b84b"></span> Moderate</span>
+            <span><span class="leg-dot" style="background:#e88f68"></span> High</span>
+            <span><span class="leg-dot" style="background:#c96a3f"></span> Critical</span>
+          </div>
+        </div>
+
+        <div class="svg-container">
+          <svg viewBox="0 0 420 420" xmlns="http://www.w3.org/2000/svg">
+            <!-- Background quadrants -->
+            <rect x="10" y="10" width="195" height="195" rx="6" fill="rgba(232,143,104,0.05)" />
+            <rect x="205" y="10" width="195" height="195" rx="6" fill="rgba(232,200,64,0.05)" />
+            <rect x="10" y="205" width="195" height="195" rx="6" fill="rgba(201,106,63,0.06)" />
+            <rect x="205" y="205" width="195" height="195" rx="6" fill="rgba(122,158,126,0.05)" />
+
+            <!-- Quadrant labels -->
+            <text x="100" y="30" text-anchor="middle" fill="#e88f68" font-size="9" font-weight="600" opacity="0.7">🔄 Needs Plan Change</text>
+            <text x="310" y="30" text-anchor="middle" fill="#e8b84b" font-size="9" font-weight="600" opacity="0.7">📉 Churn Risk</text>
+            <text x="100" y="395" text-anchor="middle" fill="#c96a3f" font-size="9" font-weight="600" opacity="0.7">🚨 Critical</text>
+            <text x="310" y="395" text-anchor="middle" fill="#7a9e7e" font-size="9" font-weight="600" opacity="0.7">⭐ Star Patients</text>
+
+            <!-- Grid lines -->
+            <line x1="200" y1="10" x2="200" y2="400" stroke="#ede8e3" stroke-width="1" stroke-dasharray="4,4"/>
+            <line x1="10" y1="200" x2="400" y2="200" stroke="#ede8e3" stroke-width="1" stroke-dasharray="4,4"/>
+
+            <!-- Axis labels -->
+            <text x="210" y="415" text-anchor="middle" fill="#8a7e78" font-size="10" font-weight="600">Health Score →</text>
+            <text x="5" y="210" text-anchor="middle" fill="#8a7e78" font-size="10" font-weight="600"
+                  transform="rotate(-90, 5, 210)">Engagement →</text>
+
+            <!-- Patient bubbles -->
+            <g *ngFor="let p of data.patients">
+              <circle [attr.cx]="xPos(p)" [attr.cy]="yPos(p)" [attr.r]="bubbleR(p)"
+                      [attr.fill]="p.riskColor" opacity="0.75"
+                      stroke="#fff" stroke-width="2"
+                      style="cursor: pointer; transition: all 0.2s;"
+                      (mouseenter)="hoveredPatient = p"
+                      (mouseleave)="hoveredPatient = null"
+                      (click)="selectPatient(p)" />
+              <text [attr.x]="xPos(p)" [attr.y]="yPos(p) + 3.5"
+                    text-anchor="middle" fill="#fff" font-size="8" font-weight="700"
+                    pointer-events="none">
+                {{ p.initials }}
+              </text>
+            </g>
+          </svg>
+
+          <!-- Hover tooltip -->
+          <div class="bubble-tooltip" *ngIf="hoveredPatient"
+               [style.left.px]="xPos(hoveredPatient) * 1.15 + 20"
+               [style.top.px]="yPos(hoveredPatient) * 1.15 - 10">
+            <strong>{{ hoveredPatient.name }}</strong>
+            <span>Health: {{ hoveredPatient.healthScore }} · Engage: {{ hoveredPatient.engagementScore }}</span>
+            <span class="bt-quad" [style.color]="quadrantColor(hoveredPatient.quadrant)">{{ quadrantLabel(hoveredPatient.quadrant) }}</span>
+          </div>
+        </div>
+
+        <!-- Mini stats below chart -->
+        <div class="hc-footer">
+          <div class="hcf-stat">
+            <span class="hcf-value">{{ data.overallStats.totalPatients }}</span>
+            <span class="hcf-label">Patients</span>
+          </div>
+          <div class="hcf-stat">
+            <span class="hcf-value">{{ data.overallStats.avgHealthScore }}</span>
+            <span class="hcf-label">Avg Health</span>
+          </div>
+          <div class="hcf-stat">
+            <span class="hcf-value">{{ data.overallStats.avgEngagementScore }}</span>
+            <span class="hcf-label">Avg Engage</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Items Feed -->
+      <div class="actions-card">
+        <div class="ac-header">
+          <h3>📋 Action Items</h3>
+          <span class="ac-count">{{ data.actionItems.length }}</span>
+        </div>
+
+        <!-- Filter pills -->
+        <div class="ac-filters">
+          <button [class.af--active]="actionFilter === 'ALL'" (click)="actionFilter = 'ALL'">
+            All ({{ data.actionItems.length }})
+          </button>
+          <button [class.af--active]="actionFilter === 'URGENT'" (click)="actionFilter = 'URGENT'"
+                  *ngIf="actionTypeCount('URGENT') > 0">
+            🔴 Urgent ({{ actionTypeCount('URGENT') }})
+          </button>
+          <button [class.af--active]="actionFilter === 'HIGH'" (click)="actionFilter = 'HIGH'"
+                  *ngIf="actionTypeCount('HIGH') > 0">
+            🟠 High ({{ actionTypeCount('HIGH') }})
+          </button>
+          <button [class.af--active]="actionFilter === 'MEDIUM'" (click)="actionFilter = 'MEDIUM'"
+                  *ngIf="actionTypeCount('MEDIUM') > 0">
+            🟡 Medium ({{ actionTypeCount('MEDIUM') }})
+          </button>
+          <button [class.af--active]="actionFilter === 'LOW'" (click)="actionFilter = 'LOW'"
+                  *ngIf="actionTypeCount('LOW') > 0">
+            🟢 Low ({{ actionTypeCount('LOW') }})
+          </button>
+        </div>
+
+        <!-- Items -->
+        <div class="ac-list">
+          <div class="ac-item" *ngFor="let a of filteredActions"
+               [style.border-left-color]="priorityColor(a.priority)"
+               (click)="openDossier(a.profileId)">
+            <div class="aci-icon">{{ a.icon }}</div>
+            <div class="aci-body">
+              <strong>{{ a.title }}</strong>
+              <span>{{ a.description }}</span>
+            </div>
+            <span class="aci-priority"
+                  [style.background]="priorityColor(a.priority) + '18'"
+                  [style.color]="priorityColor(a.priority)">
+              {{ a.priority }}
+            </span>
+          </div>
+          <div class="ac-empty" *ngIf="filteredActions.length === 0">
+            <span>✅</span>
+            <p>No action items in this category.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ═══ PATIENT TABLE ═══ -->
+    <div class="table-card">
+      <div class="tc-header">
+        <h3>👥 All Patients</h3>
+      </div>
+      <div class="tc-table">
+        <div class="tt-head">
+          <span>Patient</span>
+          <span>Health</span>
+          <span>Engagement</span>
+          <span>Quadrant</span>
+          <span>Entries</span>
+          <span></span>
+        </div>
+        <div class="tt-row" *ngFor="let p of data.patients" (click)="openDossier(p.profileId)">
+          <div class="tt-patient">
+            <div class="tt-avatar" [style.background]="p.riskColor + '20'" [style.color]="p.riskColor">{{ p.initials }}</div>
+            <div>
+              <strong>{{ p.name }}</strong>
+              <span>{{ p.gender }}</span>
+            </div>
+          </div>
+          <div class="tt-score">
+            <div class="tt-bar"><div class="tt-bar-fill" [style.width.%]="p.healthScore" [style.background]="p.riskColor"></div></div>
+            <span>{{ p.healthScore }}</span>
+          </div>
+          <div class="tt-score">
+            <div class="tt-bar"><div class="tt-bar-fill" [style.width.%]="p.engagementScore" style="background:#4ab8f0"></div></div>
+            <span>{{ p.engagementScore }}</span>
+          </div>
+          <div class="tt-quad">
+            <span class="tt-quad-badge" [style.background]="quadrantColor(p.quadrant) + '15'" [style.color]="quadrantColor(p.quadrant)">
+              {{ quadrantLabel(p.quadrant) }}
+            </span>
+          </div>
+          <div class="tt-entries">{{ p.entryCount }}</div>
+          <div class="tt-action">
+            <button class="btn-dossier" (click)="$event.stopPropagation(); openDossier(p.profileId)">📋</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </ng-container>
+</div>

@@ -1,0 +1,28 @@
+<div class="chart-card">
+
+  <div class="chart-header">
+    <span class="chart-title">Events by Type</span>
+    <span class="chart-subtitle">{{ total }} total</span>
+  </div>
+
+  <div class="type-list">
+    <div class="type-row" *ngFor="let item of rows">
+      <div class="type-icon" [style.background]="item.bg">
+        <i [class]="item.icon" [style.color]="item.accent"></i>
+      </div>
+      <div class="type-body">
+        <div class="type-top">
+          <span class="type-label">{{ item.label }}</span>
+          <span class="type-count" [style.color]="item.accent">{{ item.count }}</span>
+        </div>
+        <div class="type-track">
+          <div class="type-fill"
+               [style.width.%]="item.pct * 100"
+               [style.background]="item.accent">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

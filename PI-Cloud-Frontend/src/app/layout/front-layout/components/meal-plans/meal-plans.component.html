@@ -1,0 +1,40 @@
+<section class="mealplan-section" id="mealplans">
+  <div class="container">
+    <div class="mealplan-inner">
+
+      <div class="mealplan-copy">
+        <div class="mealplan-label">Personalized Plans</div>
+        <h2 class="mealplan-title">Your Week of Healthy Eating, <em>Done for You</em></h2>
+        <p class="mealplan-desc">Stop wondering "what's for dinner?" Get a complete weekly meal plan matched to your goals — with recipes, shopping lists, and prep guides.</p>
+        <ul class="mealplan-features">
+          <li class="mealplan-feature" *ngFor="let f of planFeatures">
+            <span class="check"></span> {{ f }}
+          </li>
+        </ul>
+        <button class="btn-primary" (click)="startPlan()">Start My Plan &rarr;</button>
+      </div>
+
+      <div class="mealplan-visual">
+        <div class="day-card"
+             *ngFor="let day of days"
+             [class.day-card--featured]="day.featured"
+             (click)="viewFullWeek()">
+          <div class="day-label">{{ day.emoji }} {{ day.label }}</div>
+          <div class="day-meal" *ngFor="let meal of day.meals">
+            <span class="day-meal-emoji">{{ meal.emoji }}</span>
+            <div class="day-meal-info">
+              <strong>{{ meal.name }}</strong>
+              <span>{{ meal.calories }} kcal · {{ meal.protein }}g protein</span>
+            </div>
+          </div>
+        </div>
+        <div class="day-card day-card--more" (click)="viewFullWeek()">
+          <span>📅</span>
+          <strong>+ 4 More Days</strong>
+          <span>Thu · Fri · Sat · Sun</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>

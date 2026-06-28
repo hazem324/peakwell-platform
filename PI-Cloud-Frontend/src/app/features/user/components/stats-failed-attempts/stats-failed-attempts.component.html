@@ -1,0 +1,30 @@
+<div class="chart-card">
+
+  <div class="chart-header">
+    <span class="chart-title">Login Risk Distribution</span>
+    <span class="chart-subtitle">{{ total }} users</span>
+  </div>
+
+  <div class="bands">
+    <div class="band" *ngFor="let b of bands">
+
+      <div class="band-meta">
+        <span class="band-label">{{ b.label }}</span>
+        <span class="band-count" [style.color]="b.accent">{{ b.count }}</span>
+      </div>
+
+      <div class="band-track">
+        <div class="band-fill"
+             [style.width.%]="b.pct * 100"
+             [style.background]="b.accent">
+        </div>
+      </div>
+
+      <span class="band-pct" [style.color]="b.accent">
+        {{ (b.pct * 100).toFixed(0) }}%
+      </span>
+
+    </div>
+  </div>
+
+</div>

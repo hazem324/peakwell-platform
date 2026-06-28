@@ -1,0 +1,56 @@
+<app-header></app-header>
+
+<div class="student-dashboard">
+
+  <!-- HEADER -->
+  <div class="dashboard-header">
+    <span class="section-label">STUDENT SPACE</span>
+    <h1>Mon Espace Étudiant</h1>
+    <p>Explorez vos repas et votre plan personnalisé</p>
+  </div>
+
+  <!-- WRAPPER -->
+  <div class="dashboard-wrapper">
+
+    <!-- NAV -->
+    <div class="dashboard-nav-box">
+
+      <button
+        class="nav-item"
+        [class.active]="currentView==='menus'"
+        (click)="setView('menus')">
+        Today Menu
+      </button>
+
+      <button
+        class="nav-item"
+        [class.active]="currentView==='meals'"
+        (click)="setView('meals')">
+        Meals
+      </button>
+
+      <button
+        class="nav-item"
+        [class.active]="currentView==='plan'"
+        (click)="setView('plan')">
+        My Plan
+      </button>
+
+    </div>
+
+    <!-- CONTENT -->
+    <div class="dashboard-content">
+
+      <app-menu-list *ngIf="currentView==='menus'"></app-menu-list>
+
+      <app-meals-etudiant *ngIf="currentView==='meals'"></app-meals-etudiant>
+
+      <app-plan-etudiant *ngIf="currentView==='plan'"></app-plan-etudiant>
+
+    </div>
+
+  </div>
+
+</div>
+
+<app-footer></app-footer>

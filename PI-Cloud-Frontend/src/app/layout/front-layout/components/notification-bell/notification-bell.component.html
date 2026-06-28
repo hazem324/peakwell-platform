@@ -1,0 +1,48 @@
+<div class="notif-wrapper">
+  <!-- Bell Button -->
+  <button class="bell-btn" (click)="toggle()" [class.bell-btn--has-unread]="unreadCount > 0">
+    🔔
+    <span class="bell-badge" *ngIf="unreadCount > 0">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
+  </button>
+
+  <!-- Dropdown Panel -->
+  <div class="notif-panel" *ngIf="open">
+    <div class="np-header">
+      <h4>Notifications</h4>
+      <div class="np-actions">
+        <button class="np-btn" (click)="markAllRead()" *ngIf="unreadCount > 0">Mark all read</button>
+        <button class="np-btn np-btn--dim" (click)="dismissAll()" *ngIf="notifications.length > 0">Clear all</button>
+      </div>
+    </div>
+
+    <!-- Empty state -->
+    <div class="np-empty" *ngIf="notifications.length === 0">
+      <span>🔔</span>
+      <p>No notifications</p>
+    </div>
+
+    <!-- Notification list -->
+    <div class="np-list">
+      <div class="np-item" *ngFor="let n of notifications"
+           [class.np-item--unread]="!n.read"
+           [style.border-left-color]="severityColor(n.severity)"
+           (click)="navigate(n)">
+
+        <div class="npi-icon">{{ n.icon }}</div>
+
+        <div class="npi-body">
+          <div class="npi-top">
+            <strong>{{ n.title }}</strong>
+            <span class="npi-time">{{ timeAgo(n.createdAt) }}</span>
+          </div>
+          <p class="npi-msg">{{ n.message }}</p>
+          <button class="npi-action" *ngIf="n.actionLabel" (click)="navigate(n); $event.stopPropagation()">
+            {{ n.actionLabel }} →
+          </button>
+        </div>
+
+        <button class="npi-dismiss" (click)="dismiss(n, $event)" title="Dismiss">×</button>
+      </div>
+    </div>
+  </div>
+</div>

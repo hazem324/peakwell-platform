@@ -1,0 +1,88 @@
+<!-- Announcement Bar -->
+<div class="announcement" *ngIf="showAnnouncement">
+  <span>{{ announcementText }}</span>
+  <button class="ann-close" (click)="showAnnouncement = false">✕</button>
+</div>
+
+<!-- Navigation -->
+<nav [class.nav--scrolled]="scrolled">
+  <div class="nav-inner container">
+
+    <!-- Left: Logo -->
+    <div class="nav-logo" [routerLink]="['/']">
+      <svg class="logo-mark" viewBox="0 0 40 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Heart -->
+        <path d="M20 32 C10 24 2 17 2 10.5 C2 6 5.5 2.5 10 2.5 C13 2.5 16 4.5 20 8 C24 4.5 27 2.5 30 2.5 C34.5 2.5 38 6 38 10.5 C38 17 30 24 20 32Z"
+              fill="rgba(201,106,63,0.09)" stroke="#c96a3f" stroke-width="1.6" stroke-linejoin="round"/>
+        <!-- ECG pulse line -->
+        <path d="M7 16 L12 16 L14.5 9 L17.5 23 L20 12 L22.5 16 L33 16"
+              stroke="#7a9e7e" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="logo-wordmark">
+        <span class="logo-peak">Peak</span><span class="logo-well">Well</span>
+      </span>
+    </div>
+
+    <!-- Center: Nav links -->
+    <div class="nav-center">
+      <ng-container *ngFor="let link of visibleNavLinks">
+        <a *ngIf="link.route"  [routerLink]="link.route"                          class="nav-link" routerLinkActive="nav-link--active">{{ link.label }}</a>
+        <a *ngIf="link.anchor" (click)="scrollTo(link.anchor!)" class="nav-link" style="cursor:pointer">{{ link.label }}</a>
+      </ng-container>
+    </div>
+
+    <!-- Right: Actions -->
+    <div class="nav-actions">
+      <a [routerLink]="authNavItem.route" class="nav-link nav-link--profile" routerLinkActive="nav-link--active">{{ authNavItem.label }}</a>
+      <app-notification-bell></app-notification-bell>
+      <a *ngIf="showNutritionistBtn" routerLink="/nutritionist" class="btn-nutritionist" routerLinkActive="btn-nutritionist--active">🩺 Nutritionist</a>
+      <button class="hamburger" (click)="toggleMenu()">{{ menuOpen ? '✕' : '☰' }}</button>
+    </div>
+
+  </div>
+</nav>
+
+<!-- Mobile drawer -->
+<div class="mobile-drawer" [class.mobile-drawer--open]="menuOpen">
+  <div class="drawer-header">
+    <div class="nav-logo">
+      <svg class="logo-mark" viewBox="0 0 40 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Heart -->
+        <path d="M20 32 C10 24 2 17 2 10.5 C2 6 5.5 2.5 10 2.5 C13 2.5 16 4.5 20 8 C24 4.5 27 2.5 30 2.5 C34.5 2.5 38 6 38 10.5 C38 17 30 24 20 32Z"
+              fill="rgba(201,106,63,0.09)" stroke="#c96a3f" stroke-width="1.6" stroke-linejoin="round"/>
+        <!-- ECG pulse line -->
+        <path d="M7 16 L12 16 L14.5 9 L17.5 23 L20 12 L22.5 16 L33 16"
+              stroke="#7a9e7e" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="logo-wordmark">
+        <span class="logo-peak">Peak</span><span class="logo-well">Well</span>
+      </span>
+    </div>
+    <button class="drawer-close" (click)="closeMenu()">✕</button>
+  </div>
+  <div class="drawer-links">
+    <ng-container *ngFor="let link of visibleNavLinks">
+      <a *ngIf="link.route"  [routerLink]="link.route"                          class="drawer-link" (click)="closeMenu()">{{ link.label }}</a>
+      <a *ngIf="link.anchor" (click)="scrollTo(link.anchor!)" class="drawer-link">{{ link.label }}</a>
+    </ng-container>
+    <a [routerLink]="authNavItem.route" class="drawer-link" (click)="closeMenu()">{{ authNavItem.label }}</a>
+    <a *ngIf="showNutritionistBtn" routerLink="/nutritionist" class="drawer-link drawer-link--nutri" (click)="closeMenu()">🩺 Nutritionist Space</a>
+  </div>
+</div>
+<div class="drawer-backdrop" [class.drawer-backdrop--open]="menuOpen" (click)="closeMenu()"></div>
+
+<!-- Free Kit Modal -->
+<div class="modal-overlay" [class.modal-overlay--open]="modalOpen" (click)="closeModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <button class="modal-close" (click)="closeModal()">✕</button>
+    <div class="modal-emoji">🎁</div>
+    <h2>Your Free <em>Starter Kit</em> Awaits</h2>
+    <p>Enter your email to instantly receive your 7-Day Clean Eating Meal Plan and recipe ebook.</p>
+    <div class="modal-form">
+      <input type="text" [(ngModel)]="modalName" placeholder="First name" />
+      <input type="email" [(ngModel)]="modalEmail" placeholder="Email address" />
+      <button class="btn-primary" (click)="handleSignup()">Send My Free Kit &rarr;</button>
+    </div>
+    <p class="modal-legal">No spam, ever. Unsubscribe anytime.</p>
+  </div>
+</div>

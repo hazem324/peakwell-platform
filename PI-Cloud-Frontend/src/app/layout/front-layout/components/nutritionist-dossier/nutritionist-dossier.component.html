@@ -1,0 +1,408 @@
+<div class="page-wrap">
+
+  <div class="page-header">
+    <div class="container">
+      <a routerLink="/nutritionist/clients" class="back-link">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+        Clients
+      </a>
+
+      <div class="ph-loading" *ngIf="loading">
+        <div class="spinner"></div>
+        Loading patient record…
+      </div>
+
+      <div class="ph-empty" *ngIf="!loading && !profile">Patient not found.</div>
+
+      <div class="ph-patient" *ngIf="!loading && profile">
+        <div class="ph-avatar"
+             [style.background]="patientImageUrl ? 'transparent' : avatarBg()"
+             [style.color]="avatarColor()"
+             [style.box-shadow]="'0 0 0 4px ' + avatarColor() + '22'">
+          <img *ngIf="patientImageUrl"
+               [src]="patientImageUrl"
+               [alt]="initials(profile)"
+               class="ph-avatar-img"
+               (error)="patientImageUrl = null">
+          <span *ngIf="!patientImageUrl">{{ initials(profile) }}</span>
+        </div>
+        <div class="ph-info">
+          <h1>{{ profile.firstName }} {{ profile.lastName }}</h1>
+          <div class="ph-meta">
+            <span>{{ age(profile.dateOfBirth) }}</span>
+            <span class="ph-sep">·</span>
+            <span>{{ profile.gender | titlecase }}</span>
+            <span class="ph-blood"
+                  [style.background]="bloodTypeColor(profile.bloodType) + '14'"
+                  [style.color]="bloodTypeColor(profile.bloodType)"
+                  [style.border-color]="bloodTypeColor(profile.bloodType) + '35'">
+              {{ profile.bloodType || '—' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container" *ngIf="!loading && profile">
+
+    <div class="tabs-bar">
+      <button class="tab-btn" *ngFor="let t of tabs"
+              [class.is-active]="activeTab === t.value"
+              (click)="onTabChange(t.value)">
+        {{ t.label }}
+      </button>
+    </div>
+
+    <!-- ── Medical Profile Tab ─────────────────────────────── -->
+    <div *ngIf="activeTab === 'profile'">
+
+      <div class="stats-strip">
+        <div class="ss-item">
+          <div class="ss-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M4 9l8-7 8 7M4 15l8 7 8-7"/></svg>
+          </div>
+          <strong>{{ profile.height || '—' }}</strong>
+          <span>{{ profile.height ? 'cm' : 'Height' }}</span>
+        </div>
+        <div class="ss-sep"></div>
+        <div class="ss-item">
+          <div class="ss-icon ss-icon--allergy">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <strong>{{ profile.allergies?.length || 0 }}</strong>
+          <span>Allergies</span>
+        </div>
+        <div class="ss-sep"></div>
+        <div class="ss-item">
+          <div class="ss-icon ss-icon--condition">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          </div>
+          <strong>{{ profile.conditions?.length || 0 }}</strong>
+          <span>Conditions</span>
+        </div>
+        <div class="ss-sep"></div>
+        <div class="ss-item">
+          <div class="ss-icon ss-icon--medication">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="M8.5 8.5 16 16"/></svg>
+          </div>
+          <strong>{{ profile.medications?.length || 0 }}</strong>
+          <span>Medications</span>
+        </div>
+      </div>
+
+      <div class="detail-grid">
+
+        <div class="detail-card" *ngIf="profile.conditions?.length > 0">
+          <div class="dc-header">
+            <span class="dc-dot dc-dot--condition"></span>
+            <h3>Diagnosed Conditions</h3>
+          </div>
+          <div class="dc-chips">
+            <span class="chip chip--condition" *ngFor="let c of profile.conditions">{{ c }}</span>
+          </div>
+        </div>
+
+        <div class="detail-card" *ngIf="profile.allergies?.length > 0">
+          <div class="dc-header">
+            <span class="dc-dot dc-dot--allergy"></span>
+            <h3>Allergies</h3>
+          </div>
+          <div class="dc-chips">
+            <span class="chip chip--allergy" *ngFor="let a of profile.allergies">{{ a }}</span>
+          </div>
+        </div>
+
+        <div class="detail-card" *ngIf="profile.medications?.length > 0">
+          <div class="dc-header">
+            <span class="dc-dot dc-dot--medication"></span>
+            <h3>Current Medications</h3>
+          </div>
+          <div class="dc-chips">
+            <span class="chip chip--medication" *ngFor="let m of profile.medications">{{ m }}</span>
+          </div>
+        </div>
+
+        <div class="detail-card" *ngIf="profile.emergencyContact">
+          <div class="dc-header">
+            <span class="dc-dot"></span>
+            <h3>Emergency Contact</h3>
+          </div>
+          <p class="dc-contact">{{ profile.emergencyContact }}</p>
+        </div>
+
+      </div>
+
+      <div class="empty-state"
+           *ngIf="!profile.conditions?.length && !profile.allergies?.length
+                  && !profile.medications?.length && !profile.emergencyContact">
+        <div class="empty-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+        </div>
+        <h3>No medical information on file</h3>
+        <p>This patient has not yet completed their medical profile.</p>
+      </div>
+
+    </div>
+
+    <!-- ── Goals Tab ─────────────────────────────────────── -->
+    <div *ngIf="activeTab === 'goals'">
+      <div class="goals-header">
+        <div>
+          <h3 class="goals-title">Health Goals</h3>
+          <p class="goals-sub">View and assign goals for this patient.</p>
+        </div>
+        <button class="assign-btn" (click)="openGoalModal()">+ Assign Goal</button>
+      </div>
+
+      <!-- Loading -->
+      <div class="empty-state" *ngIf="goalsLoading">
+        <div class="empty-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+        <h3>Loading goals…</h3>
+      </div>
+
+      <!-- Empty -->
+      <div class="empty-state" *ngIf="!goalsLoading && goals.length === 0">
+        <div class="empty-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
+        <h3>No goals assigned yet</h3>
+        <p>Assign the first goal to help this patient track their progress.</p>
+      </div>
+
+      <!-- Goal Cards -->
+      <div class="goal-cards" *ngIf="!goalsLoading && goals.length > 0">
+        <div class="goal-card" *ngFor="let g of goals" [style.--gc-accent]="goalColor(g)">
+
+          <!-- Header -->
+          <div class="gc-header">
+            <div class="gc-icon">{{ goalIcon(g) }}</div>
+            <div class="gc-meta">
+              <span class="gc-metric">{{ goalMetricLabel(g.metric) }}</span>
+              <div class="gc-badges">
+                <span class="gc-badge gc-badge--dir">{{ g.direction | titlecase }}</span>
+                <span class="gc-badge gc-badge--assigned" *ngIf="g.assignedByDietitian">
+                  👨‍⚕️ {{ g.assignedByDietitianName }}
+                </span>
+                <span class="gc-badge gc-badge--self" *ngIf="!g.assignedByDietitian">Self-set</span>
+              </div>
+            </div>
+            <span class="gc-status-pill"
+                  [style.color]="goalStatusColor(g)"
+                  [style.background]="goalStatusColor(g) + '14'"
+                  [style.border-color]="goalStatusColor(g) + '30'">
+              {{ goalStatusLabel(g) }}
+            </span>
+          </div>
+
+          <!-- Stats -->
+          <div class="gc-stats">
+            <div class="gc-stat">
+              <div class="gc-stat-label">Current</div>
+              <div class="gc-stat-val">{{ getLatestMetricValue(g.metric) || '—' }}<span *ngIf="g.unit"> {{ g.unit }}</span></div>
+            </div>
+            <div class="gc-stat">
+              <div class="gc-stat-label">Target</div>
+              <div class="gc-stat-val">{{ g.targetValue }}<span *ngIf="g.unit"> {{ g.unit }}</span></div>
+            </div>
+            <div class="gc-stat">
+              <div class="gc-stat-label">Remaining</div>
+              <div class="gc-stat-val gc-stat-val--accent">{{ goalRemaining(g) }}</div>
+            </div>
+            <div class="gc-stat">
+              <div class="gc-stat-label">Days Left</div>
+              <div class="gc-stat-val">{{ goalDaysLeft(g) }}</div>
+            </div>
+          </div>
+
+          <!-- Progress -->
+          <div class="gc-progress-row">
+            <div class="gc-progress-bar">
+              <div class="gc-progress-fill"
+                   [style.width]="goalProgress(g) + '%'"
+                   [style.background]="goalColor(g)">
+              </div>
+            </div>
+            <span class="gc-progress-pct" [style.color]="goalColor(g)">{{ goalProgress(g) }}%</span>
+          </div>
+
+          <!-- Milestones -->
+          <div class="gc-milestones" *ngIf="g.milestones?.length">
+            <div class="gcm-label">Milestones</div>
+            <div class="gcm-track">
+              <div class="gcm-item" *ngFor="let m of g.milestones" [class.gcm-item--reached]="m.reached">
+                <div class="gcm-dot" [style.border-color]="m.reached ? goalColor(g) : null"
+                                     [style.background]="m.reached ? goalColor(g) : null">
+                  <svg *ngIf="m.reached" width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div class="gcm-info">
+                  <span class="gcm-title">{{ m.label }}</span>
+                  <span class="gcm-val">{{ m.targetValue }} {{ g.unit }}</span>
+                  <span class="gcm-date" *ngIf="m.reachedDate">{{ m.reachedDate | date:'MMM d' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Assign Goal Modal -->
+      <div class="nd-modal-overlay" *ngIf="showGoalModal" (click)="showGoalModal = false">
+        <div class="nd-modal" (click)="$event.stopPropagation()">
+          <div class="nd-modal-header">
+            <h4>🎯 Assign Goal</h4>
+            <button (click)="showGoalModal = false">×</button>
+          </div>
+
+          <!-- Step 1: pick type -->
+          <div *ngIf="!selectedTemplate">
+            <p class="nd-modal-sub">Choose a goal type for this patient</p>
+            <div class="nd-template-grid">
+              <button class="nd-tpl-card"
+                      [class.nd-tpl-card--active]="hasActiveGoal(t)"
+                      [disabled]="hasActiveGoal(t)"
+                      *ngFor="let t of goalTemplates"
+                      (click)="!hasActiveGoal(t) && (selectedTemplate = t)">
+                <span class="nd-tpl-active-badge" *ngIf="hasActiveGoal(t)">Active</span>
+                <span class="nd-tpl-icon">{{ goalIcons[t.metric] ?? '🎯' }}</span>
+                <span class="nd-tpl-label">{{ t.label }}</span>
+                <span class="nd-tpl-dir">{{ t.direction }}</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Step 2: configure -->
+          <div *ngIf="selectedTemplate">
+            <button class="nd-back" (click)="selectedTemplate = null">← Back</button>
+            <div class="nd-selected-info">
+              <span class="nd-selected-icon">{{ goalIcons[selectedTemplate.metric] ?? '🎯' }}</span>
+              <div>
+                <div class="nd-selected-label">{{ selectedTemplate.label }}</div>
+                <div class="nd-selected-current" *ngIf="getLatestMetricValue(selectedTemplate.metric)">
+                  Current: {{ getLatestMetricValue(selectedTemplate.metric) }} {{ selectedTemplate.unit }}
+                </div>
+              </div>
+            </div>
+            <div class="nd-fields">
+              <div class="nd-field">
+                <label>Target ({{ selectedTemplate.unit }})</label>
+                <input type="number" [(ngModel)]="newGoalTarget" step="0.1" placeholder="Enter target value"/>
+              </div>
+              <div class="nd-field">
+                <label>Deadline</label>
+                <input type="date" [(ngModel)]="newGoalDeadline"/>
+              </div>
+            </div>
+            <button class="nd-assign-btn" (click)="assignGoal()">🎯 Assign Goal</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Biometrics Tab ──────────────────────────────────── -->
+    <div *ngIf="activeTab === 'biometrics'">
+
+      <div class="bio-snapshot" *ngIf="latest">
+        <div class="bio-card">
+          <div class="bio-card-label">Weight</div>
+          <div class="bio-card-val">{{ latest.weight }}<span>kg</span></div>
+          <div class="bio-delta" [ngClass]="deltaClass(latest.weight, previous?.weight, true)"
+               *ngIf="previous">{{ delta(latest.weight, previous.weight) }} kg</div>
+        </div>
+        <div class="bio-card">
+          <div class="bio-card-label">BMI</div>
+          <div class="bio-card-val" [style.color]="bmiColor(latest.bmi)">{{ latest.bmi }}</div>
+          <div class="bio-badge" [style.background]="bmiColor(latest.bmi) + '14'" [style.color]="bmiColor(latest.bmi)">{{ bmiLabel(latest.bmi) }}</div>
+        </div>
+        <div class="bio-card" *ngIf="latest.bodyFat != null">
+          <div class="bio-card-label">Body Fat</div>
+          <div class="bio-card-val">{{ latest.bodyFat }}<span>%</span></div>
+          <div class="bio-delta" [ngClass]="deltaClass(latest.bodyFat, previous?.bodyFat, true)"
+               *ngIf="previous && previous.bodyFat != null">{{ delta(latest.bodyFat, previous.bodyFat) }}%</div>
+        </div>
+        <div class="bio-card" *ngIf="latest.muscleMass != null">
+          <div class="bio-card-label">Muscle Mass</div>
+          <div class="bio-card-val">{{ latest.muscleMass }}<span>kg</span></div>
+          <div class="bio-delta" [ngClass]="deltaClass(latest.muscleMass, previous?.muscleMass, false)"
+               *ngIf="previous && previous.muscleMass != null">{{ delta(latest.muscleMass, previous.muscleMass) }} kg</div>
+        </div>
+        <div class="bio-card" *ngIf="latest.systolic != null">
+          <div class="bio-card-label">Blood Pressure</div>
+          <div class="bio-card-val">{{ latest.systolic }}<span>/{{ latest.diastolic }}</span></div>
+          <div class="bio-card-unit">mmHg</div>
+        </div>
+        <div class="bio-card" *ngIf="latest.glucose != null">
+          <div class="bio-card-label">Glucose</div>
+          <div class="bio-card-val">{{ latest.glucose }}<span>mg/dL</span></div>
+        </div>
+      </div>
+
+      <div class="history-card" *ngIf="biometrics.length > 0">
+        <div class="hc-header">
+          <h3>Biometric History</h3>
+          <span class="hc-count">{{ biometrics.length }} records</span>
+        </div>
+        <div class="hc-table-wrap">
+          <table class="hc-table">
+            <thead>
+              <tr>
+                <th>Date</th><th>Weight</th><th>BMI</th><th>Body Fat</th>
+                <th>Muscle</th><th>BP</th><th>Glucose</th><th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let e of pagedBiometrics">
+                <td><strong>{{ e.recordedAt | date:'MMM d, y' }}</strong></td>
+                <td>{{ e.weight }} kg</td>
+                <td>
+                  <span class="bmi-pill" [style.background]="bmiColor(e.bmi) + '14'" [style.color]="bmiColor(e.bmi)">
+                    {{ e.bmi }}
+                  </span>
+                </td>
+                <td>{{ e.bodyFat != null ? e.bodyFat + '%' : '—' }}</td>
+                <td>{{ e.muscleMass != null ? e.muscleMass + ' kg' : '—' }}</td>
+                <td>{{ e.systolic != null ? e.systolic + '/' + e.diastolic + ' mmHg' : '—' }}</td>
+                <td>{{ e.glucose != null ? e.glucose + ' mg/dL' : '—' }}</td>
+                <td class="notes-cell">{{ e.notes || '—' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination" *ngIf="totalPages > 1">
+          <button class="pg-btn pg-btn--nav" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+
+          <button class="pg-btn"
+                  *ngFor="let p of pageNumbers"
+                  [class.pg-btn--active]="p === currentPage"
+                  (click)="goToPage(p)">
+            {{ p }}
+          </button>
+
+          <button class="pg-btn pg-btn--nav" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+
+          <span class="pg-info">{{ (currentPage - 1) * pageSize + 1 }}–{{ currentPage * pageSize > biometrics.length ? biometrics.length : currentPage * pageSize }} of {{ biometrics.length }}</span>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="biometrics.length === 0">
+        <div class="empty-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+          </svg>
+        </div>
+        <h3>No biometric records</h3>
+        <p>Biometric data will appear here once the patient has logged entries.</p>
+      </div>
+
+    </div>
+
+  </div>
+</div>

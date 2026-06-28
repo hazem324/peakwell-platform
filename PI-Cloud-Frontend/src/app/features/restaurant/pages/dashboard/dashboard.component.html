@@ -1,0 +1,120 @@
+<app-header></app-header>
+
+<div class="modal-overlay" *ngIf="showForm" (click)="closeForm()">
+  <div class="modal" (click)="$event.stopPropagation()">
+
+    <!-- PRODUCT FORM -->
+    <app-product-form 
+      *ngIf="currentView==='products'"
+      [productData]="selectedProduct"
+      [isEditMode]="isEditMode"
+      (closeForm)="closeForm()"
+      (success)="afterSuccess($event)"
+      (error)="afterError()">
+    </app-product-form>
+
+    <app-meal-form 
+      *ngIf="currentView==='meals'"
+      [meal]="selectedMeal"
+      [isEditMode]="isEditMode"
+      (close)="closeForm()"
+      (save)="handleMealSave($event)">
+    </app-meal-form>
+  </div>
+</div>
+
+<div class="popup-overlay" *ngIf="showPopup">
+  <div class="popup-box">
+
+    <div class="popup-icon" [ngClass]="isSuccess ? 'success' : 'error'">
+      {{ isSuccess ? '✔' : '✖' }}
+    </div>
+
+    <p class="popup-message">{{ popupMessage }}</p>
+
+    <button class="popup-btn" (click)="closePopup()">OK</button>
+
+  </div>
+</div>
+
+<div class="popup-overlay" *ngIf="showDeleteConfirm">
+  <div class="popup-box">
+
+    <p class="popup-message">
+      Voulez-vous supprimer ce produit ?
+    </p>
+
+    <div class="popup-actions">
+      <button class="popup-btn danger" (click)="confirmDeleteAction()">Oui</button>
+      <button class="popup-btn secondary" (click)="cancelDelete()">Annuler</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="restaurant-dashboard">
+
+  <!-- HEADER -->
+  <div class="dashboard-header">
+    <span class="section-label">RESTAURANT MANAGEMENT</span>
+    <h1>Dashboard Restaurant</h1>
+    <p>Gérez vos produits, repas et menus efficacement</p>
+  </div>
+
+  <!-- WRAPPER -->
+  <div class="dashboard-wrapper">
+
+    <!-- NAV -->
+    <div class="dashboard-nav-box">
+
+      <button 
+        class="nav-item"
+        [class.active]="currentView==='products'"
+        (click)="setView('products')">
+        Produits
+      </button>
+
+      <button 
+        class="nav-item"
+        [class.active]="currentView==='meals'"
+        (click)="setView('meals')">
+        Repas
+      </button>
+
+      <button 
+        class="nav-item"
+        [class.active]="currentView==='menus'"
+        (click)="setView('menus')">
+        Menus
+      </button>
+
+    </div>
+
+    <!-- CONTENT -->
+    <div class="dashboard-content">
+
+      <app-product-list 
+        *ngIf="currentView==='products'"
+        (addProduct)="openForm()"
+        (editProduct)="openEditForm($event)"
+        (deleteProduct)="confirmDelete($event)">
+      </app-product-list>
+
+      <app-meal-list 
+        *ngIf="currentView==='meals'"
+        (addMeal)="openForm()"
+        (editMealEvent)="openEditMeal($event)"
+        (deleteMealEvent)="confirmDeleteMeal($any($event))"
+        (refreshMeals)="onRefreshMeals()">
+      </app-meal-list>
+
+      <app-menu-list *ngIf="currentView==='menus'"></app-menu-list>
+
+    </div>
+
+  </div>
+
+</div>
+
+<app-footer></app-footer>

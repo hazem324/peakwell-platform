@@ -1,0 +1,43 @@
+.newsletter-section {
+  background: linear-gradient(135deg, var(--blush) 0%, #f0e8d8 100%);
+  position: relative; overflow: hidden;
+  &::before { content: '🌿'; position: absolute; left: 60px; top: 40px; font-size: 120px; opacity: 0.08; }
+  &::after  { content: '🌸'; position: absolute; right: 80px; bottom: 30px; font-size: 100px; opacity: 0.08; }
+}
+
+.newsletter-inner { max-width: 660px; margin: 0 auto; text-align: center; position: relative; z-index: 1; }
+
+.newsletter-eyebrow { font-size: 12px; letter-spacing: 3px; text-transform: uppercase; color: var(--sage-dark); font-weight: 600; margin-bottom: 16px; }
+
+.newsletter-title { font-family: var(--font-serif); font-size: clamp(36px, 4.5vw, 56px); font-weight: 300; line-height: 1.1; color: var(--charcoal); margin-bottom: 16px; em { font-style: italic; color: var(--terracotta); } }
+
+.newsletter-sub { font-size: 15px; line-height: 1.8; color: var(--warm-gray); margin-bottom: 36px; }
+
+.newsletter-form {
+  display: flex; gap: 8px; background: #fff; border: 1.5px solid var(--border);
+  border-radius: var(--radius-pill); padding: 8px 8px 8px 20px;
+  box-shadow: var(--shadow-md); flex-wrap: wrap;
+  input {
+    flex: 1; border: none; background: none; font-size: 14px;
+    color: var(--charcoal); outline: none; padding: 8px 4px; min-width: 120px;
+    font-family: var(--font-sans);
+    &::placeholder { color: var(--light-gray); }
+  }
+  .email-input { border-left: 1px solid var(--border); padding-left: 16px; }
+  .btn-primary { flex-shrink: 0; white-space: nowrap; padding: 12px 24px; font-size: 13px; }
+}
+
+.newsletter-perks {
+  display: flex; justify-content: center; gap: 28px;
+  margin-top: 24px; flex-wrap: wrap; list-style: none;
+}
+
+.perk {
+  display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--warm-gray);
+  span { color: var(--sage); font-weight: 600; }
+}
+
+@media (max-width: 600px) {
+  .newsletter-form { flex-direction: column; border-radius: var(--radius-md); padding: 16px; }
+  .newsletter-form .email-input { border-left: none; border-top: 1px solid var(--border); padding-left: 4px; }
+}

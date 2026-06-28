@@ -1,0 +1,167 @@
+<div class="modal-overlay" [class.modal-overlay--open]="visible" (click)="close.emit()">
+  <div class="admin-modal admin-modal--wide" (click)="$event.stopPropagation()" *ngIf="user">
+
+    <div class="admin-modal-header">
+      <h3>User Details</h3>
+      <button class="modal-close" (click)="close.emit()">✕</button>
+    </div>
+
+    <div class="admin-modal-body">
+
+      <!-- Hero -->
+      <div class="detail-hero">
+        <div class="detail-avatar" [style.background]="avatarBg(user.role)">
+          <img *ngIf="user.imageUrl" [src]="user.imageUrl" alt="profile"/>
+          <span *ngIf="!user.imageUrl" [style.color]="roleColor(user.role)">
+            {{ initials(user) }}
+          </span>
+        </div>
+        <div>
+          <div class="detail-name">{{ user.firstName }} {{ user.lastName }}</div>
+          <div class="detail-joined">Member since {{ user.createdAt }}</div>
+          <div class="detail-badges">
+            <span class="role-pill"
+                  [style.background]="roleBg(user.role)"
+                  [style.color]="roleColor(user.role)">
+              {{ user.role || 'No role' }}
+            </span>
+            <span class="profile-pill" [class.profile-pill--done]="user.profileCompleted">
+              {{ user.profileCompleted ? 'Profile complete' : ' Incomplete' }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Base info -->
+      <div class="detail-grid">
+        <div class="detail-item">
+          <span class="detail-label">Email</span>
+          <span class="detail-value">{{ user.email }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Phone</span>
+          <span class="detail-value">{{ user.phoneNumber || '—' }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Account status</span>
+          <span class="status-badge"
+                [style.background]="statusColor(user.status || 'PENDING') + '22'"
+                [style.color]="statusColor(user.status || 'PENDING')">
+            {{ user.status | titlecase }}
+          </span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Account enabled</span>
+          <span class="detail-value">{{ user.enabled ? 'Yes' : 'No' }}</span>
+        </div>
+      </div>
+
+      <!-- Address -->
+      <div class="section-divider">Address</div>
+      <div class="detail-grid" *ngIf="user.address; else noAddress">
+        <div class="detail-item">
+          <span class="detail-label">Street</span>
+          <span class="detail-value">{{ user.address.street || '—' }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">City</span>
+          <span class="detail-value">{{ user.address.city || '—' }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">State</span>
+          <span class="detail-value">{{ user.address.state || '—' }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Postal code</span>
+          <span class="detail-value">{{ user.address.postalCode || '—' }}</span>
+        </div>
+        <div class="detail-item detail-item--full">
+          <span class="detail-label">Country</span>
+          <span class="detail-value">{{ user.address.country || '—' }}</span>
+        </div>
+      </div>
+      <ng-template #noAddress>
+        <span class="detail-value" style="display:block; margin-bottom:8px">No address provided</span>
+      </ng-template>
+
+      <!-- Student profile -->
+      <ng-container *ngIf="user.role === 'STUDENT' && user.studentProfile">
+        <div class="section-divider">Student profile</div>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <span class="detail-label">Height</span>
+            <span class="detail-value">{{ user.studentProfile.height }} cm</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Weight</span>
+            <span class="detail-value">{{ user.studentProfile.weight }} kg</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Activity level</span>
+            <span class="detail-value">{{ user.studentProfile.activityLevel | titlecase }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Goal</span>
+            <span class="detail-value">{{ user.studentProfile.goal | titlecase }}</span>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Dietitian profile -->
+      <ng-container *ngIf="user.role === 'DIETITIAN' && user.dietitianProfile">
+        <div class="section-divider">Dietitian profile</div>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <span class="detail-label">Specialization</span>
+            <span class="detail-value">{{ user.dietitianProfile.specialization }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Experience</span>
+            <span class="detail-value">{{ user.dietitianProfile.experienceYears }} years</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Consultation price</span>
+            <span class="detail-value">$ {{ user.dietitianProfile.consultationPrice }} / session</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Portfolio</span>
+            <a class="detail-link" [href]="user.dietitianProfile.linkUrl" target="_blank">
+              {{ user.dietitianProfile.linkUrl || '—' }}
+            </a>
+          </div>
+          <div class="detail-item detail-item--full" *ngIf="user.dietitianProfile.certificateUrl">
+            <span class="detail-label">Certificate</span>
+            <a class="detail-link" [href]="user.dietitianProfile.certificateUrl" target="_blank">
+              📄 View certificate
+            </a>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Ban info -->
+      <div class="ban-info" *ngIf="user.status === 'BANNED'">
+        <div class="ban-info-title">⚠️ Account is banned</div>
+        <div class="detail-item">
+          <span class="detail-label">Reason</span>
+          <span class="detail-value">{{ user.banReason || '—' }}</span>
+        </div>
+        <div class="detail-item detail-item--full" style="margin-top: 8px">
+          <span class="detail-label">Description</span>
+          <span class="detail-value">{{ user.banDescription || '—' }}</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="admin-modal-footer">
+      <button class="btn-cancel" (click)="close.emit()">Close</button>
+      <button class="btn-status-action"
+              [class.btn-status-action--ban]="user.status !== 'BANNED'"
+              [class.btn-status-action--unban]="user.status === 'BANNED'"
+              (click)="onStatusClick()">
+        {{ user.status === 'BANNED' ? ' Unban User' : ' Ban User' }}
+      </button>
+    </div>
+
+  </div>
+</div>

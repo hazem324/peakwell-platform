@@ -1,0 +1,281 @@
+<div class="vc-page" (mousemove)="showControls = true">
+  <!-- ═══════════ PRE-CALL LOBBY ═══════════ -->
+  <div class="lobby" *ngIf="callState === 'loading' || callState === 'ready'">
+    <div class="lobby-card">
+      <div class="lobby-preview">
+        <video
+          #localVideo
+          autoplay
+          muted
+          playsinline
+          class="lobby-video"
+        ></video>
+        <div class="lobby-overlay" *ngIf="!localStream">
+          <span class="lo-icon">📷</span>
+          <p>Waiting for camera access…</p>
+        </div>
+        <div class="lobby-overlay lobby-overlay--error" *ngIf="error">
+          <span class="lo-icon">⚠️</span>
+          <p>{{ error }}</p>
+        </div>
+        <!-- Camera/mic toggles on preview -->
+        <div class="lobby-controls" *ngIf="localStream">
+          <button [class.lc-off]="!cameraOn" (click)="toggleCamera()">
+            {{ cameraOn ? "📷" : "🚫" }}
+          </button>
+          <button [class.lc-off]="!micOn" (click)="toggleMic()">
+            {{ micOn ? "🎤" : "🔇" }}
+          </button>
+        </div>
+      </div>
+
+      <div class="lobby-info">
+        <h1>Video <em>Consultation</em></h1>
+        <div class="li-details" *ngIf="consultation">
+          <div class="li-doctor">
+            <div class="li-avatar">
+              {{ consultation.doctorName?.charAt(0) || "D" }}
+            </div>
+            <div>
+              <strong>{{ consultation.doctorName || "Your Dietitian" }}</strong>
+              <span>{{
+                consultation.doctorSpecialty || "Nutrition Specialist"
+              }}</span>
+            </div>
+          </div>
+          <div class="li-meta">
+            <span *ngIf="consultation.scheduledAt"
+              >📅 {{ consultation.scheduledAt | slice : 0 : 10 }}</span
+            >
+            <span *ngIf="consultation.durationMinutes"
+              >⏱ {{ consultation.durationMinutes }} min</span
+            >
+            <span *ngIf="consultation.consultationType"
+              >📹 {{ consultation.consultationType }}</span
+            >
+          </div>
+          <div class="li-reason" *ngIf="consultation.reason">
+            <span class="li-reason-label">Reason</span>
+            <p>{{ consultation.reason }}</p>
+          </div>
+        </div>
+
+        <div class="li-checklist">
+          <div class="lic-item" [class.lic-item--ok]="localStream">
+            <span>{{ localStream ? "✅" : "⏳" }}</span> Camera ready
+          </div>
+          <div class="lic-item" [class.lic-item--ok]="micOn && localStream">
+            <span>{{ micOn && localStream ? "✅" : "⏳" }}</span> Microphone
+            ready
+          </div>
+          <div class="lic-item lic-item--ok">
+            <span>✅</span> Connection stable
+          </div>
+        </div>
+
+        <button
+          class="btn-join"
+          (click)="startCall()"
+          [disabled]="!localStream || callState === 'loading'"
+        >
+          <span *ngIf="callState !== 'loading'">Join Call →</span>
+          <span *ngIf="callState === 'loading'">Loading…</span>
+        </button>
+        <button class="btn-back" (click)="goBack()">← Back to Dashboard</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ CONNECTING ═══════════ -->
+  <div class="connecting" *ngIf="callState === 'connecting'">
+    <div class="conn-pulse"></div>
+    <h2>Connecting to your dietitian…</h2>
+    <p>Setting up secure video connection</p>
+  </div>
+
+  <!-- ═══════════ LIVE CALL ═══════════ -->
+  <div class="call" *ngIf="callState === 'connected'">
+    <!-- Remote video (full screen) -->
+    <div class="call-remote">
+      <video
+        #remoteVideo
+        autoplay
+        playsinline
+        class="remote-video"
+        [class.remote-video--active]="doctorJoined"
+      ></video>
+      <div class="remote-placeholder" *ngIf="!doctorJoined">
+        <div class="rp-avatar">
+          {{ consultation?.doctorName?.charAt(0) || "D" }}
+        </div>
+        <p>Waiting for doctor to join…</p>
+      </div>
+    </div>
+
+    <!-- Local video (PiP) -->
+    <div
+      class="call-local"
+      [class.call-local--mini]="localMinimized"
+      (click)="toggleLocalSize()"
+    >
+      <video #localVideo autoplay muted playsinline class="local-video"></video>
+      <span class="local-label">You</span>
+    </div>
+
+    <!-- Top bar -->
+    <div class="call-top" [class.call-top--visible]="showControls">
+      <div class="ct-left">
+        <span class="ct-dot" [class.ct-dot--live]="doctorJoined"></span>
+        <span class="ct-status">{{
+          doctorJoined ? "Connected" : "Waiting…"
+        }}</span>
+        <span class="ct-timer">{{ callDuration }}</span>
+      </div>
+      <div class="ct-right">
+        <span class="ct-name" *ngIf="consultation">{{
+          consultation.doctorName
+        }}</span>
+        <span class="ct-badge">{{
+          consultation?.consultationType || "VIDEO"
+        }}</span>
+      </div>
+    </div>
+
+    <!-- Bottom controls -->
+    <div class="call-controls" [class.call-controls--visible]="showControls">
+      <button
+        class="cc-btn"
+        [class.cc-btn--off]="!micOn"
+        (click)="toggleMic()"
+        title="Toggle microphone"
+      >
+        <span>{{ micOn ? "🎤" : "🔇" }}</span>
+        <small>{{ micOn ? "Mute" : "Unmute" }}</small>
+      </button>
+      <button
+        class="cc-btn"
+        [class.cc-btn--off]="!cameraOn"
+        (click)="toggleCamera()"
+        title="Toggle camera"
+      >
+        <span>{{ cameraOn ? "📷" : "🚫" }}</span>
+        <small>{{ cameraOn ? "Stop Video" : "Start Video" }}</small>
+      </button>
+      <button
+        class="cc-btn"
+        [class.cc-btn--active]="screenSharing"
+        (click)="toggleScreenShare()"
+        title="Share screen"
+      >
+        <span>🖥️</span>
+        <small>{{ screenSharing ? "Stop Share" : "Share Screen" }}</small>
+      </button>
+      <button
+        class="cc-btn"
+        [class.cc-btn--active]="chatOpen"
+        (click)="toggleChat()"
+        title="Chat"
+      >
+        <span>💬</span>
+        <small>Chat</small>
+        <span class="cc-badge" *ngIf="unreadChat > 0">{{ unreadChat }}</span>
+      </button>
+      <button
+        class="cc-btn"
+        [class.cc-btn--active]="notesOpen"
+        (click)="toggleNotes()"
+        title="Notes"
+      >
+        <span>📝</span>
+        <small>Notes</small>
+      </button>
+      <button class="cc-btn cc-btn--end" (click)="endCall()" title="End call">
+        <span>📞</span>
+        <small>End</small>
+      </button>
+    </div>
+
+    <!-- Chat Sidebar -->
+    <div class="chat-panel" [class.chat-panel--open]="chatOpen">
+      <div class="cp-header">
+        <h4>💬 Chat</h4>
+        <button (click)="chatOpen = false">✕</button>
+      </div>
+      <div class="cp-messages">
+        <div
+          class="cp-msg"
+          *ngFor="let m of chatMessages"
+          [class.cp-msg--you]="m.sender === 'you'"
+          [class.cp-msg--doctor]="m.sender === 'doctor'"
+        >
+          <span class="cpm-text">{{ m.text }}</span>
+          <span class="cpm-time">{{ m.time }}</span>
+        </div>
+        <div class="cp-empty" *ngIf="chatMessages.length === 0">
+          <p>No messages yet. Say hello!</p>
+        </div>
+      </div>
+      <div class="cp-input">
+        <input
+          #chatInput
+          type="text"
+          [(ngModel)]="chatInput"
+          (keydown)="onChatKeydown($event)"
+          placeholder="Type a message…"
+        />
+        <button (click)="sendChat()">→</button>
+      </div>
+    </div>
+
+    <!-- Notes Sidebar -->
+    <div class="notes-panel" [class.notes-panel--open]="notesOpen">
+      <div class="np-header">
+        <h4>📝 Call Notes</h4>
+        <button (click)="notesOpen = false">✕</button>
+      </div>
+      <textarea
+        class="np-textarea"
+        [(ngModel)]="callNotes"
+        placeholder="Take notes during the call… These will be saved when the call ends."
+      ></textarea>
+    </div>
+  </div>
+
+  <!-- ═══════════ CALL ENDED ═══════════ -->
+  <div class="ended" *ngIf="callState === 'ended'">
+    <div class="ended-card">
+      <span class="ec-icon">✅</span>
+      <h2>Call Ended</h2>
+      <p>Your video consultation has been completed.</p>
+
+      <div class="ec-summary">
+        <div class="ecs-item">
+          <span class="ecs-label">Duration</span>
+          <span class="ecs-value">{{ callDuration }}</span>
+        </div>
+        <div class="ecs-item" *ngIf="consultation">
+          <span class="ecs-label">Doctor</span>
+          <span class="ecs-value">{{ consultation.doctorName }}</span>
+        </div>
+        <div class="ecs-item">
+          <span class="ecs-label">Messages</span>
+          <span class="ecs-value">{{ chatMessages.length }}</span>
+        </div>
+      </div>
+
+      <div class="ec-notes" *ngIf="callNotes.trim()">
+        <h4>📝 Your Notes</h4>
+        <p>{{ callNotes }}</p>
+      </div>
+
+      <div class="ec-actions">
+        <button class="btn-primary" (click)="goBack()">
+          ← Back to Dashboard
+        </button>
+        <button class="btn-secondary" (click)="rejoinCall()">
+          🔄 Rejoin Call
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

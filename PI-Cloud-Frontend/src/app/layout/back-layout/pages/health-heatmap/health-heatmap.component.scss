@@ -1,0 +1,184 @@
+:host { display: block; }
+.heatmap-page { display: flex; flex-direction: column; gap: 24px; }
+
+// ── Header ──────────────────────────────────────
+.hm-header {
+  display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;
+  h1 { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 28px; font-weight: 600; color: #1e1a16; margin: 0; }
+  p { font-size: 13px; color: #8a7e78; margin: 4px 0 0; }
+}
+.btn-refresh {
+  padding: 8px 18px; border-radius: 100px; border: 1px solid #ede8e3;
+  background: #fff; font-size: 12px; font-weight: 600; color: #8a7e78; cursor: pointer;
+  &:hover { border-color: #c96a3f; color: #c96a3f; }
+  &:disabled { opacity: .5; }
+}
+
+// ── Loading ─────────────────────────────────────
+.hm-loading { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 60px 0; color: #8a7e78; }
+.spinner { width: 26px; height: 26px; border: 3px solid #ede8e3; border-top-color: #c96a3f; border-radius: 50%; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+// ── Quadrant Cards ──────────────────────────────
+.quad-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+  @media (max-width: 800px) { grid-template-columns: repeat(2, 1fr); }
+}
+.quad-card {
+  background: #fff; border: 1px solid #ede8e3; border-top: 3px solid #ede8e3;
+  border-radius: 16px; padding: 20px 16px;
+  display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center;
+  transition: transform .2s, box-shadow .2s;
+  &:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.06); }
+  &--star     { border-top-color: #7a9e7e; }
+  &--churn    { border-top-color: #e8b84b; }
+  &--plan     { border-top-color: #e88f68; }
+  &--critical { border-top-color: #c96a3f; }
+}
+.qc-icon  { font-size: 24px; }
+.qc-value { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 36px; font-weight: 700; color: #1e1a16; line-height: 1; }
+.qc-label { font-size: 12px; font-weight: 600; color: #1e1a16; }
+.qc-sub   { font-size: 10px; color: #b5aaa5; }
+
+// ── Main Grid (chart + actions) ─────────────────
+.main-grid {
+  display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px;
+  @media (max-width: 900px) { grid-template-columns: 1fr; }
+}
+
+// ── Heatmap Card ────────────────────────────────
+.heatmap-card {
+  background: #fff; border: 1px solid #ede8e3; border-radius: 18px; overflow: hidden;
+}
+.hc-title {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 18px 22px; border-bottom: 1px solid #f5f1ed; flex-wrap: wrap; gap: 8px;
+  h3 { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 17px; font-weight: 600; color: #1e1a16; margin: 0; }
+}
+.hc-legend { display: flex; gap: 12px; font-size: 10px; color: #8a7e78;
+  span { display: flex; align-items: center; gap: 4px; }
+}
+.leg-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+.svg-container { position: relative; padding: 16px; }
+.svg-container svg { width: 100%; height: auto; }
+
+.bubble-tooltip {
+  position: absolute; background: #fff; border: 1px solid #ede8e3;
+  border-radius: 12px; padding: 10px 14px; box-shadow: 0 8px 24px rgba(0,0,0,.12);
+  pointer-events: none; z-index: 10; min-width: 160px;
+  display: flex; flex-direction: column; gap: 3px;
+  strong { font-size: 13px; color: #1e1a16; }
+  span { font-size: 11px; color: #8a7e78; }
+}
+.bt-quad { font-size: 10px; font-weight: 700; margin-top: 2px; }
+
+.hc-footer {
+  display: flex; border-top: 1px solid #f5f1ed;
+}
+.hcf-stat {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 14px 0; border-right: 1px solid #f5f1ed;
+  &:last-child { border-right: none; }
+}
+.hcf-value { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; font-weight: 700; color: #1e1a16; }
+.hcf-label { font-size: 10px; color: #b5aaa5; font-weight: 600; text-transform: uppercase; letter-spacing: .8px; }
+
+// ── Actions Card ────────────────────────────────
+.actions-card {
+  background: #fff; border: 1px solid #ede8e3; border-radius: 18px;
+  display: flex; flex-direction: column; max-height: 540px;
+}
+.ac-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 18px 22px; border-bottom: 1px solid #f5f1ed;
+  h3 { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 17px; font-weight: 600; color: #1e1a16; margin: 0; }
+}
+.ac-count {
+  background: #c96a3f; color: #fff; font-size: 11px; font-weight: 700;
+  padding: 3px 10px; border-radius: 100px;
+}
+.ac-filters {
+  display: flex; gap: 4px; padding: 12px 22px; border-bottom: 1px solid #f5f1ed; flex-wrap: wrap;
+  button {
+    padding: 5px 12px; border-radius: 100px; border: 1px solid #ede8e3;
+    background: #fff; font-size: 10px; font-weight: 600; color: #8a7e78; cursor: pointer;
+    &:hover { border-color: #c96a3f; }
+    &.af--active { background: #1e1a16; color: #fff; border-color: #1e1a16; }
+  }
+}
+.ac-list { flex: 1; overflow-y: auto; }
+.ac-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 14px 22px; border-bottom: 1px solid #f5f1ed;
+  border-left: 3px solid transparent; cursor: pointer;
+  transition: background .15s;
+  &:hover { background: #fdfbf8; }
+  &:last-child { border-bottom: none; }
+}
+.aci-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+.aci-body {
+  flex: 1; min-width: 0;
+  strong { display: block; font-size: 12px; color: #1e1a16; margin-bottom: 2px; }
+  span { font-size: 11px; color: #8a7e78; line-height: 1.5; }
+}
+.aci-priority {
+  padding: 3px 9px; border-radius: 100px; font-size: 9px; font-weight: 700;
+  letter-spacing: .5px; flex-shrink: 0; margin-top: 2px;
+}
+.ac-empty { padding: 30px; text-align: center; color: #b5aaa5; font-size: 13px;
+  span { font-size: 28px; display: block; margin-bottom: 8px; }
+}
+
+// ── Patient Table ───────────────────────────────
+.table-card {
+  background: #fff; border: 1px solid #ede8e3; border-radius: 18px; overflow: hidden;
+}
+.tc-header {
+  padding: 18px 22px; border-bottom: 1px solid #f5f1ed;
+  h3 { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 17px; font-weight: 600; color: #1e1a16; margin: 0; }
+}
+.tt-head {
+  display: grid; grid-template-columns: 2fr 1fr 1fr 1.2fr 0.6fr 44px;
+  gap: 10px; padding: 12px 22px; border-bottom: 1px solid #ede8e3;
+  span { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #c5bdb7; }
+}
+.tt-row {
+  display: grid; grid-template-columns: 2fr 1fr 1fr 1.2fr 0.6fr 44px;
+  gap: 10px; align-items: center; padding: 14px 22px;
+  border-bottom: 1px solid #f5f1ed; cursor: pointer; transition: background .15s;
+  &:hover { background: #fdfbf8; }
+  &:last-child { border-bottom: none; }
+}
+.tt-patient {
+  display: flex; align-items: center; gap: 10px; min-width: 0;
+  strong { display: block; font-size: 13px; color: #1e1a16; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  span { font-size: 11px; color: #c5bdb7; }
+}
+.tt-avatar {
+  width: 36px; height: 36px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; flex-shrink: 0;
+}
+.tt-score {
+  display: flex; align-items: center; gap: 8px;
+  span { font-size: 12px; font-weight: 700; min-width: 24px; color: #1e1a16; }
+}
+.tt-bar { flex: 1; height: 6px; background: #f0ebe5; border-radius: 100px; overflow: hidden; max-width: 60px; }
+.tt-bar-fill { height: 100%; border-radius: 100px; transition: width .4s ease; }
+.tt-quad-badge {
+  padding: 4px 10px; border-radius: 8px; font-size: 10px; font-weight: 600; white-space: nowrap;
+}
+.tt-entries { font-size: 13px; color: #8a7e78; font-weight: 600; text-align: center; }
+.btn-dossier {
+  width: 34px; height: 34px; border-radius: 10px; border: 1px solid #ede8e3;
+  background: #fff; font-size: 14px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  &:hover { background: #faf6f1; border-color: #c96a3f; }
+}
+
+// ── Responsive ──────────────────────────────────
+@media (max-width: 900px) {
+  .tt-head, .tt-row { grid-template-columns: 2fr 1fr 1fr 44px; }
+  .tt-head span:nth-child(4), .tt-head span:nth-child(5),
+  .tt-row .tt-quad, .tt-row .tt-entries { display: none; }
+}

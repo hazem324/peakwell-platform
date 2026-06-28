@@ -1,0 +1,11 @@
+<span class="status-pill"
+      *ngIf="payment"
+      [style.background]="statusColor(payment.status) + '18'"
+      [style.color]="statusColor(payment.status)">
+  {{ payment.status === 'PAID' ? '✓ Paid' :
+     payment.status === 'PENDING' ? '⏳ Pending' :
+     payment.status === 'REFUNDED' ? '↩ Refunded' : '✗ Failed' }}
+</span>
+<span class="status-pill status-pill--unpaid" *ngIf="!payment">
+  💳 Unpaid
+</span>

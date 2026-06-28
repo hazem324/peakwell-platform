@@ -1,0 +1,165 @@
+## ── MySQL Replica ConfigMap ──────────────────────────────────────────────────
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-replica-config
+  namespace: {{ include "peakwell.namespace" . }}
+  labels:
+    {{- include "peakwell.labels" . | nindent 4 }}
+data:
+  my.cnf: |
+    [mysqld]
+    server-id        = 2
+    log-bin          = mysql-bin
+    binlog-format    = ROW
+    relay-log        = relay-bin
+    read-only        = ON
+    super-read-only  = ON
+---
+## ── MySQL Replica StatefulSet ────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql-replica
+  namespace: {{ include "peakwell.namespace" . }}
+  labels:
+    {{- include "peakwell.labels" . | nindent 4 }}
+spec:
+  serviceName: mysql-replica
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql-replica
+  template:
+    metadata:
+      labels:
+        app: mysql-replica
+        db-role: standby
+    spec:
+      initContainers:
+        - name: wait-for-primary
+          image: {{ .Values.mysql.image }}
+          command:
+            - sh
+            - -c
+            - |
+              until mysqladmin ping -h mysql -u root -p"$MYSQL_ROOT_PASSWORD" --silent 2>/dev/null; do
+                echo "Waiting for primary..."; sleep 3
+              done
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: peakwell-secrets
+                  key: MYSQL_ROOT_PASSWORD
+      containers:
+        - name: mysql
+          image: {{ .Values.mysql.image }}
+          args:
+            - --defaults-extra-file=/etc/mysql/conf.d/my.cnf
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: peakwell-secrets
+                  key: MYSQL_ROOT_PASSWORD
+          ports:
+            - containerPort: 3306
+          volumeMounts:
+            - name: mysql-replica-data
+              mountPath: /var/lib/mysql
+            - name: config
+              mountPath: /etc/mysql/conf.d/my.cnf
+              subPath: my.cnf
+          livenessProbe:
+            exec:
+              command: ["mysqladmin", "ping", "-h", "localhost", "-u", "root",
+                        "-p$(MYSQL_ROOT_PASSWORD)"]
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 15
+          readinessProbe:
+            exec:
+              command: ["mysqladmin", "ping", "-h", "localhost", "-u", "root",
+                        "-p$(MYSQL_ROOT_PASSWORD)"]
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+      volumes:
+        - name: config
+          configMap:
+            name: mysql-replica-config
+  volumeClaimTemplates:
+    - metadata:
+        name: mysql-replica-data
+      spec:
+        storageClassName: {{ .Values.mysql.storageClass }}
+        accessModes: [ReadWriteOnce]
+        resources:
+          requests:
+            storage: {{ .Values.mysql.storage }}
+---
+## ── MySQL Replica Service (headless) ─────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-replica
+  namespace: {{ include "peakwell.namespace" . }}
+  labels:
+    {{- include "peakwell.labels" . | nindent 4 }}
+spec:
+  selector:
+    app: mysql-replica
+  ports:
+    - port: 3306
+      targetPort: 3306
+  clusterIP: None
+---
+## ── RBAC for failover monitor ────────────────────────────────────────────────
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: failover-monitor
+  namespace: {{ include "peakwell.namespace" . }}
+  labels:
+    {{- include "peakwell.labels" . | nindent 4 }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: failover-role
+  namespace: {{ include "peakwell.namespace" . }}
+  labels:
+    {{- include "peakwell.labels" . | nindent 4 }}
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "patch"]
+  - apiGroups: ["apps"]
+    resources: ["statefulsets"]
+    verbs: ["get"]
+  - apiGroups: [""]
+    resources: ["services"]
+    verbs: ["get", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: failover-rolebinding
+  namespace: {{ include "peakwell.namespace" . }}
+  labels:
+    {{- include "peakwell.labels" . | nindent 4 }}
+subjects:
+  - kind: ServiceAccount
+    name: failover-monitor
+    namespace: {{ include "peakwell.namespace" . }}
+roleRef:
+  kind: Role
+  apiGroup: rbac.authorization.k8s.io
+  name: failover-role

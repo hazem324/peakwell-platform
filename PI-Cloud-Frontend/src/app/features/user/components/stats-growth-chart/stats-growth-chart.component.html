@@ -1,0 +1,51 @@
+<div class="chart-card">
+
+  <div class="chart-header">
+    <span class="chart-title">User Growth</span>
+    <span class="chart-subtitle">registrations per day</span>
+  </div>
+
+  <div class="growth-wrap">
+    <svg [attr.viewBox]="'0 0 ' + W + ' ' + H" class="growth-svg" preserveAspectRatio="none">
+
+      <!-- horizontal grid lines -->
+      <line *ngFor="let l of [0.25, 0.5, 0.75, 1]"
+            [attr.x1]="padX"
+            [attr.y1]="H - padY - l * (H - padY*2)"
+            [attr.x2]="W - padX"
+            [attr.y2]="H - padY - l * (H - padY*2)"
+            stroke="#f5f0eb" stroke-width="1"/>
+
+      <!-- bars -->
+      <g *ngFor="let b of bars">
+        <rect
+          [attr.x]="b.x"
+          [attr.y]="b.y"
+          [attr.width]="36"
+          [attr.height]="b.height"
+          rx="4"
+          class="growth-bar"/>
+
+        <!-- count label on top -->
+        <text
+          [attr.x]="b.x + 18"
+          [attr.y]="b.y - 6"
+          text-anchor="middle"
+          class="bar-label">
+          {{ b.count }}
+        </text>
+
+        <!-- date label below -->
+        <text
+          [attr.x]="b.x + 18"
+          [attr.y]="H - 4"
+          text-anchor="middle"
+          class="bar-date">
+          {{ formatDate(b.date) }}
+        </text>
+      </g>
+
+    </svg>
+  </div>
+
+</div>

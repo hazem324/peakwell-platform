@@ -1,0 +1,80 @@
+<div class="no-results" *ngIf="users.length === 0">
+  <i class="fa-solid fa-magnifying-glass search-icon"></i>
+  <p>No users match "<strong>{{ searchQuery }}</strong>"</p>
+</div>
+
+<div class="users-table-wrap" *ngIf="users.length > 0">
+  <table class="users-table">
+    <thead>
+      <tr>
+        <th>User</th>
+        <th>Email</th>
+        <th>Phone</th>
+        <th>Address</th>
+        <th>Role</th>
+        <th>Status</th>
+        <th>Profile</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let user of users">
+
+        <td>
+          <div class="user-cell">
+            <div class="user-avatar-sm" [style.background]="avatarBg(user.role)">
+              <img *ngIf="user.imageUrl" [src]="user.imageUrl" alt="avatar"/>
+              <span *ngIf="!user.imageUrl" [style.color]="roleColor(user.role)">
+                {{ initials(user) }}
+              </span>
+            </div>
+            <span class="user-fullname">{{ user.firstName }} {{ user.lastName }}</span>
+          </div>
+        </td>
+
+        <td class="td-muted">{{ user.email }}</td>
+
+        <td class="td-muted">{{ user.phoneNumber || '—' }}</td>
+
+        <td class="td-muted td-address">{{ formatAddress(user) }}</td>
+
+        <td>
+          <span class="role-pill"
+                [style.background]="roleBg(user.role)"
+                [style.color]="roleColor(user.role)">
+            {{ user.role || 'No role' }}
+          </span>
+        </td>
+
+        <td>
+          <span class="status-badge"
+                [style.background]="statusColor(user.status || 'PENDING') + '22'"
+                [style.color]="statusColor(user.status || 'PENDING')">
+            {{ user.status | titlecase }}
+          </span>
+        </td>
+
+        <td>
+          <span class="profile-badge" [class.profile-badge--done]="user.profileCompleted">
+            {{ user.profileCompleted ? ' Complete' : ' Pending' }}
+          </span>
+        </td>
+
+        <td>
+          <div class="action-btns">
+            <button class="btn-detail" (click)="detailClick.emit(user)">
+              👁 Details
+            </button>
+            <button class="btn-status"
+                    [class.btn-status--ban]="user.status !== 'BANNED'"
+                    [class.btn-status--unban]="user.status === 'BANNED'"
+                    (click)="statusClick.emit(user)">
+              {{ user.status === 'BANNED' ? ' Unban' : ' Ban' }}
+            </button>
+          </div>
+        </td>
+
+      </tr>
+    </tbody>
+  </table>
+</div>

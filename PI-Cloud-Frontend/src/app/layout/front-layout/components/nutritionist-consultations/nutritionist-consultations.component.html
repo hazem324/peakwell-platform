@@ -1,0 +1,274 @@
+<div class="cp-page">
+
+  <!-- ── Page Header ── -->
+  <div class="cp-header-bar">
+    <div class="container">
+      <a routerLink="/nutritionist" class="cp-back">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+        Nutritionist Space
+      </a>
+      <div class="cp-header-content">
+        <div class="cp-title-group">
+          <div class="cp-icon-wrap">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>
+          </div>
+          <div>
+            <h1 class="cp-title">My Consultations</h1>
+            <p class="cp-subtitle">{{ all.length }} total &nbsp;·&nbsp; {{ completedCount }} completed &nbsp;·&nbsp; {{ upcomingCount }} upcoming</p>
+          </div>
+        </div>
+        <div class="cp-stats-chips">
+          <div class="cp-chip cp-chip--green">
+            <span class="chip-dot"></span>
+            {{ completedCount }} Completed
+          </div>
+          <div class="cp-chip cp-chip--blue">
+            <span class="chip-dot"></span>
+            {{ upcomingCount }} Upcoming
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- ── Filters ── -->
+    <div class="cp-filters">
+      <div class="cp-tabs">
+        <button class="cp-tab" [class.cp-tab--active]="filterTab === 'all'"       (click)="setTab('all')">All</button>
+        <button class="cp-tab" [class.cp-tab--active]="filterTab === 'upcoming'"  (click)="setTab('upcoming')">Upcoming</button>
+        <button class="cp-tab" [class.cp-tab--active]="filterTab === 'completed'" (click)="setTab('completed')">Completed</button>
+        <button class="cp-tab" [class.cp-tab--active]="filterTab === 'other'"     (click)="setTab('other')">Other</button>
+      </div>
+      <div class="cp-search-wrap">
+        <svg class="cp-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input class="cp-search" type="text" placeholder="Search patient, reason, diagnosis…"
+               [(ngModel)]="filterText" (ngModelChange)="page = 1" />
+        <button class="cp-search-clear" *ngIf="filterText" (click)="filterText = ''; page = 1">✕</button>
+      </div>
+    </div>
+
+    <!-- ── Loading ── -->
+    <div class="cp-loading" *ngIf="loading">
+      <div class="cp-spinner"></div>
+      <span>Loading consultations…</span>
+    </div>
+
+    <!-- ── Error ── -->
+    <div class="cp-error" *ngIf="error">⚠ {{ error }}</div>
+
+    <!-- ── Empty state ── -->
+    <div class="cp-empty" *ngIf="!loading && filtered.length === 0">
+      <div class="cp-empty-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+      </div>
+      <p>No consultations found</p>
+      <small>Try adjusting your filters or search query</small>
+    </div>
+
+    <!-- ── Grid ── -->
+    <div class="cp-grid" *ngIf="!loading && paged.length > 0">
+      <div class="cp-card"
+           *ngFor="let c of paged"
+           [class.cp-card--upcoming]="c.status === 'UPCOMING' || c.status === 'PENDING_APPROVAL'"
+           [class.cp-card--completed]="c.status === 'COMPLETED'"
+           [class.cp-card--other]="c.status !== 'UPCOMING' && c.status !== 'PENDING_APPROVAL' && c.status !== 'COMPLETED'"
+           (click)="openDrawer(c)">
+
+        <!-- Top row: avatar + name + badge -->
+        <div class="cp-card-top">
+          <div class="cp-avatar" [style.background]="c.patientImageUrl ? 'transparent' : avatarColor(c.patientName)">
+          <img *ngIf="c.patientImageUrl" [src]="c.patientImageUrl" [alt]="c.patientName" class="cp-avatar-img" (error)="c.patientImageUrl = null">
+          <span *ngIf="!c.patientImageUrl">{{ initials(c.patientName) }}</span>
+        </div>
+          <div class="cp-identity">
+            <p class="cp-patient">{{ c.patientName || 'Unknown Patient' }}</p>
+            <p class="cp-consult-type">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <ng-container *ngIf="c.consultationType === 'VIDEO_CALL'"><path d="m22 8-6 4 6 4V8z"/><rect x="2" y="6" width="14" height="12" rx="2"/></ng-container>
+                <ng-container *ngIf="c.consultationType !== 'VIDEO_CALL'"><path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9z"/><path d="M3 9V7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2"/></ng-container>
+              </svg>
+              {{ c.consultationType === 'IN_PERSON' ? 'In Person' : c.consultationType === 'VIDEO_CALL' ? 'Video Call' : (c.consultationType || 'Consultation') }}
+            </p>
+          </div>
+          <span class="cp-badge" [ngClass]="statusClass(c.status)">{{ statusLabel(c.status) }}</span>
+        </div>
+
+        <div class="cp-divider"></div>
+
+        <!-- Date -->
+        <div class="cp-meta-row">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          {{ formatDate(c.scheduledAt) }}
+        </div>
+
+        <!-- Reason -->
+        <div class="cp-reason" *ngIf="c.reason">"{{ c.reason }}"</div>
+
+        <!-- Notes indicator (completed) -->
+        <div *ngIf="c.status === 'COMPLETED'">
+          <span class="cp-notes-indicator cp-notes-indicator--filled" *ngIf="hasNotes(c)">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Notes filled
+          </span>
+          <span class="cp-notes-indicator cp-notes-indicator--empty" *ngIf="!hasNotes(c)">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Notes missing
+          </span>
+        </div>
+
+        <!-- Footer -->
+        <div class="cp-card-footer">
+          <span class="cp-duration">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            {{ c.durationMinutes || 30 }} min
+          </span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── Pagination ── -->
+    <div class="cp-pagination" *ngIf="totalPages > 1">
+      <button class="cp-page-btn cp-page-btn--nav" [disabled]="page === 1" (click)="page = page - 1">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
+      <button class="cp-page-btn"
+              *ngFor="let p of pageRange()"
+              [class.cp-page-btn--active]="p === page"
+              (click)="page = p">{{ p }}</button>
+      <button class="cp-page-btn cp-page-btn--nav" [disabled]="page === totalPages" (click)="page = page + 1">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── Detail Drawer ── -->
+<div class="cp-overlay" *ngIf="selected" (click)="closeDrawer()">
+  <div class="cp-drawer" (click)="$event.stopPropagation()">
+
+    <!-- Drawer header -->
+    <div class="cp-dh">
+      <div class="cp-dh-left">
+        <div class="cp-dh-avatar" [style.background]="selected.patientImageUrl ? 'transparent' : avatarColor(selected.patientName)">
+          <img *ngIf="selected.patientImageUrl" [src]="selected.patientImageUrl" [alt]="selected.patientName" class="cp-avatar-img" (error)="selected.patientImageUrl = null">
+          <span *ngIf="!selected.patientImageUrl">{{ initials(selected.patientName) }}</span>
+        </div>
+        <div>
+          <p class="cp-dh-name">{{ selected.patientName || 'Patient' }}</p>
+          <p class="cp-dh-date">{{ formatDate(selected.scheduledAt) }}</p>
+        </div>
+      </div>
+      <div class="cp-dh-actions">
+        <button class="cp-btn-close" (click)="closeDrawer()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="cp-db">
+
+      <!-- Appointment details -->
+      <div class="cp-section">
+        <div class="cp-section-label">Appointment</div>
+        <div class="cp-detail-grid">
+          <div class="cp-detail-item"><span>Date</span><strong>{{ formatDate(selected.scheduledAt) }}</strong></div>
+          <div class="cp-detail-item"><span>Duration</span><strong>{{ selected.durationMinutes }} min</strong></div>
+          <div class="cp-detail-item"><span>Type</span><strong>{{ selected.consultationType || '—' }}</strong></div>
+          <div class="cp-detail-item"><span>Priority</span><strong>{{ selected.priority || '—' }}</strong></div>
+          <div class="cp-detail-item">
+            <span>Status</span>
+            <span class="cp-badge" [ngClass]="statusClass(selected.status)">{{ statusLabel(selected.status) }}</span>
+          </div>
+          <div class="cp-detail-item" *ngIf="selected.completedAt">
+            <span>Completed</span><strong>{{ formatDate(selected.completedAt) }}</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reason -->
+      <div class="cp-section" *ngIf="selected.reason">
+        <div class="cp-section-label">Reason</div>
+        <p class="cp-text-block">{{ selected.reason }}</p>
+      </div>
+
+      <!-- Rejection reason -->
+      <div class="cp-section cp-section--rejected" *ngIf="selected.status === 'REJECTED' && selected.rejectionReason">
+        <div class="cp-section-label">Rejection Reason</div>
+        <p class="cp-text-block">{{ selected.rejectionReason }}</p>
+      </div>
+
+      <!-- Clinical Notes form (completed only) -->
+      <div class="cp-notes-form" *ngIf="selected.status === 'COMPLETED'">
+        <div class="cp-notes-form-header">
+          <h3>Clinical Notes</h3>
+          <span class="cp-notes-badge cp-notes-badge--filled" *ngIf="hasNotes(selected)">Saved</span>
+          <span class="cp-notes-badge cp-notes-badge--empty"  *ngIf="!hasNotes(selected)">Not filled</span>
+        </div>
+
+        <div class="cp-form-group">
+          <label>Diagnosis</label>
+          <textarea class="cp-textarea" rows="3" placeholder="Enter diagnosis…" [(ngModel)]="formDiagnosis"></textarea>
+        </div>
+
+        <div class="cp-form-group">
+          <label>Prescription</label>
+          <textarea class="cp-textarea" rows="3" placeholder="Enter prescription or dietary plan…" [(ngModel)]="formPrescription"></textarea>
+        </div>
+
+        <div class="cp-form-group">
+          <label>Clinical Notes</label>
+          <textarea class="cp-textarea" rows="3" placeholder="Observations, recommendations…" [(ngModel)]="formDoctorNotes"></textarea>
+        </div>
+
+        <div class="cp-form-row">
+          <div class="cp-form-group" style="flex:1">
+            <label>Follow-up Instructions</label>
+            <textarea class="cp-textarea" rows="2" placeholder="Instructions for the patient…" [(ngModel)]="formFollowUpInstructions"></textarea>
+          </div>
+          <div class="cp-form-group cp-form-group--small">
+            <label>Follow-up Date</label>
+            <input class="cp-input" type="date" [(ngModel)]="formFollowUpDate" />
+          </div>
+        </div>
+
+        <div class="cp-form-footer">
+          <span class="cp-saved-msg" *ngIf="notesSaved">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Notes saved successfully
+          </span>
+          <button class="cp-btn-save" (click)="saveNotes()" [disabled]="notesLoading">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            {{ notesLoading ? 'Saving…' : 'Save Notes' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Biometric Snapshot -->
+      <div class="cp-section" *ngIf="selected.biometricSnapshot && selected.status === 'COMPLETED'">
+        <div class="cp-section-label">Biometric Snapshot</div>
+        <div class="cp-biometrics">
+          <div class="cp-bio-item" *ngIf="selected.biometricSnapshot['weight'] != null">
+            <strong>{{ selected.biometricSnapshot['weight'] }}</strong><span>Weight</span>
+          </div>
+          <div class="cp-bio-item" *ngIf="selected.biometricSnapshot['bmi'] != null">
+            <strong>{{ selected.biometricSnapshot['bmi'] }}</strong><span>BMI</span>
+          </div>
+          <div class="cp-bio-item" *ngIf="selected.biometricSnapshot['bodyFat'] != null">
+            <strong>{{ selected.biometricSnapshot['bodyFat'] }}</strong><span>Body Fat</span>
+          </div>
+          <div class="cp-bio-item" *ngIf="selected.biometricSnapshot['systolic'] != null">
+            <strong>{{ selected.biometricSnapshot['systolic'] }}/{{ selected.biometricSnapshot['diastolic'] }}</strong><span>BP</span>
+          </div>
+          <div class="cp-bio-item" *ngIf="selected.biometricSnapshot['glucose'] != null">
+            <strong>{{ selected.biometricSnapshot['glucose'] }}</strong><span>Glucose</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

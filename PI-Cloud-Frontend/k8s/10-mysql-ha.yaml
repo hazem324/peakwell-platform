@@ -1,0 +1,252 @@
+## ── MySQL Primary config (enables binary logging for replication) ──────────
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-primary-config
+  namespace: peakwell
+data:
+  my.cnf: |
+    [mysqld]
+    server-id        = 1
+    log-bin          = mysql-bin
+    binlog-format    = ROW
+    sync-binlog      = 1
+---
+## ── MySQL Replica config ────────────────────────────────────────────────────
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-replica-config
+  namespace: peakwell
+data:
+  my.cnf: |
+    [mysqld]
+    server-id        = 2
+    log-bin          = mysql-bin
+    binlog-format    = ROW
+    relay-log        = relay-bin
+    read-only        = ON
+    super-read-only  = ON
+---
+## ── Replica StatefulSet ─────────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql-replica
+  namespace: peakwell
+spec:
+  serviceName: mysql-replica
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql-replica
+  template:
+    metadata:
+      labels:
+        app: mysql-replica
+        db-role: standby
+    spec:
+      initContainers:
+        - name: wait-for-primary
+          image: mysql:8.0
+          command:
+            - sh
+            - -c
+            - |
+              until mysqladmin ping -h mysql -u root -p"$MYSQL_ROOT_PASSWORD" --silent 2>/dev/null; do
+                echo "Waiting for primary..."; sleep 3
+              done
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: peakwell-secrets
+                  key: MYSQL_ROOT_PASSWORD
+      containers:
+        - name: mysql
+          image: mysql:8.0
+          args:
+            - --defaults-extra-file=/etc/mysql/conf.d/my.cnf
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: peakwell-secrets
+                  key: MYSQL_ROOT_PASSWORD
+          ports:
+            - containerPort: 3306
+          volumeMounts:
+            - name: mysql-replica-data
+              mountPath: /var/lib/mysql
+            - name: config
+              mountPath: /etc/mysql/conf.d/my.cnf
+              subPath: my.cnf
+          livenessProbe:
+            exec:
+              command: ["mysqladmin", "ping", "-h", "localhost", "-u", "root", "-ppeakwell"]
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 15
+          readinessProbe:
+            exec:
+              command: ["mysqladmin", "ping", "-h", "localhost", "-u", "root", "-ppeakwell"]
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+      volumes:
+        - name: config
+          configMap:
+            name: mysql-replica-config
+  volumeClaimTemplates:
+    - metadata:
+        name: mysql-replica-data
+      spec:
+        storageClassName: local-path
+        accessModes: [ReadWriteOnce]
+        resources:
+          requests:
+            storage: 5Gi
+---
+## ── Replica Service ─────────────────────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-replica
+  namespace: peakwell
+spec:
+  selector:
+    app: mysql-replica
+  ports:
+    - port: 3306
+      targetPort: 3306
+  clusterIP: None
+---
+## ── RBAC so the failover monitor can patch pod labels ───────────────────────
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: failover-monitor
+  namespace: peakwell
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: failover-role
+  namespace: peakwell
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "patch"]
+  - apiGroups: ["apps"]
+    resources: ["statefulsets"]
+    verbs: ["get"]
+  - apiGroups: [""]
+    resources: ["services"]
+    verbs: ["get", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: failover-rolebinding
+  namespace: peakwell
+subjects:
+  - kind: ServiceAccount
+    name: failover-monitor
+    namespace: peakwell
+roleRef:
+  kind: Role
+  apiGroup: rbac.authorization.k8s.io
+  name: failover-role
+---
+## ── Failover monitor — watches primary, promotes replica if primary is down ──
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-failover-monitor
+  namespace: peakwell
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql-failover-monitor
+  template:
+    metadata:
+      labels:
+        app: mysql-failover-monitor
+    spec:
+      serviceAccountName: failover-monitor
+      containers:
+        - name: monitor
+          image: bitnami/kubectl:latest
+          command:
+            - /bin/sh
+            - -c
+            - |
+              FAIL_COUNT=0
+              THRESHOLD=5
+
+              echo "Failover monitor started. Watching mysql-0..."
+
+              while true; do
+                sleep 10
+
+                # First check pod phase — only count as failure if pod is actually not Running
+                POD_PHASE=$(kubectl get pod mysql-0 -n peakwell -o jsonpath='{.status.phase}' 2>/dev/null)
+                if [ "$POD_PHASE" != "Running" ]; then
+                  FAIL_COUNT=$((FAIL_COUNT + 1))
+                  echo "Primary pod phase=$POD_PHASE — failure count: $FAIL_COUNT/$THRESHOLD"
+                  sleep 10
+                  continue
+                fi
+
+                # Pod is Running — now check if MySQL is actually responding
+                if kubectl exec mysql-0 -n peakwell -- \
+                     mysqladmin ping -u root -p"$MYSQL_ROOT_PASSWORD" --silent 2>/dev/null; then
+                  FAIL_COUNT=0
+                else
+                  FAIL_COUNT=$((FAIL_COUNT + 1))
+                  echo "Primary mysqld not responding — failure count: $FAIL_COUNT/$THRESHOLD"
+                fi
+
+                if [ "$FAIL_COUNT" -ge "$THRESHOLD" ]; then
+                  echo "=== PRIMARY DOWN — STARTING FAILOVER ==="
+
+                  # 1. Promote replica: stop slave, remove read-only
+                  kubectl exec mysql-replica-0 -n peakwell -- \
+                    mysql -u root -p"$MYSQL_ROOT_PASSWORD" -e \
+                    "STOP SLAVE; RESET SLAVE ALL; SET GLOBAL read_only=OFF; SET GLOBAL super_read_only=OFF;" \
+                    2>/dev/null || \
+                  kubectl exec mysql-replica-0 -n peakwell -- \
+                    mysql -u root -e \
+                    "STOP SLAVE; RESET SLAVE ALL; SET GLOBAL read_only=OFF; SET GLOBAL super_read_only=OFF;" \
+                    2>/dev/null && echo "Replica promoted." || echo "Promotion failed — may already be primary."
+
+                  # 2. Switch the mysql Service selector to point at the replica
+                  kubectl patch service mysql -n peakwell --type=merge \
+                    -p '{"spec":{"selector":{"app":"mysql-replica","db-role":"standby"}}}'
+
+                  echo "=== FAILOVER COMPLETE — mysql-replica-0 is now serving traffic ==="
+                  echo "Reconfigure mysql-0 as a replica manually when it recovers."
+
+                  sleep infinity
+                fi
+              done
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: peakwell-secrets
+                  key: MYSQL_ROOT_PASSWORD
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "10m"
+            limits:
+              memory: "64Mi"
+              cpu: "50m"

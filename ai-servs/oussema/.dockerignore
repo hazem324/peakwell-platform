@@ -1,0 +1,11 @@
+__pycache__
+*.pyc
+.git
+.idea
+.venv
+symptom_dataset.csv
+symptom_model.json
+main.py
+disease_model.py
+start_api.bat
+README.md

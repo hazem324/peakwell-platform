@@ -1,0 +1,30 @@
+<div class="alerts-page">
+<div class="alerts-summary">
+  <div class="summary-stat summary-stat--danger">
+    <strong>{{ dangerCount }}</strong><span>Critical</span>
+  </div>
+  <div class="summary-stat summary-stat--warning">
+    <strong>{{ warningCount }}</strong><span>Warnings</span>
+  </div>
+  <div class="summary-stat summary-stat--info">
+    <strong>{{ infoCount }}</strong><span>Normal</span>
+  </div>
+</div>
+
+  <div class="alert-list">
+    <div class="alert-card"
+         *ngFor="let alert of alerts"
+         [style.background]="alertBg(alert.type)"
+         [style.border-left]="'4px solid ' + alertColor(alert.type)">
+      <div class="alert-icon">{{ alertIcon(alert.type) }}</div>
+      <div class="alert-body">
+        <div class="alert-header">
+          <strong>{{ alert.metric }}</strong>
+          <span class="alert-value" [style.color]="alertColor(alert.type)">{{ alert.value }}</span>
+          <span class="alert-date">{{ alert.date }}</span>
+        </div>
+        <p>{{ alert.message }}</p>
+      </div>
+    </div>
+  </div>
+</div>

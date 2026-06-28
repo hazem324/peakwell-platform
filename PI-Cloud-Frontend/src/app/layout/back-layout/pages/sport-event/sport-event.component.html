@@ -1,0 +1,105 @@
+<section class="sport-event-page">
+  <div class="page-container">
+
+    <div class="page-header">
+      <h2>Gestion des événements sportifs</h2>
+
+      <p>Consulter, modifier et supprimer les événements sportifs</p>
+      <div class="top-actions">
+        <button class="add-event-btn" routerLink="/admin/events/add">
+          <span>➕</span> Ajouter Event
+        </button>
+      </div>
+    </div>
+
+    <div class="messages">
+      <div class="alert success" *ngIf="successMessage">{{ successMessage }}</div>
+      <div class="alert error" *ngIf="errorMessage">{{ errorMessage }}</div>
+    </div>
+
+    <div class="content-panel">
+
+      <div class="filters-toolbar">
+
+        <div class="search-box">
+          <span class="search-icon">⌕</span>
+          <input
+            type="text"
+            placeholder="Search event by title or location..."
+            [(ngModel)]="searchTerm"
+            (input)="applyFilters()"
+          />
+        </div>
+
+        <div class="select-box">
+          <select [(ngModel)]="selectedStatus" (change)="applyFilters()">
+            <option value="">Tous les statuts</option>
+            <option value="OPEN">OPEN</option>
+            <option value="FULL">FULL</option>
+            <option value="CANCELLED">CANCELLED</option>
+            <option value="FINISHED">FINISHED</option>
+          </select>
+        </div>
+
+        <div class="date-box">
+          <input
+            type="date"
+            [(ngModel)]="selectedDate"
+            (change)="applyFilters()"
+          />
+        </div>
+      </div>
+
+      <app-list-event
+        [events]="paginatedEvents"
+        [loading]="loading"
+        (editRequested)="onEditRequested($event)"
+        (deleteRequested)="onDeleteRequested($event)"
+        (reviewsRequested)="onReviewsRequested($event)"
+        (participantsRequested)="onParticipantsRequested($event)">
+      </app-list-event>
+
+      <div class="pagination-wrapper" *ngIf="!loading && filteredEvents.length > 0">
+        <div class="pagination-box">
+          <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
+            Précédent
+          </button>
+
+          <button
+            *ngFor="let page of pageNumbers"
+            (click)="goToPage(page)"
+            [class.active]="page === currentPage">
+            {{ page }}
+          </button>
+
+          <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">
+            Suivant
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <app-edit-event-modal
+      *ngIf="showEditModal && selectedEvent"
+      [event]="selectedEvent"
+      (save)="handleUpdateEvent($event)"
+      (close)="closeEditModal()">
+    </app-edit-event-modal>
+
+    <app-list-avis
+      *ngIf="showReviewsModal"
+      [eventId]="selectedReviewsEventId"
+      [eventTitle]="selectedReviewsEventTitle"
+      (close)="closeReviewsModal()">
+    </app-list-avis>
+
+    <app-event-registrations
+      *ngIf="showParticipantsModal"
+      [eventId]="selectedParticipantsEventId"
+      [eventTitle]="selectedParticipantsEventTitle"
+      (close)="closeParticipantsModal()">
+    </app-event-registrations>
+
+  </div>
+</section>

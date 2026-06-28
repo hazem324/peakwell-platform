@@ -1,0 +1,217 @@
+<div class="mp-page">
+
+  <!-- Toolbar -->
+  <div class="mp-toolbar">
+    <div class="mp-tabs">
+      <button class="mp-tab"
+              *ngFor="let tab of tabs"
+              [class.mp-tab--active]="activeTab === tab.key"
+              (click)="activeTab = tab.key">
+        {{ tab.label }}
+        <span class="tab-count">{{ countByTab(tab.key) }}</span>
+      </button>
+    </div>
+
+    <div class="mp-search">
+      <span class="mp-search-icon">🔍</span>
+      <input type="text"
+             class="mp-search-input"
+             placeholder="Search by name, dietitian, blood type…"
+             [(ngModel)]="searchQuery" />
+      <button class="mp-search-clear" *ngIf="searchQuery" (click)="searchQuery = ''">✕</button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="mp-empty" *ngIf="loading">
+    <div class="mp-empty__icon">⏳</div>
+    <p>Loading medical profiles…</p>
+  </div>
+
+  <!-- Empty state -->
+  <div class="mp-empty" *ngIf="!loading && filtered.length === 0">
+    <div class="mp-empty__icon">🩺</div>
+    <p>No {{ activeTab === 'all' ? '' : activeTab }} profiles found.</p>
+  </div>
+
+  <!-- Cards grid -->
+  <div class="mp-grid" *ngIf="!loading && filtered.length > 0">
+    <div class="mp-card"
+         *ngFor="let p of filtered; let i = index"
+         [class.mp-card--complete]="p.complete"
+         [attr.data-i]="i">
+
+      <!-- Top accent bar -->
+      <div class="mp-card-accent"></div>
+
+      <!-- Card Header -->
+      <div class="mp-card-header">
+        <div class="mp-client">
+          <div class="mp-avatar-wrap">
+            <div class="mp-avatar" [style.background]="p.imageUrl ? 'transparent' : avatarColor(i)">
+              <img *ngIf="p.imageUrl" [src]="p.imageUrl" [alt]="patientName(p)" class="mp-avatar-img" />
+              <span *ngIf="!p.imageUrl">{{ initials(p) }}</span>
+            </div>
+            <div class="mp-status-dot" [class.mp-status-dot--ok]="p.complete"></div>
+          </div>
+          <div class="mp-client-info">
+            <strong>{{ patientName(p) }}</strong>
+            <div class="mp-client-meta">
+              <span class="mp-gender-tag">{{ p.gender || '—' }}</span>
+              <span class="mp-blood-tag" *ngIf="p.bloodType"
+                    [style.background]="bmiBarColor(p.bmi) + '18'"
+                    [style.color]="bmiBarColor(p.bmi)">{{ p.bloodType }}</span>
+            </div>
+          </div>
+        </div>
+        <span class="mp-status"
+              [class.mp-status--ok]="p.complete"
+              [class.mp-status--na]="!p.complete">
+          {{ p.complete ? '✓ Complete' : 'Incomplete' }}
+        </span>
+      </div>
+
+      <!-- Height + last entry -->
+      <div class="mp-meta">
+        <span class="mp-height">
+          <svg class="mp-icon" viewBox="0 0 14 14" fill="none">
+            <path d="M7 1v12M4 3l3-2 3 2M4 11l3 2 3-2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          {{ p.height ? p.height + ' cm' : '—' }}
+        </span>
+        <span *ngIf="p.recordedAt" class="mp-last-entry">
+          Last entry: {{ p.recordedAt | date:'MMM d' }}
+        </span>
+      </div>
+
+      <!-- BMI bar -->
+      <div class="mp-bmi" *ngIf="p.bmi">
+        <div class="mp-bmi-label">
+          <span>BMI</span>
+          <strong [style.color]="bmiBarColor(p.bmi)">{{ p.bmi }} — {{ bmiLabel(p.bmi) }}</strong>
+        </div>
+        <div class="mp-bmi-track">
+          <div class="mp-bmi-fill"
+               [style.width]="bmiBarWidth(p.bmi)"
+               [style.background]="bmiBarColor(p.bmi)"></div>
+        </div>
+        <div class="mp-bmi-zones">
+          <span>Under</span><span>Normal</span><span>Over</span><span>Obese</span>
+        </div>
+      </div>
+
+      <!-- Biometric macros -->
+      <div class="mp-macros">
+        <div class="mp-macro mp-macro--weight">
+          <div class="mp-macro__icon">⚖️</div>
+          <strong>{{ p.weight != null ? p.weight + ' kg' : '—' }}</strong>
+          <span>Weight</span>
+        </div>
+        <div class="mp-macro mp-macro--fat">
+          <div class="mp-macro__icon">🔬</div>
+          <strong>{{ p.bodyFat != null ? p.bodyFat + '%' : '—' }}</strong>
+          <span>Body Fat</span>
+        </div>
+        <div class="mp-macro mp-macro--bp">
+          <div class="mp-macro__icon">❤️</div>
+          <strong>{{ (p.systolic != null && p.diastolic != null) ? p.systolic + '/' + p.diastolic : '—' }}</strong>
+          <span>BP mmHg</span>
+        </div>
+        <div class="mp-macro mp-macro--glucose">
+          <div class="mp-macro__icon">🩸</div>
+          <strong>{{ p.glucose != null ? p.glucose : '—' }}</strong>
+          <span>Glucose</span>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="mp-actions">
+        <button class="btn-history" (click)="openHistory(p)">
+          <svg viewBox="0 0 16 16" fill="none" class="btn-icon">
+            <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4"/>
+            <path d="M8 5v3.5l2 1.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
+          View All Biometrics
+        </button>
+      </div>
+
+      <!-- Dietitian footer -->
+      <div class="mp-footer">
+        <span class="mp-dietitian">
+          <span class="mp-footer-dot mp-footer-dot--diet"></span>
+          {{ p.dietitianName || 'Unassigned' }}
+        </span>
+        <span *ngIf="p.muscleMass != null" class="mp-muscle">
+          💪 {{ p.muscleMass }} kg
+        </span>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- Biometric History Modal -->
+<div class="modal-overlay" [class.modal-overlay--open]="historyProfile !== null" (click)="closeHistory()">
+  <div class="history-modal" (click)="$event.stopPropagation()">
+
+    <div class="history-modal-header">
+      <div class="history-patient">
+        <div class="mp-avatar mp-avatar--sm"
+             [style.background]="historyProfile?.imageUrl ? 'transparent' : '#fde8d8'">
+          <img *ngIf="historyProfile?.imageUrl" [src]="historyProfile.imageUrl" class="mp-avatar-img" />
+          <span *ngIf="!historyProfile?.imageUrl">{{ historyProfile ? initials(historyProfile) : '' }}</span>
+        </div>
+        <div>
+          <h3>{{ historyProfile ? patientName(historyProfile) : '' }}</h3>
+          <span>Biometric History</span>
+        </div>
+      </div>
+      <button class="modal-close" (click)="closeHistory()">✕</button>
+    </div>
+
+    <div class="history-modal-body">
+      <div class="history-loading" *ngIf="historyLoading">Loading…</div>
+
+      <div class="history-empty" *ngIf="!historyLoading && historyEntries.length === 0">
+        No biometric data recorded yet.
+      </div>
+
+      <div class="history-table-wrap" *ngIf="!historyLoading && historyEntries.length > 0">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Weight</th>
+              <th>Height</th>
+              <th>BMI</th>
+              <th>Body Fat</th>
+              <th>Muscle</th>
+              <th>BP</th>
+              <th>Glucose</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let e of historyEntries">
+              <td class="entry-date">{{ formatDate(e.recordedAt) }}</td>
+              <td>{{ e.weight != null ? e.weight + ' kg' : '—' }}</td>
+              <td>{{ e.height != null ? e.height + ' cm' : '—' }}</td>
+              <td>
+                <span class="bmi-chip" [style.background]="bmiBarColor(e.bmi) + '22'" [style.color]="bmiBarColor(e.bmi)">
+                  {{ e.bmi ?? '—' }}
+                </span>
+              </td>
+              <td>{{ e.bodyFat != null ? e.bodyFat + '%' : '—' }}</td>
+              <td>{{ e.muscleMass != null ? e.muscleMass + ' kg' : '—' }}</td>
+              <td>{{ (e.systolic != null && e.diastolic != null) ? e.systolic + '/' + e.diastolic : '—' }}</td>
+              <td>{{ e.glucose != null ? e.glucose + ' mg/dL' : '—' }}</td>
+              <td class="entry-notes">{{ e.notes || '—' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>

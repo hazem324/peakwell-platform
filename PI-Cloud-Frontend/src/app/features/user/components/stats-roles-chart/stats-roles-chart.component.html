@@ -1,0 +1,50 @@
+<div class="chart-card">
+
+  <div class="chart-header">
+    <span class="chart-title">Users by Role</span>
+    <span class="chart-subtitle">{{ total }} total</span>
+  </div>
+
+  <div class="roles-body">
+
+    <svg [attr.viewBox]="'0 0 ' + (cx*2) + ' ' + (cy*2)" class="donut-svg">
+      <!-- track -->
+      <circle
+        [attr.cx]="cx" [attr.cy]="cy" [attr.r]="r"
+        fill="none" stroke="#f5f0eb" [attr.stroke-width]="stroke"/>
+
+      <!-- segments -->
+      <circle
+        *ngFor="let seg of segments"
+        [attr.cx]="cx" [attr.cy]="cy" [attr.r]="r"
+        fill="none"
+        [attr.stroke]="seg.accent"
+        [attr.stroke-width]="stroke"
+        [attr.stroke-dasharray]="dashArray(seg.pct)"
+        [attr.transform]="rotate(seg.offset)"
+        stroke-linecap="butt"
+        class="donut-seg"/>
+
+      <!-- centre label -->
+      <text [attr.x]="cx" [attr.y]="cy - 8" text-anchor="middle" class="donut-val">
+        {{ total }}
+      </text>
+      <text [attr.x]="cx" [attr.y]="cy + 12" text-anchor="middle" class="donut-sub">
+        users
+      </text>
+    </svg>
+
+    <div class="roles-legend">
+      <div class="legend-item" *ngFor="let seg of segments">
+        <span class="legend-dot" [style.background]="colorOf(seg.role)"></span>
+        <span class="legend-role" [style.color]="colorOf(seg.role)"
+              [style.background]="bgOf(seg.role)">
+          {{ seg.role }}
+        </span>
+        <span class="legend-count">{{ seg.count }}</span>
+        <span class="legend-pct">{{ (seg.pct * 100).toFixed(0) }}%</span>
+      </div>
+    </div>
+
+  </div>
+</div>

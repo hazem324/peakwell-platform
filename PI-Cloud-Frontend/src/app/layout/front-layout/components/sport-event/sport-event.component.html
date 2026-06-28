@@ -1,0 +1,352 @@
+
+<section class="events-page">
+  <div class="container">
+
+    <!-- HEADER -->
+    <div class="section-header">
+      <div class="header-left">
+        <h2 class="section-title">Mes Événements</h2>
+        <p class="section-subtitle">
+          Explorez les événements du campus et gérez vos participations
+        </p>
+      </div>
+
+      <div class="header-actions">
+        <a routerLink="/events-map" class="btn btn-primary">
+          🗺 Voir sur la carte
+        </a>
+
+        <button
+          *ngIf="recommendedEvents.length > 0"
+          class="btn btn-secondary"
+          (click)="toggleRecommended()">
+          {{ showRecommended ? 'Retour aux événements' : 'Afficher recommandations' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- WHITE PANEL -->
+    <div class="events-panel">
+
+      <div class="alert error" *ngIf="errorMessage">
+        {{ errorMessage }}
+      </div>
+
+      <div class="alert success" *ngIf="successMessage">
+        {{ successMessage }}
+      </div>
+
+      <!-- SEARCH + FILTERS -->
+      <div class="toolbar">
+        <div class="search-box">
+          <span class="search-icon">⌕</span>
+          <input
+            type="text"
+            placeholder="Rechercher par titre ou lieu..."
+            [(ngModel)]="searchTerm"
+            (input)="applyFilters()"
+          />
+        </div>
+
+        <div class="date-box">
+          <input
+            type="date"
+            [(ngModel)]="selectedDate"
+            (change)="applyFilters()"
+          />
+        </div>
+      </div>
+
+      <div class="filter-tags">
+        <button
+          [class.active]="selectedStatus === ''"
+          (click)="selectedStatus=''; applyFilters()">
+          Tous
+        </button>
+
+        <button
+          [class.active]="selectedStatus === 'OPEN'"
+          (click)="selectedStatus='OPEN'; applyFilters()">
+          OPEN
+        </button>
+
+        <button
+          [class.active]="selectedStatus === 'FULL'"
+          (click)="selectedStatus='FULL'; applyFilters()">
+          FULL
+        </button>
+
+        <button
+          [class.active]="selectedStatus === 'CANCELLED'"
+          (click)="selectedStatus='CANCELLED'; applyFilters()">
+          CANCELLED
+        </button>
+
+        <button
+          [class.active]="selectedStatus === 'FINISHED'"
+          (click)="selectedStatus='FINISHED'; applyFilters()">
+          FINISHED
+        </button>
+      </div>
+
+      <div class="loading-state" *ngIf="loading">
+        Chargement des événements...
+      </div>
+
+      <!-- RECOMMENDED TITLE -->
+      <div class="recommended-block" *ngIf="showRecommended && recommendedEvents.length > 0">
+        <div class="recommended-title">
+          <h3>Recommended for You</h3>
+          <p>Suggestions personnalisées selon votre historique</p>
+        </div>
+      </div>
+
+      <!-- EVENTS GRID -->
+      <div class="events-grid" *ngIf="!loading && paginatedEvents.length > 0">
+        <ng-container *ngFor="let event of displayCards">
+
+          <article
+            *ngIf="event; else emptyCard"
+            class="event-card"
+            [ngClass]="{
+              'card-low': event.status === 'FULL',
+              'card-out': event.status === 'CANCELLED' || event.status === 'FINISHED'
+            }"
+            (click)="openEventDetails(event)"
+          >
+            <div class="event-image">
+              <img
+                [src]="event.imageUrl || 'assets/events/default.jpg'"
+                [alt]="event.title"
+                (error)="event.imageUrl = 'assets/events/default.jpg'"
+              />
+            </div>
+
+            <div class="event-content">
+              <div class="card-header">
+                <div class="event-info">
+                  <h3>{{ event.title }}</h3>
+                  <p class="event-description">
+                    {{ event.description || 'Aucune description disponible.' }}
+                  </p>
+                </div>
+
+                <span class="badge category">
+                  {{ event.category }}
+                </span>
+              </div>
+
+              <div class="event-meta-grid">
+                <div class="meta-item">
+                  <span class="label">Date</span>
+                  <strong>{{ event.eventDate | date:'mediumDate' }}</strong>
+                </div>
+
+                <div class="meta-item">
+                  <span class="label">Heure</span>
+                  <strong>{{ event.eventDate | date:'shortTime' }}</strong>
+                </div>
+
+                <div class="meta-item location-item">
+                  <span class="label">Lieu</span>
+                  <strong>{{ event.location }}</strong>
+                </div>
+
+                <div class="meta-item">
+                  <span class="label">Participants</span>
+                  <strong>{{ event.currentParticipants }}/{{ event.maxParticipants }}</strong>
+                </div>
+              </div>
+
+              <div class="card-footer">
+                <div class="status-container">
+                  <span
+                    class="stock-badge"
+                    [ngClass]="{
+                      'in-stock': event.status === 'OPEN',
+                      'low-stock': event.status === 'FULL',
+                      'out-stock': event.status === 'CANCELLED' || event.status === 'FINISHED'
+                    }"
+                  >
+                    {{
+                      event.status === 'OPEN' ? 'Disponible' :
+                      event.status === 'FULL' ? 'Complet' :
+                      event.status === 'CANCELLED' ? 'Annulé' :
+                      'Terminé'
+                    }}
+                  </span>
+                </div>
+
+                <div class="actions">
+                  <button class="icon-btn map" (click)="openInGoogleMaps(event, $event)">📍</button>
+
+                  <button
+                    *ngIf="isAlreadyJoined(event)"
+                    class="action-btn joined"
+                    disabled>
+                    Joined
+                  </button>
+
+                  <button
+                    *ngIf="isInWaitingList(event)"
+                    class="action-btn waiting"
+                    disabled>
+                    Waiting
+                  </button>
+
+                  <button
+                    *ngIf="!isAlreadyJoined(event) && !isInWaitingList(event)"
+                    class="action-btn join"
+                    (click)="joinEvent(event, $event)"
+                    [disabled]="event.status === 'FINISHED' || event.status === 'CANCELLED'">
+                    {{
+                      event.status === 'OPEN'
+                        ? 'Join'
+                        : event.status === 'FULL'
+                          ? 'Waiting List'
+                          : 'Unavailable'
+                    }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <ng-template #emptyCard>
+            <div class="event-card ghost-card"></div>
+          </ng-template>
+
+        </ng-container>
+      </div>
+
+      <div class="empty-state" *ngIf="!loading && filteredEvents.length === 0">
+        Aucun événement disponible pour le moment.
+      </div>
+
+      <!-- PAGINATION -->
+      <div class="pagination-wrapper" *ngIf="!loading && filteredEvents.length > 0">
+        <div class="pagination">
+          <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
+            ← Précédent
+          </button>
+
+          <span>
+            Page {{ currentPage }} / {{ totalPages }}
+          </span>
+
+          <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">
+            Suivant →
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- MODAL DETAILS -->
+<div class="modal-backdrop" *ngIf="showDetailsModal && selectedEvent" (click)="closeEventDetails()">
+  <div class="event-modal" (click)="$event.stopPropagation()">
+    <button class="modal-close" (click)="closeEventDetails()">✕</button>
+
+    <div class="modal-layout">
+      <div class="modal-image">
+        <img
+          [src]="selectedEvent.imageUrl || 'assets/events/default.jpg'"
+          [alt]="selectedEvent.title"
+          (error)="selectedEvent.imageUrl = 'assets/events/default.jpg'"
+        >
+      </div>
+
+      <div class="modal-body">
+        <div class="modal-top">
+          <div>
+            <h2>{{ selectedEvent.title }}</h2>
+            <p class="modal-description">
+              {{ selectedEvent.description || 'No description available for this event.' }}
+            </p>
+          </div>
+
+          <span class="stock-badge"
+            [ngClass]="{
+              'in-stock': selectedEvent.status === 'OPEN',
+              'low-stock': selectedEvent.status === 'FULL',
+              'out-stock': selectedEvent.status === 'CANCELLED' || selectedEvent.status === 'FINISHED'
+            }">
+            {{ selectedEvent.status }}
+          </span>
+        </div>
+
+        <div class="event-meta-grid modal-meta">
+          <div class="meta-item">
+            <span class="label">Category</span>
+            <strong>{{ selectedEvent.category }}</strong>
+          </div>
+
+          <div class="meta-item">
+            <span class="label">Date</span>
+            <strong>{{ selectedEvent.eventDate | date:'fullDate' }}</strong>
+          </div>
+
+          <div class="meta-item">
+            <span class="label">Time</span>
+            <strong>{{ selectedEvent.eventDate | date:'shortTime' }}</strong>
+          </div>
+
+          <div class="meta-item">
+            <span class="label">Participants</span>
+            <strong>{{ selectedEvent.currentParticipants }}/{{ selectedEvent.maxParticipants }}</strong>
+          </div>
+
+          <div class="meta-item clickable-box">
+            <span class="label">Location</span>
+            <strong class="clickable-location" (click)="openLocationMap(selectedEvent, $event)">
+              {{ selectedEvent.location }}
+            </strong>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn btn-secondary" (click)="openInGoogleMaps(selectedEvent, $event)">
+            📍 Google Maps
+          </button>
+
+          <button
+            *ngIf="isAlreadyJoined(selectedEvent)"
+            class="btn btn-secondary"
+            disabled>
+            Joined
+          </button>
+
+          <button
+            *ngIf="isInWaitingList(selectedEvent)"
+            class="btn btn-secondary"
+            disabled>
+            Waiting
+          </button>
+
+          <button
+            *ngIf="!isAlreadyJoined(selectedEvent) && !isInWaitingList(selectedEvent)"
+            class="btn btn-primary"
+            (click)="joinEvent(selectedEvent)"
+            [disabled]="selectedEvent.status === 'FINISHED' || selectedEvent.status === 'CANCELLED'">
+            {{
+              selectedEvent.status === 'OPEN'
+                ? 'Join Event'
+                : selectedEvent.status === 'FULL'
+                  ? 'Join Waiting List'
+                  : 'Unavailable'
+            }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<app-event-location-map-modal
+  *ngIf="showLocationMapModal && selectedEvent?.latitude && selectedEvent?.longitude"
+  [latitude]="selectedEvent!.latitude!"
+  [longitude]="selectedEvent!.longitude!"
+  [address]="selectedEvent!.location"
+  (close)="closeLocationMapModal()">
+</app-event-location-map-modal>

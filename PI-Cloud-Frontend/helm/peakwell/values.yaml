@@ -1,0 +1,90 @@
+# ── Secrets ────────────────────────────────────────────────────────────────
+# DO NOT commit real values here.
+# Override via a gitignored file:  helm install peakwell . -f values.secret.yaml
+# or per-value:                    --set secrets.mysqlRootPassword=...
+secrets:
+  mysqlRootPassword: "peakwell"
+  springDatasourcePassword: "peakwell"
+  keycloakClientSecret: "g6PZR6A8vNOoW7MOYzJ8pCH4UUox77xi"
+  keycloakDbPassword: "peakwell"
+  springMailPassword: "xhjsfsxfbcbrelts"
+  groqApiKey: "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"
+  nutritionApiKey: "ggJEPcXVIlcCLfJaIW28QKEGFEEttcwsinBDM3Nh"
+  aiApiKey: "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"
+  iaFaceApiKey: "JqflDziXLUo-bG3zPj11ZTnAMBFQZ0Sz"
+  aiFaceApiSecret: "RB3PO2bsCGVPYPzobmBxk0F1qKNgUOij"
+  stripeSecretKey: "sk_test_51TCpiOQRBlglb0TZOi5yEYnMWP23Kz131ZcEGCEO2jAz2vquIU2r5mgkTO8lqPVqnplkkjV0njqpZXp1c2iyUZAm003adOlcTr"
+  jwtSecret: "mySuperSecretKeyThatIsAtLeast32CharactersLong123"
+  captchaHmacSecret: "min32charsecretchangeme1234567890"
+  captchaJwtSecret: "anotherlongrandomsecretforjwt5678"
+
+# ── Public access ───────────────────────────────────────────────────────────
+# The IP or hostname that external browsers use to reach the cluster.
+# Example: 192.168.1.197.nip.io  or  peakwell.nutrition
+publicHost: "192.168.1.183.nip.io"
+
+ingress:
+  host: "192.168.1.183.nip.io"   # hostname used in Ingress rule
+
+keycloak:
+  # Full public URL browsers use for OAuth redirects (include port if NodePort)
+  publicUrl: "http://192.168.1.183.nip.io:30180"
+  nodePort: 30180
+  image: "hazem231/peakwell-keycloak:1.2"
+  storage: "1Gi"
+
+# ── MySQL ───────────────────────────────────────────────────────────────────
+mysql:
+  image: "mysql:8.0"
+  storage: "5Gi"
+  storageClass: "local-path"
+  replicatorPassword: "replicatorpass"
+
+# ── Backend ─────────────────────────────────────────────────────────────────
+backend:
+  image: "oussamaghalioun/peakwell-backend:latest"
+  storage: "5Gi"
+  storageClass: "local-path"
+  # Node IP used for the nip.io hostAlias inside the backend pod
+  nipIp: "192.168.1.183"
+
+# ── Frontend ────────────────────────────────────────────────────────────────
+frontend:
+  image: "oussamaghalioun/peakwell-frontend:latest"
+
+# ── AI microservices ────────────────────────────────────────────────────────
+ai:
+  ml:
+    image: "oussamaghalioun/peakwell-ai-ml:latest"
+  symptom:
+    image: "oussamaghalioun/peakwell-ai-symptom:latest"
+  nutrition:
+    image: "oussamaghalioun/peakwell-ai-nutrition:latest"
+  sport:
+    image: "oussamaghalioun/peakwell-ai-sport:latest"
+
+# ── Mail ────────────────────────────────────────────────────────────────────
+mail:
+  host: "smtp.gmail.com"
+  port: "587"
+  username: "achrefpatron38@gmail.com"
+  from: "achrefpatron38@gmail.com"
+
+
+# ── Stripe / Payments ───────────────────────────────────────────────────────
+stripe:
+  currency: "tnd"
+  consultationPrice: "5000"
+  paymentCurrency: "usd"
+  paymentPriceConsultation: "5000"
+  paymentPriceSportsEvent: "2000"
+  paymentPriceNutritionPlan: "9900"
+  paymentPriceSubscriptionMonthly: "1990"
+  paymentPriceSubscriptionYearly: "14900"
+
+# ── AI config ───────────────────────────────────────────────────────────────
+aiConfig:
+  groqApiUrl: "https://api.groq.com/openai/v1/chat/completions"
+  model: "moonshotai/Kimi-K2-Instruct-0905"
+  aiApiUrl: "https://router.huggingface.co/v1/chat/completions"
+  faceApiUrl: "https://api-us.faceplusplus.com/facepp/v3/compare"

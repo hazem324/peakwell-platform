@@ -1,0 +1,65 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: peakwell-config
+  namespace: {{ include "peakwell.namespace" . }}
+  labels:
+    {{- include "peakwell.labels" . | nindent 4 }}
+data:
+  # ── Keycloak container config ──────────────────────────────────────────
+  KC_HTTP_ENABLED:    "true"
+  KC_HEALTH_ENABLED:  "true"
+  KC_HOSTNAME_STRICT: "false"
+  KC_DB:              "mysql"
+  KC_DB_URL:          "jdbc:mysql://mysql:3306/keycloak?createDatabaseIfNotExist=true"
+  KC_DB_USERNAME:     "root"
+  KC_HOSTNAME:        {{ .Values.keycloak.publicUrl | quote }}
+
+  # ── Database ──────────────────────────────────────────────────────────
+  SPRING_DATASOURCE_URL:      "jdbc:mysql://mysql:3306/peakwell?createDatabaseIfNotExist=true&zeroDateTimeBehavior=convertToNull"
+  SPRING_DATASOURCE_USERNAME: "root"
+  SPRING_JPA_SHOW_SQL:        "false"
+
+  # ── Keycloak (backend) ────────────────────────────────────────────────
+  KEYCLOAK_SERVER_URL:   "http://keycloak:8080"
+  KEYCLOAK_PUBLIC_URL:   {{ .Values.keycloak.publicUrl | quote }}
+  KEYCLOAK_REALM:        "peakwell"
+  KEYCLOAK_CLIENT_ID:    "spring-client"
+  SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: {{ printf "%s/realms/peakwell/protocol/openid-connect/certs" "http://keycloak:8080" | quote }}
+  SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI:  {{ printf "%s/realms/peakwell" .Values.keycloak.publicUrl | quote }}
+
+  # ── App URLs ──────────────────────────────────────────────────────────
+  APP_FRONTEND_URL:             {{ printf "http://%s" .Values.ingress.host | quote }}
+  APP_PUBLIC_URL:               {{ printf "http://%s/peakwell" .Values.ingress.host | quote }}
+  APP_VERIFY_EMAIL_REDIRECT_URL: {{ printf "http://%s/auth/login" .Values.ingress.host | quote }}
+
+  # ── AI microservices — internal cluster DNS ───────────────────────────
+  PEAKWELL_AI_ML_URL:        "http://ai-ml:8001"
+  PEAKWELL_AI_SYMPTOM_URL:   "http://ai-symptom:8002"
+  PEAKWELL_AI_NUTRITION_URL: "http://ai-nutrition:8003"
+  PEAKWELL_AI_SPORT_URL:     "http://ai-sport:8004"
+
+  # ── External AI APIs ──────────────────────────────────────────────────
+  GROQ_API_URL:    {{ .Values.aiConfig.groqApiUrl | quote }}
+  AI_MODEL:        {{ .Values.aiConfig.model | quote }}
+  AI_API_URL:      {{ .Values.aiConfig.aiApiUrl | quote }}
+  AI_FACE_API_URL: {{ .Values.aiConfig.faceApiUrl | quote }}
+
+  # ── Mail ──────────────────────────────────────────────────────────────
+  SPRING_MAIL_HOST:     {{ .Values.mail.host | quote }}
+  SPRING_MAIL_PORT:     {{ .Values.mail.port | quote }}
+  SPRING_MAIL_USERNAME: {{ .Values.mail.username | quote }}
+  APP_MAIL_FROM:        {{ .Values.mail.from | quote }}
+
+  # ── Stripe / Payments ─────────────────────────────────────────────────
+  STRIPE_CURRENCY:                      {{ .Values.stripe.currency | quote }}
+  CONSULTATION_PRICE:                   {{ .Values.stripe.consultationPrice | quote }}
+  PAYMENT_CURRENCY:                     {{ .Values.stripe.paymentCurrency | quote }}
+  PAYMENT_PRICE_CONSULTATION:           {{ .Values.stripe.paymentPriceConsultation | quote }}
+  PAYMENT_PRICE_SPORTS_EVENT:           {{ .Values.stripe.paymentPriceSportsEvent | quote }}
+  PAYMENT_PRICE_NUTRITION_PLAN:         {{ .Values.stripe.paymentPriceNutritionPlan | quote }}
+  PAYMENT_PRICE_SUBSCRIPTION_MONTHLY:   {{ .Values.stripe.paymentPriceSubscriptionMonthly | quote }}
+  PAYMENT_PRICE_SUBSCRIPTION_YEARLY:    {{ .Values.stripe.paymentPriceSubscriptionYearly | quote }}
+
+  # ── JWT ───────────────────────────────────────────────────────────────
+  JWT_EXPIRATION: "86400000"

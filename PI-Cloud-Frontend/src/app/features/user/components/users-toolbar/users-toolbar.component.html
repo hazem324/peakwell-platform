@@ -1,0 +1,36 @@
+<div class="users-toolbar">
+  <div class="users-search">
+    
+     <i class="fa-solid fa-magnifying-glass search-icon"></i>
+    <input type="text"
+           [(ngModel)]="searchQuery"
+           (ngModelChange)="onSearch()"
+           placeholder="Search by name, email or address…"/>
+    <button class="search-clear" *ngIf="searchQuery" (click)="clearSearch()">✕</button>
+  </div>
+
+  <div class="status-filters">
+    <button class="status-btn"
+            *ngFor="let s of statusFilters"
+            [class.status-btn--active]="activeStatus === s"
+            (click)="setStatus(s)">
+      {{ s | titlecase }}
+    </button>
+  </div>
+
+  <div class="filter-group">
+    <span class="filter-label">Role</span>
+    <div class="status-filters">
+      <button class="status-btn role-btn"
+              *ngFor="let r of roleFilters"
+              [class.status-btn--active]="activeRole === r"
+              (click)="setRole(r)">
+        {{ r === 'ALL' ? 'All roles' : r | titlecase }}
+      </button>
+    </div>
+  </div>
+  
+  <div class="users-count">
+    {{ totalCount }} user{{ totalCount !== 1 ? 's' : '' }}
+  </div>
+</div>

@@ -1,0 +1,251 @@
+<!-- Empty state -->
+<div class="empty-dash" *ngIf="!hasData">
+  <div class="empty-dash-icon">🎯</div>
+  <h3>Set your first health goal</h3>
+  <p>Add biometric data first, then create personalized goals with milestones to track your progress.</p>
+</div>
+
+<div class="empty-dash" *ngIf="hasData && loading">
+  <div class="empty-dash-icon">⏳</div>
+  <h3>Loading your goals…</h3>
+</div>
+
+<div class="goals" *ngIf="hasData && !loading">
+
+  <!-- Header -->
+  <div class="goals-header">
+    <div>
+      <h3>Your Health Goals</h3>
+      <p>Track progress toward your targets with automatic milestone detection.</p>
+    </div>
+    <button class="btn-create" (click)="openCreate()">+ New Goal</button>
+  </div>
+
+  <!-- No goals yet -->
+  <div class="no-goals" *ngIf="goals.length === 0">
+    <span>🏁</span>
+    <div>
+      <strong>No goals set yet</strong>
+      <p>Create your first health goal to start tracking progress toward meaningful milestones.</p>
+    </div>
+    <button class="btn-setup" (click)="openCreate()">Create a Goal →</button>
+  </div>
+
+  <!-- Goal Cards -->
+  <div class="goal-card" *ngFor="let goal of goals" [class.goal-card--paused]="goal.paused">
+    <div class="goal-top">
+      <div class="goal-identity">
+        <span class="goal-icon" [style.background]="getGoalColor(goal) + '15'" [style.color]="getGoalColor(goal)">
+          {{ getGoalIcon(goal) }}
+        </span>
+        <div>
+          <div class="goal-metric">
+            {{ getMetricLabel(goal.metric) }}
+            <span class="badge-dietitian" *ngIf="goal.assignedByDietitian">
+              👨‍⚕️ {{ goal.assignedByDietitianName }}
+            </span>
+          </div>
+          <span class="goal-direction">Target: {{ goal.targetValue }} {{ goal.unit }}</span>
+        </div>
+      </div>
+      <div class="goal-actions">
+        <span class="goal-status"
+              [style.background]="getGoalStatus(goal).color + '15'"
+              [style.color]="getGoalStatus(goal).color">
+          {{ getGoalStatus(goal).label }}
+        </span>
+        <button class="btn-icon" (click)="openEdit(goal)" title="Edit goal" *ngIf="!goal.achieved">✏️</button>
+        <button class="btn-icon" (click)="openPause(goal.id)" title="Pause goal" *ngIf="!goal.paused && !goal.achieved">⏸</button>
+        <button class="btn-icon" (click)="resumeGoal(goal.id)" title="Resume goal" *ngIf="goal.paused">▶</button>
+        <button class="btn-icon" (click)="toggleChart(goal)" title="Progress chart">📈</button>
+        <button class="btn-delete" (click)="deleteGoal(goal.id)" title="Remove goal">×</button>
+      </div>
+    </div>
+    <div class="pause-banner" *ngIf="goal.paused && goal.pauseReason">⏸ Paused: {{ goal.pauseReason }}</div>
+
+    <!-- Progress Ring + Stats -->
+    <div class="goal-body">
+      <div class="goal-progress-area">
+        <div class="progress-ring-wrap">
+          <svg viewBox="0 0 120 120" class="progress-ring-svg">
+            <circle cx="60" cy="60" r="50" fill="none" stroke="#ede8e3" stroke-width="10"/>
+            <circle cx="60" cy="60" r="50" fill="none"
+                    [attr.stroke]="getGoalColor(goal)" stroke-width="10"
+                    stroke-linecap="round"
+                    [attr.stroke-dasharray]="(getProgress(goal) / 100 * 314) + ' 314'"
+                    transform="rotate(-90 60 60)"/>
+          </svg>
+          <div class="progress-ring-value" [style.color]="getGoalColor(goal)">
+            {{ getProgress(goal) }}%
+          </div>
+        </div>
+      </div>
+
+      <div class="goal-stats">
+        <div class="goal-stat">
+          <span class="stat-label">Current</span>
+          <span class="stat-value">{{ getCurrentValue(goal) }} {{ goal.unit }}</span>
+        </div>
+        <div class="goal-stat">
+          <span class="stat-label">Target</span>
+          <span class="stat-value">{{ goal.targetValue }} {{ goal.unit }}</span>
+        </div>
+        <div class="goal-stat">
+          <span class="stat-label">Remaining</span>
+          <span class="stat-value stat-value--accent">{{ getRemainingValue(goal) }}</span>
+        </div>
+        <div class="goal-stat">
+          <span class="stat-label">Days left</span>
+          <span class="stat-value">{{ getDaysRemaining(goal) }} days</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Progress Chart -->
+    <div class="chart-section" *ngIf="expandedChartGoalId === goal.id">
+      <div class="chart-wrap" style="height:180px">
+        <canvas [id]="'goal-chart-' + goal.id"></canvas>
+      </div>
+    </div>
+
+    <!-- Milestones -->
+    <div class="milestones">
+      <div class="milestone-label">Milestones</div>
+      <div class="milestone-track">
+        <div class="milestone"
+             *ngFor="let m of (goal.milestones || [])"
+             [class.milestone--reached]="m.reached">
+          <div class="milestone-dot">
+            <span *ngIf="m.reached">✓</span>
+            <span *ngIf="!m.reached" class="dot-empty"></span>
+          </div>
+          <div class="milestone-info">
+            <span class="milestone-title">{{ m.label }}</span>
+            <span class="milestone-value">{{ m.targetValue }} {{ goal.unit }}</span>
+            <span class="milestone-date" *ngIf="m.reachedDate">{{ m.reachedDate }}</span>
+            <span class="milestone-note" *ngIf="m.note && editingNoteId !== m.id">{{ m.note }}</span>
+            <div class="note-editor" *ngIf="editingNoteId === m.id">
+              <input type="text" [(ngModel)]="noteText" placeholder="Add a note…" (keyup.enter)="saveNote(m)"/>
+              <button class="btn-note-save" (click)="saveNote(m)">Save</button>
+              <button class="btn-note-cancel" (click)="editingNoteId = null">×</button>
+            </div>
+            <button class="btn-note-open" *ngIf="m.reached && editingNoteId !== m.id" (click)="openNote(m)">
+              {{ m.note ? '✏️ Edit note' : '📝 Add note' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pause Modal -->
+  <div class="modal-overlay" *ngIf="showPauseModal" (click)="showPauseModal = false">
+    <div class="modal-card modal-card--sm" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h4>⏸ Pause Goal</h4>
+        <button class="modal-close" (click)="showPauseModal = false">×</button>
+      </div>
+      <div class="modal-step">
+        <div class="field-group">
+          <label>Reason (optional)</label>
+          <input type="text" [(ngModel)]="pauseReason" placeholder="e.g. recovering from illness…"/>
+        </div>
+        <button class="btn-create-goal" (click)="confirmPause()">Confirm Pause</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Modal -->
+  <div class="modal-overlay" *ngIf="showEditModal" (click)="showEditModal = false">
+    <div class="modal-card modal-card--sm" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h4>✏️ Edit Goal</h4>
+        <button class="modal-close" (click)="showEditModal = false">×</button>
+      </div>
+      <div class="modal-step" *ngIf="editingGoal">
+        <div class="config-fields">
+          <div class="field-group">
+            <label>New target ({{ editingGoal.unit }})</label>
+            <input type="number" [(ngModel)]="editTarget" step="0.1"/>
+          </div>
+          <div class="field-group">
+            <label>New deadline</label>
+            <input type="date" [(ngModel)]="editDeadline"/>
+          </div>
+        </div>
+        <button class="btn-create-goal" (click)="confirmEdit()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Modal -->
+  <div class="modal-overlay" *ngIf="showCreateModal" (click)="showCreateModal = false">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h4>Create Health Goal</h4>
+        <button class="modal-close" (click)="showCreateModal = false">×</button>
+      </div>
+
+      <!-- Step 1: Choose type -->
+      <div class="modal-step" *ngIf="!selectedTemplate">
+        <p class="modal-subtitle">
+          Choose a goal type
+          <span class="rec-count" *ngIf="recommendedCount > 0">
+            {{ recommendedCount }} recommended for you
+          </span>
+        </p>
+        <div class="template-grid">
+          <button class="template-card"
+                  [class.template-card--recommended]="isRecommended(t) && !hasActiveGoal(t)"
+                  [class.template-card--active]="hasActiveGoal(t)"
+                  [disabled]="hasActiveGoal(t)"
+                  *ngFor="let t of templates"
+                  (click)="!hasActiveGoal(t) && selectTemplate(t)">
+            <span class="template-rec-badge" *ngIf="isRecommended(t) && !hasActiveGoal(t)">Recommended</span>
+            <span class="template-active-badge" *ngIf="hasActiveGoal(t)">Active</span>
+            <span class="template-icon">{{ t.icon }}</span>
+            <span class="template-label">{{ t.label }}</span>
+            <span class="template-dir">{{ t.direction | titlecase }}</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 2: Configure target + deadline -->
+      <div class="modal-step" *ngIf="selectedTemplate && createStep === 2">
+        <button class="btn-back" (click)="createStep = 1; selectedTemplate = null">← Back</button>
+        <div class="config-header">
+          <span class="config-icon">{{ selectedTemplate.icon }}</span>
+          <strong>{{ selectedTemplate.label }}</strong>
+        </div>
+        <div class="config-fields">
+          <div class="field-group">
+            <label>Target value ({{ selectedTemplate.unit }})</label>
+            <input type="number" [(ngModel)]="newGoalTarget" step="0.1"/>
+          </div>
+          <div class="field-group">
+            <label>Deadline</label>
+            <input type="date" [(ngModel)]="newGoalDeadline"/>
+          </div>
+        </div>
+        <div class="step2-actions">
+          <button class="btn-secondary" (click)="goToMilestoneStep()">Set custom milestones →</button>
+          <button class="btn-create-goal" (click)="createGoal()">🎯 Create Goal</button>
+        </div>
+      </div>
+
+      <!-- Step 3: Custom milestones -->
+      <div class="modal-step" *ngIf="selectedTemplate && createStep === 3">
+        <button class="btn-back" (click)="createStep = 2">← Back</button>
+        <p class="modal-subtitle">Define your own checkpoints</p>
+        <div class="milestone-editor" *ngFor="let m of customMilestones; let i = index">
+          <input type="text" [(ngModel)]="m.label" placeholder="Label (e.g. First 5 kg)"/>
+          <input type="number" [(ngModel)]="m.targetValue" [placeholder]="selectedTemplate.unit" step="0.1"/>
+          <button class="btn-rm" (click)="removeMilestoneRow(i)">×</button>
+        </div>
+        <button class="btn-secondary" (click)="addMilestoneRow()">+ Add milestone</button>
+        <button class="btn-create-goal" (click)="createGoal()">🎯 Create Goal</button>
+      </div>
+    </div>
+  </div>
+
+</div>

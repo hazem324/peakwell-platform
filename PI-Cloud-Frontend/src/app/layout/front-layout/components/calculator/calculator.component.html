@@ -1,0 +1,81 @@
+<section class="calc-section" id="calculator">
+  <div class="container">
+    <div class="calc-inner">
+
+      <div class="calc-copy">
+        <div class="section-label">Free Tool</div>
+        <h2 class="section-title">Find Your Daily <em>Calorie</em> &amp; Macro Needs</h2>
+        <p class="section-sub">Calculate exactly how much to eat based on your body, goals, and activity level.</p>
+        <ul class="calc-perks">
+          <li class="calc-perk" *ngFor="let p of perks">
+            <span class="perk-icon">{{ p.icon }}</span> {{ p.text }}
+          </li>
+        </ul>
+      </div>
+
+      <div class="calc-form">
+        <h3 class="calc-form-title">Calorie &amp; Macro Calculator</h3>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Age</label>
+            <input type="number" [(ngModel)]="age" min="15" max="80" placeholder="28"/>
+          </div>
+          <div class="form-group">
+            <label>Weight (kg)</label>
+            <input type="number" [(ngModel)]="weight" min="30" max="250" placeholder="68"/>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Height (cm)</label>
+            <input type="number" [(ngModel)]="height" min="100" max="250" placeholder="165"/>
+          </div>
+          <div class="form-group">
+            <label>Gender</label>
+            <select [(ngModel)]="gender">
+              <option value="female">Female</option>
+              <option value="male">Male</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Activity Level</label>
+          <select [(ngModel)]="selectedActivity">
+            <option *ngFor="let a of activities" [value]="a.value">{{ a.label }}</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Your Goal</label>
+          <div class="goal-btns">
+            <button class="goal-btn"
+                    *ngFor="let g of goals"
+                    [class.goal-btn--active]="selectedGoalOffset === g.offset"
+                    (click)="selectedGoalOffset = g.offset">
+              {{ g.emoji }} {{ g.label }}
+            </button>
+          </div>
+        </div>
+
+        <button class="btn-primary calc-submit" (click)="calculate()">
+          Calculate My Targets &rarr;
+        </button>
+
+        <div class="calc-result" *ngIf="result">
+          <div class="result-label">Your Daily Target</div>
+          <div class="result-kcal">{{ result!.calories | number }}</div>
+          <div class="result-sub">calories/day · BMR: {{ result!.bmr }} · TDEE: {{ result!.tdee }}</div>
+          <div class="result-macros">
+            <div class="result-macro"><span class="macro-val">{{ result!.protein }}</span><span class="macro-lbl">Protein (g)</span></div>
+            <div class="result-macro"><span class="macro-val">{{ result!.carbs }}</span><span class="macro-lbl">Carbs (g)</span></div>
+            <div class="result-macro"><span class="macro-val">{{ result!.fat }}</span><span class="macro-lbl">Fat (g)</span></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,18 @@
+<section class="events-map-page">
+  <div class="container">
+    <div class="page-header">
+      <h1>Events Map</h1>
+      <p>Explore all available events directly on the map.</p>
+    </div>
+
+    <div class="alert error" *ngIf="errorMessage">
+      {{ errorMessage }}
+    </div>
+
+    <div class="loading-state" *ngIf="loading">
+      Chargement des événements...
+    </div>
+
+    <div id="events-map" class="map-container"></div>
+  </div>
+</section>

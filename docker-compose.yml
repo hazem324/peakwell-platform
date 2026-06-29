@@ -1,0 +1,117 @@
+version: "3.9"
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: peakwell
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - peakwell-network
+
+  keycloak:
+    image: hazem231/peakwell-keycloak:1.2
+    container_name: keycloak
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - "8180:8080"
+    networks:
+      - peakwell-network
+
+  backend:
+    build:
+      context: ./PI-Cloud-Backend
+      dockerfile: Dockerfile
+    image: peakwell-backend:1.0
+    container_name: peakwell-backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/peakwell?createDatabaseIfNotExist=true&zeroDateTimeBehavior=convertToNull
+      DB_USERNAME: root
+      DB_PASSWORD: root
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/peakwell
+    ports:
+      - "8090:8090"
+    networks:
+      - peakwell-network
+
+  frontend:
+    build:
+      context: ./PI-Cloud-Frontend
+      dockerfile: Dockerfile
+    image: peakwell-frontend:1.0
+    container_name: peakwell-frontend
+    depends_on:
+      - backend
+    ports:
+      - "4200:80"
+    networks:
+      - peakwell-network
+
+  allergen-predictor:
+    build:
+      context: ./ai-servs/achref
+      dockerfile: Dockerfile
+    image: allergen-predictor:1.0
+    container_name: allergen-predictor
+    networks:
+      - peakwell-network
+    ports:
+      - "8004:8004"
+
+  ai-event:
+    build:
+      context: ./ai-servs/adem
+      dockerfile: Dockerfile
+    image: ai-event:1.0
+    container_name: ai-event
+    networks:
+      - peakwell-network
+    ports:
+      - "8003:8003"
+
+  ai-booking:
+    build:
+      context: ./ai-servs/feryel
+      dockerfile: Dockerfile
+    image: ai-booking:1.0
+    container_name: ai-booking
+    networks:
+      - peakwell-network
+    ports:
+      - "8001:8001"
+
+  peakwell-symptom-predictor:
+    build:
+      context: ./ai-servs/oussema
+      dockerfile: Dockerfile
+    image: peakwell-symptom-predictor:1.0
+    container_name: peakwell-symptom-predictor
+    networks:
+      - peakwell-network
+    ports:
+      - "8002:8002"
+
+volumes:
+  mysql-data:
+
+networks:
+  peakwell-network:
+    driver: bridge

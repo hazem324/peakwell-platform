@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    environment {
+        IMAGE_TAG = "v${BUILD_NUMBER}"
+    }
+
     stages {
 
         stage('Checkout Source Code') {
@@ -23,8 +27,6 @@ pipeline {
                 sh '''
                     set -e
 
-                    echo "========== Build Environment =========="
-
                     echo "Git Version:"
                     git --version
 
@@ -32,6 +34,11 @@ pipeline {
 
                     echo "Docker Version:"
                     docker version
+
+                    echo ""
+
+                    echo "Docker Compose Version:"
+                    docker compose version
 
                     echo ""
 
@@ -53,7 +60,6 @@ pipeline {
                     echo "NPM Version:"
                     npm -v
 
-                    echo "======================================="
                 '''
             }
         }
@@ -160,6 +166,83 @@ pipeline {
                     }
                 }
             }
+        }
+
+        stage('Build Docker Images') {
+            steps {
+                sh '''
+                    set -e
+
+                    export IMAGE_TAG=${IMAGE_TAG}
+
+                    echo "Building Docker Images"
+                    echo "Build Number : ${BUILD_NUMBER}"
+                    echo "Image Tag    : ${IMAGE_TAG}"
+
+                    docker compose config
+                    docker compose build
+                '''
+            }
+        }
+
+        stage('Push Docker Images') {
+            steps {
+
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'docker',
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS'
+                    )
+                ]) {
+
+                    sh '''
+                        set -e
+
+                        echo "$DOCKER_PASS" | docker login \
+                            -u "$DOCKER_USER" \
+                            --password-stdin
+
+                        echo "Pushing Backend Image..."
+                        docker push hazem231/peakwell-backend:${IMAGE_TAG}
+
+                        echo "Pushing Frontend Image..."
+                        docker push hazem231/peakwell-frontend:${IMAGE_TAG}
+
+                        echo "Pushing Allergen Predictor Image..."
+                        docker push hazem231/allergen-predictor:${IMAGE_TAG}
+
+                        echo "Pushing AI Event Image..."
+                        docker push hazem231/ai-event:${IMAGE_TAG}
+
+                        echo "Pushing AI Booking Image..."
+                        docker push hazem231/ai-booking:${IMAGE_TAG}
+
+                        echo "Pushing Symptom Predictor Image..."
+                        docker push hazem231/peakwell-symptom-predictor:${IMAGE_TAG}
+
+                        docker logout
+
+                        echo "All Docker Images Pushed Successfully"
+                        
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+
+        success {
+            echo 'CI Pipeline completed successfully.'
+        }
+
+        failure {
+            echo 'CI Pipeline failed.'
+        }
+
+        always {
+            cleanWs()
         }
     }
 }

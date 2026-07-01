@@ -34,7 +34,7 @@ services:
     build:
       context: ./PI-Cloud-Backend
       dockerfile: Dockerfile
-    image: peakwell-backend:1.0
+    image: hazem231/peakwell-backend:${IMAGE_TAG}
     container_name: peakwell-backend
     restart: unless-stopped
     depends_on:
@@ -56,7 +56,7 @@ services:
     build:
       context: ./PI-Cloud-Frontend
       dockerfile: Dockerfile
-    image: peakwell-frontend:1.0
+    image: hazem231/peakwell-frontend:${IMAGE_TAG}
     container_name: peakwell-frontend
     depends_on:
       - backend
@@ -69,7 +69,7 @@ services:
     build:
       context: ./ai-servs/achref
       dockerfile: Dockerfile
-    image: allergen-predictor:1.0
+    image: hazem231/allergen-predictor:${IMAGE_TAG}
     container_name: allergen-predictor
     networks:
       - peakwell-network
@@ -80,7 +80,7 @@ services:
     build:
       context: ./ai-servs/adem
       dockerfile: Dockerfile
-    image: ai-event:1.0
+    image: hazem231/ai-event:${IMAGE_TAG}
     container_name: ai-event
     networks:
       - peakwell-network
@@ -91,7 +91,7 @@ services:
     build:
       context: ./ai-servs/feryel
       dockerfile: Dockerfile
-    image: ai-booking:1.0
+    image: hazem231/ai-booking:${IMAGE_TAG}
     container_name: ai-booking
     networks:
       - peakwell-network
@@ -102,7 +102,7 @@ services:
     build:
       context: ./ai-servs/oussema
       dockerfile: Dockerfile
-    image: peakwell-symptom-predictor:1.0
+    image: image: hazem231/peakwell-symptom-predictor:${IMAGE_TAG}
     container_name: peakwell-symptom-predictor
     networks:
       - peakwell-network

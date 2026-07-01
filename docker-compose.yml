@@ -102,7 +102,7 @@ services:
     build:
       context: ./ai-servs/oussema
       dockerfile: Dockerfile
-    image: image: hazem231/peakwell-symptom-predictor:${IMAGE_TAG}
+    image: hazem231/peakwell-symptom-predictor:${IMAGE_TAG}
     container_name: peakwell-symptom-predictor
     networks:
       - peakwell-network
